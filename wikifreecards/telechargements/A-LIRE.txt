@@ -1,0 +1,18 @@
+DOSSIER DES TÉLÉCHARGEMENTS
+===========================
+
+Déposez ici les trois fichiers proposés sur la page telecharger.html,
+en respectant exactement ces noms (sinon les boutons ne trouveront pas les fichiers) :
+
+  WikiFreeCards-installateur-windows.exe    Version avec installateur
+  WikiFreeCards-source-et-exe-windows.zip   Code source Python + .exe compilé
+  WikiFreeCards-source-python-windows.zip   Code source Python (avec main.py)
+
+Pour utiliser d'autres noms, ou pour pointer vers une page de téléchargement
+externe (par exemple les « Releases » GitHub), modifiez les trois attributs
+href dans telecharger.html.
+
+Attention : certains hébergeurs limitent la taille des fichiers
+(GitHub Pages, par exemple, refuse les fichiers de plus de 100 Mo).
+Dans ce cas, hébergez les fichiers sur GitHub Releases et mettez les
+adresses correspondantes dans telecharger.html.

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr" class="js-off">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collectionner | WikiFreeCards</title>
+<meta name="description" content="Recherche d&#x27;articles Wikipédia, gestion de la collection, catégories automatiques, export PNG, PDF et Word, profil avec vitrines et Hall des collections.">
+<meta name="theme-color" content="#0c1022">
+<link rel="icon" type="image/png" href="logo/logo_3.png">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>document.documentElement.classList.remove("js-off");</script>
+</head>
+<body class="page-collectionner">
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+<header class="site-header">
+  <div class="logo-stripe" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="WikiFreeCards, accueil">
+      <img src="logo/logo_3.png" alt="WikiFreeCards" width="1043" height="1050">
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+      <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      Menu
+    </button>
+    <nav class="main-nav" id="main-nav" aria-label="Navigation principale">
+      <ul>
+        <li><a href="index.html" data-color="white">Accueil</a></li><li><a href="collectionner.html" data-color="cyan" aria-current="page">Collectionner</a></li><li><a href="creer.html" data-color="magenta">Créer des cartes</a></li><li><a href="personnaliser.html" data-color="yellow">Personnaliser</a></li><li><a href="projet.html" data-color="navy">Le projet</a></li><li><a href="telecharger.html" data-color="cta">Télécharger</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="contenu">
+<section class="page-hero">
+  <div class="container">
+    <h1>Collectionner</h1>
+    <p class="lede">Trouver des cartes, les ranger, les regarder de près et les montrer : tout ce qui fait vivre votre collection au quotidien.</p>
+    <nav class="toc" aria-label="Sur cette page"><ul><li><a href="#recherche">Rechercher</a></li><li><a href="#collection">Ma collection</a></li><li><a href="#categories">Catégories</a></li><li><a href="#carte">Une carte en détail</a></li><li><a href="#export">Exporter</a></li><li><a href="#profil">Profil et vitrines</a></li><li><a href="#hall">Hall des collections</a></li></ul></nav>
+  </div>
+</section>
+<section class="section" id="recherche">
+  <div class="container">
+    <div class="feature feature-wide">
+      <div class="feature-text">
+        <h2>Chercher un sujet précis sur Wikipédia</h2>
+        <div class="feature-body">
+          <p>Les paquets apportent la surprise ; le moteur de recherche permet de viser un sujet. Saisissez un thème, par exemple « jeu de société » : le logiciel affiche 20 cartes, puis 20 de plus à chaque clic sur <span class="ui">Voir plus de résultats</span>.</p>
+          <ul>
+            <li>Le rang de chaque carte est calculé à partir du nombre de vues de l'article.</li>
+            <li>Les bandeaux de catégorie montrent à l'avance le classement automatique qui sera appliqué.</li>
+            <li>Cochez les cartes qui vous intéressent, puis rapatriez-les dans votre collection en un clic.</li>
+            <li>Les résultats se trient, par exemple des plus vus aux moins vus. Les champs pris en compte par la recherche se règlent dans la configuration.</li>
+          </ul>
+        </div>
+      </div>
+      <figure class="shot ">
+  <a class="shot-frame" href="medias/captures/recherche-wikipedia.png" data-lightbox>
+    <img src="medias/captures/recherche-wikipedia.png" alt="Page Recherche de WikiFreeCards avec les résultats pour « jeu de société » : Jeu des petits chevaux, Dominos, Jeu de l&#x27;oie, Dixit, Jeu de société" width="1572" height="721" loading="lazy" decoding="async">
+  </a>
+  <figcaption>Recherche « jeu de société » : chaque résultat peut être coché puis rapatrié dans la collection.</figcaption>
+</figure>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="collection">
+  <div class="container">
+    <div class="feature feature-wide">
+      <div class="feature-text">
+        <h2>Votre collection, rangée comme vous l'entendez</h2>
+        <div class="feature-body">
+          <p>La page Collection rassemble toutes vos cartes. Un compteur par rang montre d'un coup d'œil sa composition.</p>
+          <ul>
+            <li>Recherche par nom et filtre par catégorie.</li>
+            <li>Tri, par exemple selon le nombre de vues par jour.</li>
+            <li>Taille d'affichage des cartes réglable avec un curseur.</li>
+            <li>Mode <span class="ui">Sélection</span> pour cocher plusieurs cartes à la fois.</li>
+            <li>Favoris marqués d'une étoile, pagination et corbeille.</li>
+          </ul>
+        </div>
+      </div>
+      <figure class="shot ">
+  <a class="shot-frame" href="medias/captures/collection.png" data-lightbox>
+    <img src="medias/captures/collection.png" alt="Page Ma collection Wikipédia : compteurs par rang, barre de recherche, filtres, tri, curseur de taille et grille de cartes" width="1569" height="730" loading="lazy" decoding="async">
+  </a>
+  <figcaption>La page Collection : compteurs par rang, recherche, filtre par catégorie, tri, sélection et taille des cartes.</figcaption>
+</figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="categories">
+  <div class="container">
+    <div class="section-head">
+      <h2>Des catégories qui se remplissent toutes seules</h2>
+    </div>
+    <div class="two-col">
+      <div class="prose">
+        <p>Comme dans d'autres logiciels du genre, vous pouvez créer vos propres catégories. La différence : chaque catégorie accepte jusqu'à <strong>cinq mots-clés</strong>, appelés « métas ». À l'ouverture d'un paquet, une nouvelle carte qui contient l'un de ces mots dans son titre ou son sous-titre est classée automatiquement.</p>
+        <div class="note">
+          <p class="note-title">Exemple</p>
+          <p>Une catégorie « Cinéma » associée aux mots <em>acteur</em>, <em>actrice</em>, <em>film</em>, <em>scénariste</em> et <em>cinéma</em> accueillera d'elle-même toutes les nouvelles cartes correspondantes.</p>
+        </div>
+      </div>
+      <div class="prose">
+        <h3>Des pré-catégories intelligentes</h3>
+        <p>Des pré-catégories, elles aussi paramétrables, repèrent d'emblée certains types de cartes :</p>
+        <ul>
+          <li>les cartes en double ;</li>
+          <li>les cartes animées ;</li>
+          <li>les cartes sans illustration ;</li>
+          <li>les cartes « sensibles », par exemple les contenus réservés aux plus de 18 ans.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="carte">
+  <div class="container">
+    <div class="feature feature-split narrow-media">
+      <div class="feature-text">
+        <h2>Une carte, de près</h2>
+        <div class="feature-body">
+          <p>Un clic sur une carte l'affiche en grand. Vous y retrouvez :</p>
+          <ul>
+            <li>l'illustration de l'article et la lettre du rang, en haut à gauche ;</li>
+            <li>le titre, la courte description et le début de l'article ;</li>
+            <li>le nombre de vues par jour, plusieurs statistiques sur l'article, ainsi que la date et l'heure d'obtention de la carte ;</li>
+            <li>des boutons pour ouvrir l'article, ajouter la carte aux favoris, changer son illustration et l'exporter.</li>
+          </ul>
+          <h3 class="subhead" id="export">Exporter et imprimer</h3>
+          <p>Chaque carte peut être exportée au format <strong>PNG</strong>, <strong>PDF</strong> ou <strong>Word</strong>. Les exports PDF et Word sont prévus pour une impression recto verso : de quoi transformer vos cartes préférées en cartes bien réelles.</p>
+        </div>
+      </div>
+      <figure class="shot shot-portrait">
+  <a class="shot-frame" href="medias/captures/carte-agrandie.png" data-lightbox>
+    <img src="medias/captures/carte-agrandie.png" alt="Carte agrandie consacrée à Balthazar Picsou, avec les boutons ouvrir l&#x27;article, favori, changer l&#x27;illustration, export PNG et export PDF" width="548" height="683" loading="lazy" decoding="async">
+  </a>
+  <figcaption>Carte agrandie. À droite, de haut en bas : ouvrir l'article, favori, changer l'illustration, export PNG, export PDF.</figcaption>
+</figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="profil">
+  <div class="container">
+    <div class="feature feature-wide">
+      <div class="feature-text">
+        <h2>Un profil avec des vitrines</h2>
+        <div class="feature-body">
+          <p>La page Profil présente votre collection : nombre total de cartes, répartition par rang et, surtout, vos vitrines.</p>
+          <p>Vous pouvez créer de <strong>1 à 12 vitrines</strong>, contenant chacune de <strong>1 à 5 cartes</strong>. Donnez-leur un titre (les emoji sont les bienvenus), puis changez ou retirez les cartes exposées quand vous le voulez.</p>
+        </div>
+      </div>
+      <figure class="shot ">
+  <a class="shot-frame" href="medias/captures/profil-vitrines.png" data-lightbox>
+    <img src="medias/captures/profil-vitrines.png" alt="Page Profil : 39 cartes dans la collection, répartition par rang, et une vitrine de quatre cartes de requins" width="1544" height="704" loading="lazy" decoding="async">
+  </a>
+  <figcaption>Une vitrine consacrée aux requins sur la page Profil, avec les boutons Changer et Retirer sous chaque carte.</figcaption>
+</figure>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="hall">
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <h2>Le Hall des collections</h2>
+        <p>Le Hall des collections permet de visiter les collections que d'autres utilisateurs ont choisi de partager, et de montrer la vôtre. Vous rapatriez les cartes qui vous plaisent ; vos visiteurs peuvent faire de même chez vous, tout aussi simplement.</p>
+      </div>
+      <div class="prose">
+        <p>Le partage s'arrête là, volontairement : ni demandes d'ami, ni messagerie, ni monnaie virtuelle, ni enchères.</p>
+        <p>Les échanges passent par le réseau Tor, sans compte ni mot de passe. <a href="projet.html#partage">Comment fonctionne le partage</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section"><div class="container"><nav class="page-next" aria-label="Pages voisines"><a href="index.html"><small>Page précédente</small><span>Accueil</span></a><a class="next" href="creer.html"><small>Page suivante</small><span>Créer des cartes</span></a></nav></div></section>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="logo/logo_3.png" alt="WikiFreeCards" width="1043" height="1050" loading="lazy">
+        <p>Des cartes à collectionner tirées des articles de Wikipédia. Un logiciel local, gratuit et open source.</p>
+      </div>
+      <nav aria-label="Plan du site">
+        <h2>Le site</h2>
+        <ul>
+          <li><a href="index.html">Accueil</a></li><li><a href="collectionner.html">Collectionner</a></li><li><a href="creer.html">Créer des cartes</a></li><li><a href="personnaliser.html">Personnaliser</a></li><li><a href="projet.html">Le projet</a></li><li><a href="telecharger.html">Télécharger</a></li>
+        </ul>
+      </nav>
+      <div>
+        <h2>Liens externes</h2>
+        <ul>
+          <li><a class="ext" href="https://github.com/damballah/wikifreecards" rel="noopener">Code source sur GitHub</a></li>
+          <li><a class="ext" href="https://donate.wikimedia.org/" rel="noopener">Faire un don à la Wikimedia Foundation</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p>© 2026 Damballah Oueddo. WikiFreeCards est distribué sous licence MIT.</p>
+      <p>Les liens externes nécessitent une connexion Internet.</p>
+    </div>
+  </div>
+</footer>
+
+<dialog class="lightbox" id="lightbox" aria-label="Image agrandie">
+  <div class="lb-bar">
+    <div class="lb-nav">
+      <button class="lb-btn" type="button" data-lb="prev" aria-label="Image précédente">‹</button>
+      <span class="lb-count" aria-live="polite"></span>
+      <button class="lb-btn" type="button" data-lb="next" aria-label="Image suivante">›</button>
+    </div>
+    <div class="lb-nav">
+      <a class="lb-btn" data-lb="full" href="#" target="_blank" rel="noopener">Taille réelle</a>
+      <button class="lb-btn" type="button" data-lb="close">Fermer</button>
+    </div>
+  </div>
+  <div class="lb-stage"><img alt=""></div>
+  <div class="lb-caption"><p></p></div>
+</dialog>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
