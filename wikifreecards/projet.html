@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr" class="js-off">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le projet | WikiFreeCards</title>
+<meta name="description" content="L&#x27;histoire de WikiFreeCards, sa philosophie sans stress, son fonctionnement local avec partage chiffré via Tor, et sa licence MIT.">
+<meta name="theme-color" content="#0c1022">
+<link rel="icon" type="image/png" href="logo/logo_3.png">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>document.documentElement.classList.remove("js-off");</script>
+</head>
+<body class="page-projet">
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+<header class="site-header">
+  <div class="logo-stripe" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="WikiFreeCards, accueil">
+      <img src="logo/logo_3.png" alt="WikiFreeCards" width="1043" height="1050">
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+      <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      Menu
+    </button>
+    <nav class="main-nav" id="main-nav" aria-label="Navigation principale">
+      <ul>
+        <li><a href="index.html" data-color="white">Accueil</a></li><li><a href="collectionner.html" data-color="cyan">Collectionner</a></li><li><a href="creer.html" data-color="magenta">Créer des cartes</a></li><li><a href="personnaliser.html" data-color="yellow">Personnaliser</a></li><li><a href="projet.html" data-color="navy" aria-current="page">Le projet</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="contenu">
+<section class="page-hero">
+  <div class="container">
+    <h1>Le projet</h1>
+    <p class="lede">Pourquoi WikiFreeCards existe, ce qu'il refuse de faire, et comment il fonctionne.</p>
+    <nav class="toc" aria-label="Sur cette page"><ul><li><a href="#histoire">L'histoire</a></li><li><a href="#philosophie">La philosophie</a></li><li><a href="#partage">Local et partage via Tor</a></li><li><a href="#licence">Licence</a></li><li><a href="#wikipedia">Soutenir Wikipédia</a></li></ul></nav>
+  </div>
+</section>
+<section class="section" id="histoire">
+  <div class="container two-col">
+    <div>
+      <h2>L'histoire, racontée par son concepteur</h2>
+    </div>
+    <div class="prose">
+      <p>Bonjour à toutes et à tous ! Je m'appelle Damballah et je suis le concepteur de WikiFreeCards, un logiciel de gestion de cartes à collectionner construit à partir des articles de Wikipédia.</p>
+      <p>L'idée m'est venue d'un site de collection de cartes, lui aussi basé sur Wikipédia. Ce site n'était pas très sécurisé, à plusieurs niveaux, et je me suis laissé entraîner dans une spirale un peu infernale. Au bout de trois semaines, mon compte a été suspendu… et pour de bonnes raisons.</p>
+      <p>C'est à ce moment-là que j'ai voulu voir si je pouvais faire la même chose, en beaucoup plus agréable, avec beaucoup plus d'options et des fonctions que l'on ne trouve nulle part ailleurs.</p>
+      <p>Je suis un développeur à l'ancienne, pas un ingénieur. Je comprends l'algorithmique en général, mais pour ce projet, j'ai préféré vivre avec mon temps et me lancer dans le « vibe coding » avec Claude AI. Je suis donc davantage le concepteur que le développeur de WikiFreeCards.</p>
+      <p><em>Damballah</em></p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="philosophie">
+  <div class="container">
+    <div class="section-head">
+      <h2>Une collection sans stress</h2>
+      <p>WikiFreeCards est d'abord pensé pour créer et gérer une collection en mode détente. Pas de dopamine libérée en permanence : on fait évoluer son projet tranquillement.</p>
+    </div>
+    <h3>Ce que vous ne trouverez pas dans WikiFreeCards</h3>
+    <ul class="nope">
+      <li>Demandes d'ami</li>
+      <li>Tchat</li>
+      <li>Monnaie virtuelle</li>
+      <li>Enchères et revente</li>
+      <li>Achats intégrés</li>
+    </ul>
+    <p>Vous visitez la collection de ceux qui le souhaitent, vous rapatriez les cartes qui vous plaisent, et vos visiteurs peuvent faire de même chez vous. Le partage s'arrête là.</p>
+  </div>
+</section>
+
+<section class="section" id="partage">
+  <div class="container two-col">
+    <div>
+      <h2>Local, et partagé via Tor</h2>
+      <p>WikiFreeCards est un logiciel local : il fonctionne sur votre ordinateur et ne dépend d'aucun serveur centralisé ni d'aucun nom de domaine.</p>
+    </div>
+    <div class="prose">
+      <p>Si vous souhaitez partager votre collection ou votre profil, le partage passe par le réseau Tor :</p>
+      <ul>
+        <li>aucune création de compte, aucun mot de passe : un simple pseudo suffit ;</li>
+        <li>des échanges chiffrés de bout en bout, en AES-256 avec échange de clés Curve25519.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="licence">
+  <div class="container two-col">
+    <div>
+      <h2>Gratuit, libre et à vous</h2>
+    </div>
+    <div class="prose">
+      <p>WikiFreeCards est totalement gratuit et open source, sous <strong>licence MIT</strong>.</p>
+      <p>Il n'y aura pas forcément de mises à jour régulières : n'hésitez pas à forker le projet et à en faire ce que vous voulez. Le but, c'est le partage.</p>
+      <p>Aucun système de dons au profit du projet, aucun achat intégré, rien de ce genre.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary ext" href="https://github.com/damballah/wikifreecards" rel="noopener">Voir le code source sur GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="wikipedia">
+  <div class="container">
+    <div class="callout">
+      <h2>Vous voulez aider ? Soutenez Wikipédia</h2>
+      <p>Si vous souhaitez aider financièrement, pensez plutôt à la Wikimedia Foundation. C'est grâce à elle que Wikipédia, cet outil gratuit de partage de connaissances sans lequel WikiFreeCards n'existerait pas, peut le rester.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary ext" href="https://donate.wikimedia.org/" rel="noopener">Faire un don à la Wikimedia Foundation</a>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section"><div class="container"><nav class="page-next" aria-label="Pages voisines"><a href="personnaliser.html"><small>Page précédente</small><span>Personnaliser</span></a><a class="next" href="index.html"><small>Page suivante</small><span>Retour à l'accueil</span></a></nav></div></section>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="logo/logo_3.png" alt="WikiFreeCards" width="1043" height="1050" loading="lazy">
+        <p>Des cartes à collectionner tirées des articles de Wikipédia. Un logiciel local, gratuit et open source.</p>
+      </div>
+      <nav aria-label="Plan du site">
+        <h2>Le site</h2>
+        <ul>
+          <li><a href="index.html">Accueil</a></li><li><a href="collectionner.html">Collectionner</a></li><li><a href="creer.html">Créer des cartes</a></li><li><a href="personnaliser.html">Personnaliser</a></li><li><a href="projet.html">Le projet</a></li>
+        </ul>
+      </nav>
+      <div>
+        <h2>Liens externes</h2>
+        <ul>
+          <li><a class="ext" href="https://github.com/damballah/wikifreecards" rel="noopener">Code source sur GitHub</a></li>
+          <li><a class="ext" href="https://donate.wikimedia.org/" rel="noopener">Faire un don à la Wikimedia Foundation</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p>© 2026 Damballah Oueddo. WikiFreeCards est distribué sous licence MIT.</p>
+      <p>Les liens externes nécessitent une connexion Internet.</p>
+    </div>
+  </div>
+</footer>
+
+<dialog class="lightbox" id="lightbox" aria-label="Image agrandie">
+  <div class="lb-bar">
+    <div class="lb-nav">
+      <button class="lb-btn" type="button" data-lb="prev" aria-label="Image précédente">‹</button>
+      <span class="lb-count" aria-live="polite"></span>
+      <button class="lb-btn" type="button" data-lb="next" aria-label="Image suivante">›</button>
+    </div>
+    <div class="lb-nav">
+      <a class="lb-btn" data-lb="full" href="#" target="_blank" rel="noopener">Taille réelle</a>
+      <button class="lb-btn" type="button" data-lb="close">Fermer</button>
+    </div>
+  </div>
+  <div class="lb-stage"><img alt=""></div>
+  <div class="lb-caption"><p></p></div>
+</dialog>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
