@@ -1,0 +1,104 @@
+WIKIFREECARDS : SITE DE PRÉSENTATION
+====================================
+
+Site statique (HTML, CSS, JavaScript) qui présente le logiciel WikiFreeCards.
+Aucune base de données, aucun serveur, aucune installation : tout fonctionne
+hors ligne, y compris le logo, les polices, les images et les vidéos.
+
+
+1. OUVRIR LE SITE
+-----------------
+1. Décompressez l'archive où vous voulez.
+2. Double-cliquez sur index.html : le site s'ouvre dans votre navigateur.
+
+Aucun serveur local n'est nécessaire. Seuls deux liens externes (GitHub et
+la page de dons de la Wikimedia Foundation) demandent une connexion Internet.
+
+
+2. CONTENU DU DOSSIER
+---------------------
+index.html            Accueil : présentation, vidéo d'ouverture de paquet,
+                      points forts, rangs de rareté, accès aux rubriques
+collectionner.html    Recherche, import .txt, collection, catégories, carte agrandie,
+                      export, profil et vitrines, Hall des collections
+creer.html            Créateur de cartes (manuel et depuis une URL),
+                      full-art (vidéo), changement et recadrage d'illustration
+personnaliser.html    Thèmes, disposition, rangs, 21 styles de paquets,
+                      sons et musique, sauvegardes
+projet.html           Histoire, philosophie, fonctionnement local et Tor,
+                      licence MIT, soutien à Wikipédia
+telecharger.html      Les trois versions à télécharger pour Windows
+
+logo/                 Logo officiel, fichier d'origine non modifié (logo_3.png)
+assets/css/style.css  Styles. Les couleurs, espacements, rayons et ombres
+                      sont des variables regroupées en haut du fichier (:root)
+assets/js/main.js     Menu mobile et visionneuse d'images
+assets/fonts/         Polices locales (Lora, TeX Gyre Adventor) et licences
+medias/captures/      Captures d'écran du logiciel (fichiers d'origine)
+medias/paquets/       Les 21 paquets, fond retiré
+telechargements/      Dossier où déposer les 3 fichiers à télécharger
+                      (voir telechargements/A-LIRE.txt)
+medias/videos/        Les 2 vidéos (MP4 d'origine + version WebM de secours)
+                      et leurs images d'aperçu (.jpg)
+
+
+3. MODIFIER LES CONTENUS
+------------------------
+- Textes : ouvrez la page .html voulue avec un éditeur de texte
+  (Bloc-notes, VS Code…) et modifiez le texte entre les balises.
+  L'en-tête et le pied de page sont répétés dans chaque page : une
+  modification du menu doit être faite dans les 6 fichiers.
+- Image : remplacez le fichier dans medias/ en gardant le même nom, ou
+  changez le chemin dans la page. Pensez à ajuster les attributs width et
+  height à la taille de la nouvelle image.
+- Couleurs : modifiez les variables en haut de assets/css/style.css.
+  Chaque rubrique a sa couleur (règles body.page-…).
+- Agrandissement : toute image placée dans un lien
+  <a class="shot-frame" href="…" data-lightbox> s'ouvre dans la visionneuse.
+
+
+4. FICHIERS À TÉLÉCHARGER
+-------------------------
+Les boutons de telecharger.html pointent vers trois fichiers à déposer dans
+le dossier telechargements/, avec exactement ces noms :
+  WikiFreeCards-installateur-windows.exe
+  WikiFreeCards-source-et-exe-windows.zip
+  WikiFreeCards-source-python-windows.zip
+Tant qu'ils n'y sont pas, les boutons mènent à une page introuvable.
+Vous pouvez aussi remplacer ces liens par des adresses externes (par exemple
+GitHub Releases) en modifiant les trois attributs href de telecharger.html.
+
+
+5. PUBLIER LE SITE
+------------------
+Envoyez tout le contenu du dossier, tel quel, sur n'importe quel hébergement
+statique : GitHub Pages, Netlify, Cloudflare Pages, ou l'espace web de votre
+fournisseur d'accès (par FTP). index.html doit se trouver à la racine.
+Tous les chemins sont relatifs : aucune adaptation n'est nécessaire.
+
+
+6. NOTES TECHNIQUES
+-------------------
+- Noms de fichiers : les médias de l'archive d'origine ont été renommés sans
+  accents ni espaces, pour éviter tout problème chez les hébergeurs.
+  Correspondance :
+    Moteur_de_recherche_wikipedia.png ................ recherche-wikipedia.png
+    Création_de_carte_personnelle.png ............... createur-saisie-manuelle.png
+    Création_de_carte_personnelle_via_une_url.png ... createur-depuis-url.png
+    Possibilité_de_changer_l_image_d_une_carte.png .. changer-illustration.png
+    carte_zoomé.png ................................. carte-agrandie.png
+    vitrines_dans_la_pavge_de_profil.png ............ profil-vitrines.png
+    Gérez votre collection.png ...................... collection.png
+    Sauvegardes ete restaurations.png ............... sauvegardes.png
+    Raretés et apparence des cartes.png ............. raretes-apparence.png
+    Disposition_de_la_page_menu_barre_d_outils_et_paquet.png ... disposition-page.png
+    liste_des_thème_du_site.png ..................... themes-du-site.png
+    capture de l'import par fichier .txt ............ import-fichier-txt.png
+    Ouverture_de_paquets_et_affichage_des_cartes.mp4 ouverture-paquet.mp4
+    Création_d_un_full_art_sur_une_carte.mp4 ........ creation-full-art.mp4
+    paquet_N_nom.png ................................ paquet-0N-nom.png (fond retiré)
+- Vidéos : les MP4 (H.264) n'ont pas été réencodés, seulement réorganisés
+  pour démarrer plus vite en ligne. Leur piste audio d'origine est muette.
+  Une copie WebM (VP9, sans son) sert de secours aux rares navigateurs
+  dépourvus du décodeur H.264 (certaines versions de Chromium sous Linux).
+- Polices : fichiers d'origine non modifiés, licences dans assets/fonts/.
