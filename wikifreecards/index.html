@@ -47,15 +47,23 @@
         <li>Sans compte ni mot de passe</li>
       </ul>
     </div>
-    <div class="pack-fan" role="group" aria-label="Quelques styles de paquets WikiFreeCards">
-      <figure style="--r:-36deg; --i:0"><img src="medias/paquets/paquet-04-holographique.png" alt="Paquet Holographique" width="169" height="256"></figure>
-<figure style="--r:-24deg; --i:1"><img src="medias/paquets/paquet-11-ametiste.png" alt="Paquet Améthyste" width="167" height="270"></figure>
-<figure style="--r:-12deg; --i:2"><img src="medias/paquets/paquet-06-ocean.png" alt="Paquet Océan" width="169" height="256"></figure>
-<figure style="--r:0deg; --i:3"><img src="medias/paquets/paquet-02-or.png" alt="Paquet Or" width="169" height="256"></figure>
-<figure style="--r:12deg; --i:4"><img src="medias/paquets/paquet-20-rubis.png" alt="Paquet Rubis" width="167" height="270"></figure>
-<figure style="--r:24deg; --i:5"><img src="medias/paquets/paquet-15-diamant.png" alt="Paquet Diamant" width="167" height="270"></figure>
-<figure style="--r:36deg; --i:6"><img src="medias/paquets/paquet-01-classique-violet.png" alt="Paquet Classique violet" width="169" height="256"></figure>
-    </div>
+    <figure class="promo" id="video-presentation">
+      <div class="promo-frame">
+        <video id="promo-video" playsinline controls preload="auto" aria-label="Vidéo de présentation de WikiFreeCards">
+          <source src="medias/videos/presentation.mp4" type="video/mp4" onerror="this.parentNode.setAttribute('data-missing', '1')">
+          Votre navigateur ne peut pas lire cette vidéo.
+        </video>
+        <button class="promo-play" type="button" hidden>
+          <span class="promo-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg></span>
+          <span class="promo-play-label">Regarder la présentation<small>avec le son</small></span>
+        </button>
+        <div class="promo-missing" hidden>
+          <img src="logo/logo_3.png" alt="" width="1043" height="1050">
+          <p>La vidéo de présentation arrive bientôt.</p>
+        </div>
+      </div>
+      <figcaption>WikiFreeCards</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -82,7 +90,7 @@
       Votre navigateur ne peut pas lire cette vidéo. <a href="medias/videos/ouverture-paquet.mp4">Télécharger la vidéo (MP4)</a>.
     </video>
   </div>
-  <figcaption>Démonstration : ouverture d'un paquet puis rendez-vous dans la collection.</figcaption>
+  <figcaption>Démonstration : ouverture de deux paquets, tri des cartes, puis ajout à la collection (25 secondes, sans son).</figcaption>
 </figure>
     </div>
   </div>
@@ -120,12 +128,15 @@
       </ul>
       <p>Seuils, probabilités, noms, lettres, couleurs et reflets : <a href="personnaliser.html#raretes">chaque rang se règle</a> dans la configuration.</p>
     </div>
-    <figure class="shot shot-portrait">
-  <a class="shot-frame" href="medias/captures/carte-agrandie.png" data-lightbox>
-    <img src="medias/captures/carte-agrandie.png" alt="Carte agrandie de rang R consacrée à Balthazar Picsou, avec son illustration, son texte et ses statistiques" width="548" height="683" loading="lazy" decoding="async">
-  </a>
-  <figcaption>Une carte de rang R affichée en grand, avec ses boutons d'action à droite.</figcaption>
-</figure>
+    <div class="pack-fan" role="group" aria-label="Quelques styles de paquets WikiFreeCards">
+      <figure style="--r:-36deg; --i:0"><img src="medias/paquets/paquet-04-holographique.png" alt="Paquet Holographique" width="169" height="256"></figure>
+<figure style="--r:-24deg; --i:1"><img src="medias/paquets/paquet-11-ametiste.png" alt="Paquet Améthyste" width="167" height="270"></figure>
+<figure style="--r:-12deg; --i:2"><img src="medias/paquets/paquet-06-ocean.png" alt="Paquet Océan" width="169" height="256"></figure>
+<figure style="--r:0deg; --i:3"><img src="medias/paquets/paquet-02-or.png" alt="Paquet Or" width="169" height="256"></figure>
+<figure style="--r:12deg; --i:4"><img src="medias/paquets/paquet-20-rubis.png" alt="Paquet Rubis" width="167" height="270"></figure>
+<figure style="--r:24deg; --i:5"><img src="medias/paquets/paquet-15-diamant.png" alt="Paquet Diamant" width="167" height="270"></figure>
+<figure style="--r:36deg; --i:6"><img src="medias/paquets/paquet-01-classique-violet.png" alt="Paquet Classique violet" width="169" height="256"></figure>
+    </div>
   </div>
 </section>
 

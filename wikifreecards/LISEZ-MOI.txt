@@ -69,6 +69,26 @@ Vous pouvez aussi remplacer ces liens par des adresses externes (par exemple
 GitHub Releases) en modifiant les trois attributs href de telecharger.html.
 
 
+VIDÉO DE PRÉSENTATION (ACCUEIL)
+-------------------------------
+Déposez votre vidéo dans medias/videos/ sous le nom exact :
+  presentation.mp4
+Format recommandé : MP4 en H.264 avec son AAC, lisible par tous les
+navigateurs. Tant que le fichier est absent, l'accueil affiche le logo et
+le message « La vidéo de présentation arrive bientôt ».
+
+Le site tente de lancer la vidéo automatiquement, avec le son. C'est le
+navigateur du visiteur qui décide de l'autoriser : la plupart (Chrome,
+Firefox, Safari, Edge) bloquent la lecture sonore automatique, surtout lors
+d'une première visite. Dans ce cas, la vidéo affiche un grand bouton
+« Regarder la présentation » : un clic la lance depuis le début, avec le son.
+Si le visiteur a demandé à son système de réduire les animations, ce bouton
+s'affiche directement, sans tentative de lecture automatique.
+
+Publication sur GitHub Pages : un fichier ne doit pas dépasser 100 Mo.
+Au-delà, compressez la vidéo ou hébergez-la ailleurs.
+
+
 5. PUBLIER LE SITE
 ------------------
 Envoyez tout le contenu du dossier, tel quel, sur n'importe quel hébergement

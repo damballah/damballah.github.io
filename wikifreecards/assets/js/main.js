@@ -36,6 +36,74 @@
     });
   }
 
+  /* ---------- Vidéo de présentation : lecture automatique avec le son ---------- */
+  // Le site tente de lancer la vidéo avec le son. Si le navigateur le refuse
+  // (cas fréquent lors d'une première visite), un bouton « Regarder la
+  // présentation » permet de la lancer d'un clic, depuis le début et avec le son.
+  var promo = document.getElementById("promo-video");
+  if (promo) {
+    var frame = promo.closest(".promo-frame");
+    var playBtn = frame.querySelector(".promo-play");
+    var missing = frame.querySelector(".promo-missing");
+    var source = promo.querySelector("source");
+    var isMissing = false;
+
+    var showMissing = function () {
+      isMissing = true;
+      missing.hidden = false;
+      playBtn.hidden = true;
+      promo.removeAttribute("controls");
+    };
+    var showPlayButton = function () {
+      if (!isMissing && promo.paused) playBtn.hidden = false;
+    };
+
+    if (source) source.addEventListener("error", showMissing);
+    promo.addEventListener("error", showMissing);
+    // L'erreur a pu survenir avant le chargement de ce script (attribut onerror de <source>).
+    if (promo.hasAttribute("data-missing")) showMissing();
+
+    playBtn.addEventListener("click", function () {
+      promo.muted = false;
+      if (promo.volume === 0) promo.volume = 1;
+      promo.currentTime = 0;
+      var p = promo.play();
+      if (p && p.catch) p.catch(function () {});
+    });
+    promo.addEventListener("play", function () { playBtn.hidden = true; });
+
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isMissing) {
+      // rien à lire
+    } else if (reduceMotion) {
+      showPlayButton();
+    } else {
+      promo.muted = false;
+      var attempt = promo.play();
+      if (attempt && attempt.catch) {
+        attempt.catch(showPlayButton);
+      } else {
+        setTimeout(showPlayButton, 800);
+      }
+    }
+  }
+
+  /* ---------- Éventail de paquets : animation au premier affichage ---------- */
+  var fanEl = document.querySelector(".pack-fan");
+  if (fanEl) {
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) {
+          fanEl.classList.add("is-visible");
+          io.disconnect();
+        }
+      }, { threshold: 0.3 });
+      io.observe(fanEl);
+    } else {
+      fanEl.classList.add("is-visible");
+    }
+  }
+
   /* ---------- 2. Visionneuse d'images ---------- */
   var links = Array.prototype.slice.call(document.querySelectorAll("a[data-lightbox]"));
   var dialog = document.getElementById("lightbox");
