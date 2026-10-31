@@ -557,6 +557,19 @@ function identifyVoice(feat){
   }
   return bd <= state.tolerance ? best : null;
 }
+// La voix d'une même personne varie beaucoup (toux, rhume, rire, fatigue, phrase courte).
+// On reste sur l'officier en cours tant que la voix n'est pas nettement différente,
+// avec plus d'indulgence s'il vient de parler ou si une procédure le concerne.
+function likelySameSpeaker(sp, feat){
+  const d = voiceDistance(feat, sp.voice);
+  const a = voiceType(feat), b = voiceType(sp.voice);
+  const typeClash = a !== 'INDÉTERMINÉE' && b !== 'INDÉTERMINÉE' && a !== b;
+  const inFlow = state.med?.speakerId === sp.id || state.cmdFlow?.speakerId === sp.id
+              || state.rename?.id === sp.id || state.diagOffer?.speakerId === sp.id;
+  const recent = sp.lastSpokeAt && Date.now() - sp.lastSpokeAt < 90000;
+  if(typeClash) return inFlow && d <= state.tolerance*1.8;   // homme / femme : seulement en pleine procédure
+  return d <= state.tolerance * (inFlow ? 3 : recent ? 2.2 : 1.6);
+}
 function learnVoice(s, feat){
   if(!s.voice){ s.voice = { f0:feat.f0, cen:feat.cen, n:1 }; return; }
   const k = Math.min(.3, 1/(s.voice.n+1));
@@ -1027,6 +1040,8 @@ async function processInput(text, feat, fromVoice, sid){
       if(cur && !cur.voice && !state.pending){
         learnVoice(cur, feat); speaker = cur;
         addLine('sys', `EMPREINTE VOCALE DE ${cur.name} ENREGISTRÉE POUR CETTE SESSION (${voiceType(cur.voice)}).`);
+      }else if(cur && cur.voice && likelySameSpeaker(cur, feat)){
+        speaker = cur;   // même officier, voix altérée : on ne bascule pas en identification
       }
     }
   }else if(!state.pending){
@@ -1066,7 +1081,9 @@ async function processInput(text, feat, fromVoice, sid){
   }
 
   // ---------- Officier reconnu ----------
-  if(feat) learnVoice(speaker, feat);
+  // n'apprendre que des énoncés proches de l'empreinte, pour qu'une voix enrouée ne la déforme pas
+  if(feat && (!speaker.voice || voiceDistance(feat, speaker.voice) <= state.tolerance*1.5)) learnVoice(speaker, feat);
+  speaker.lastSpokeAt = Date.now();
   setCurrent(speaker);
   renderVoicePanel(speaker.name);
   addLine('user', text, speaker.name);
@@ -1209,6 +1226,12 @@ async function authStep(text, feat, fromVoice, sid){
   if(p.stage === 'id'){
     const m = findMatricule(text);
     if(!m){
+      if(!looksLikeMatricule(text)){
+        const known = state.speakers.length
+          ? " SI VOUS ÊTES DÉJÀ ENREGISTRÉ, RÉPÉTEZ VOTRE MATRICULE POUR RECALIBRER VOTRE EMPREINTE VOCALE." : '';
+        await mamanSay(`VOIX NON RECONNUE. ÉNONCEZ VOTRE MATRICULE D'OFFICIER.${known}`, sid);
+        return;
+      }
       await authFail('MATRICULE NON CONFORME. FORMAT ATTENDU : LETTRES ET CHIFFRES, AU MOINS UN CHIFFRE.', sid);
       return;
     }
@@ -1231,7 +1254,9 @@ async function authStep(text, feat, fromVoice, sid){
       existing.voice = { f0:v.f0, cen:v.cen, n:1 };
       state.pending = null; state.authFails = 0;
       setCurrent(existing); renderVoicePanel(existing.name); setStatus();
-      await mamanSay(`MATRICULE ${m.id} RECONNU. EMPREINTE VOCALE DE ${existing.name} RECALIBRÉE. EN ATTENTE DE VOS INSTRUCTIONS.`, sid);
+      existing.lastSpokeAt = Date.now();
+      const resume = state.med?.speakerId === existing.id ? ' CONSULTATION MÉDICALE EN COURS : RÉPONDEZ À LA DERNIÈRE QUESTION.' : ' EN ATTENTE DE VOS INSTRUCTIONS.';
+      await mamanSay(`MATRICULE ${m.id} RECONNU. EMPREINTE VOCALE DE ${existing.name} RECALIBRÉE.${resume}`, sid);
       return;
     }
     state.authFails = 0;
