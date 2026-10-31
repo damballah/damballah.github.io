@@ -144,6 +144,8 @@ h1{font-family:Bungee,"Arial Black",Impact,sans-serif;font-weight:400;font-size:
 .chip{border:2px solid var(--line);background:transparent;border-radius:999px;padding:.35rem .85rem;cursor:pointer;font-size:.9rem}
 .chip[aria-pressed=true]{background:var(--yellow);border-color:var(--yellow);color:#1f1a3d;font-weight:700}
 footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 1.25rem 2.5rem;max-width:640px;margin:0 auto}
+footer p{margin:.4rem 0}
+footer .credits{margin-top:1rem;padding-top:1rem;border-top:2px solid var(--line)}
 [hidden]{display:none !important}
 @media (prefers-reduced-motion: reduce){.bar>i{animation:none}.cart,.btn{transition:none}}
 </style>
@@ -251,7 +253,12 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 1.25rem 2
   </section>
 </main>
 
-<footer>Ta clé et ton image partent uniquement vers l’IA choisie, directement depuis ton navigateur. Rien n’est stocké ailleurs.</footer>
+<footer>
+  <p>Ta clé et ton image partent uniquement vers l’IA choisie, directement depuis ton navigateur. Rien n’est stocké ailleurs.</p>
+  <p class="credits">© 2026 Cartouche, imaginé par Damballah Oueddo.<br>
+    Logiciel libre sous <a href="https://github.com/TON-PSEUDO/cartouche/blob/main/LICENSE" target="_blank" rel="noopener">licence MIT</a>.
+    <a href="https://github.com/TON-PSEUDO/cartouche" target="_blank" rel="noopener">Code source sur GitHub</a>.</p>
+</footer>
 
 <script>
 'use strict';
