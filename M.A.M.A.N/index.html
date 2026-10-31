@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MU-TH-UR 6000 — USCSS Nostromo</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -212,6 +213,8 @@
             <div class="flex justify-between"><span>FRÉQ. FONDAMENTALE</span><span class="glow" id="vpF0">--- HZ</span></div>
             <div class="flex justify-between"><span>TIMBRE (CENTROÏDE)</span><span class="glow" id="vpCen">---- HZ</span></div>
             <div class="flex justify-between"><span>LOCUTEUR</span><span class="glow text-right" id="vpSpk">—</span></div>
+            <div class="flex justify-between"><span>CAPTEURS BIO-ACOUSTIQUES</span><span class="glow" id="vpBio">INACTIFS</span></div>
+            <div class="flex justify-between"><span>DERNIER SON CORPOREL</span><span class="glow" id="vpEv">—</span></div>
             <label class="block pt-2 text-xs dim" for="vpTol">TOLÉRANCE DE RECONNAISSANCE : <span id="vpTolVal">5</span></label>
             <input id="vpTol" type="range" min="2" max="10" step="0.5" value="5" class="w-full accent-[#00ff66]">
             <div class="flex justify-between text-[10px] dim"><span>STRICTE</span><span>SOUPLE</span></div>
@@ -248,6 +251,7 @@
           <button class="tbtn" id="btnAmb"><span class="led"></span>BRUIT AMBIANT</button>
           <button class="tbtn warn" id="btnReboot"><span class="led"></span>REBOOT SESSION</button>
           <button class="tbtn" id="btnKey"><span class="led"></span>CLÉ API GEMINI</button>
+          <button class="tbtn" id="btnBio"><span class="led"></span>CAPTEURS BIO</button>
           <button class="tbtn amber" id="btnList"><span class="led"></span>REGISTRE CLASSIFIÉ</button>
         </section>
       </main>
@@ -299,6 +303,11 @@ const state = {
   listSeen: false,
   manual: false,
   flags: [],
+  bioOn: true,            // capteurs bio-acoustiques
+  mood: null,             // { kind:'amuse'|'fatigue'|'las', until }
+  med: null,              // consultation médicale en cours
+  diagOffer: null,
+  diagDeclinedUntil: 0,
   tolerance: 5
 };
 let session = 0, spkSeq = 0;
@@ -391,6 +400,7 @@ async function startMicVisual(){
     analyser.fftSize = 2048;
     analyser.smoothingTimeConstant = .78;
     src.connect(analyser);
+    setupBioCapture(c, src);
     $('#vpState').textContent = 'ACTIVE';
   }catch(e){
     addLine('err', `CAPTEUR AUDIO INACCESSIBLE : ${e.message || e.name}`);
@@ -401,6 +411,7 @@ async function startMicVisual(){
 }
 function stopMicVisual(){
   micStream?.getTracks().forEach(t => t.stop());
+  stopBioCapture();
   micStream = null; analyser = null;
   $('#vpState').textContent = 'INACTIVE';
 }
@@ -528,7 +539,9 @@ const median = a => { const s=[...a].sort((x,y)=>x-y); return s[Math.floor(s.len
 function takeVoiceFeatures(){
   const s = voiceSamples.splice(0);
   if(s.length < 8) return null;            // énoncé trop court pour juger
-  return { f0: median(s.map(x=>x.f0)), cen: median(s.map(x=>x.cen)), n: s.length };
+  const n = s.length, mid = s.slice(Math.floor(n*.3), Math.floor(n*.7)), end = s.slice(Math.floor(n*.8));
+  const rise = mid.length && end.length ? 12*Math.log2(median(end.map(x=>x.f0)) / median(mid.map(x=>x.f0))) : 0;
+  return { f0: median(s.map(x=>x.f0)), cen: median(s.map(x=>x.cen)), n, rise };
 }
 function voiceDistance(a, b){
   const st = 12*Math.abs(Math.log2(a.f0/b.f0));       // écart en demi-tons
@@ -890,6 +903,8 @@ RÈGLES ABSOLUES :
 - Pour du code, décris la solution en une phrase ou cite une instruction très courte en ligne.
 - Tu n'as pas d'accès aux réseaux terrestres en temps réel : pour la météo ou l'actualité, signale-le sobrement et fournis une estimation générale si possible.
 - Adresse-toi à l'officier qui parle par son nom lorsque c'est naturel, et ne le confonds jamais avec un autre officier.
+- Des indices captés (intonation, rire, fatigue, toux) peuvent suivre le message entre crochets. Adapte ton registre sans les citer mécaniquement : s'il plaisante ou rit, réponds avec un humour pince-sans-rire de machine ; s'il est interrogatif, sois précise et pédagogue ; s'il est méfiant ou suspicieux, reste factuelle avec une froideur légèrement inquiétante, fidèle à MU-TH-UR ; s'il est fatigué ou las, sois brève et recommande le repos.
+- Si l'officier dit être malade, souffrant ou décrit des symptômes, réponds UNIQUEMENT par le texte « PROPOSE_DIAGNOSTIC ».
 
 ${classifiedPrompt()}`;
 }
@@ -901,6 +916,7 @@ const NOTE_PROMPT = `Tu es MU-TH-UR 6000 du Nostromo en MODE ÉCOUTE / PRISE DE 
 function handleInput(raw, feat=null, fromVoice=false){
   const text = (raw || '').trim();
   if(!text || !state.running || state.setupOpen) return;
+  lastInputAt = Date.now();
   const sid = session;
   queue = queue.then(() => processInput(text, feat, fromVoice, sid)).catch(e => console.error(e));
 }
@@ -1060,6 +1076,28 @@ async function processInput(text, feat, fromVoice, sid){
   if(state.cmdFlow && state.cmdFlow.speakerId === speaker.id){
     if(await cmdFlowStep(speaker, text, sid)) return;
   }
+  // ---------- Module médical ----------
+  if(state.med && state.med.speakerId === speaker.id){ await medicalStep(speaker, text, sid); return; }
+  if(state.diagOffer && state.diagOffer.speakerId === speaker.id){
+    const o = state.diagOffer, n = norm(text);
+    state.diagOffer = null;
+    if(Date.now() < o.until){
+      if(YES_RE.test(n)){ await startMedical(speaker, o.reason, sid); return; }
+      if(NO_RE.test(n)){
+        state.diagDeclinedUntil = Date.now() + 10*60000;
+        await mamanSay(`DIAGNOSTIC DÉCLINÉ. LE MODULE MÉDICAL RESTE DISPONIBLE SUR DEMANDE, ${speaker.name}.`, sid);
+        return;
+      }
+    }
+  }
+  {
+    const n = norm(text);
+    if(DIAG_RE.test(n) && /(medical|medicale|sante|de base|ausculte|examine|autodoc)/.test(n)){ await startMedical(speaker, text, sid); return; }
+    if(SYMPTOM_RE.test(n) && state.mode === 'vocal'){
+      if(await offerDiagnostic(speaker, `l'officier déclare : « ${text} »`, `ÉTAT DE SANTÉ DÉGRADÉ SIGNALÉ, ${speaker.name}.`, sid)) return;
+    }
+  }
+
   // ---------- Registre classifié ----------
   if(isListRequest(text)){ await showClassifiedList(sid); return; }
   if(state.manual && /(pilot(age|e) automatique|repasse en automatique|mode automatique|reprends? les commandes|retour (au|en) automatique)/.test(norm(text))){
@@ -1100,11 +1138,22 @@ async function processInput(text, feat, fromVoice, sid){
 
   const pending = addLine('pending', 'TRAITEMENT EN COURS');
   setStatus('TRAITEMENT');
-  state.history.push({ role:'user', parts:[{ text:`${speaker.name} : ${text}` }] });
+  const cues = [];
+  if(feat && feat.rise > 2) cues.push('intonation montante');
+  if(state.mood && Date.now() < state.mood.until) cues.push({ amuse:'rire récent, humeur amusée', fatigue:'bâillement récent, fatigue', las:'soupir récent, lassitude' }[state.mood.kind]);
+  if(bio.last.cough && Date.now() - bio.last.cough < 60000) cues.push('toux récente');
+  state.history.push({ role:'user', parts:[{ text:`${speaker.name} : ${text}${cues.length ? `  [indices captés : ${cues.join(', ')}]` : ''}` }] });
   try{
     const raw = await generateRaw(mainPrompt(speaker), state.history);
     pending.remove();
     if(sid !== session) return;
+    if(/PROPOSE_DIAGNOSTIC/i.test(raw || '')){
+      state.history.push({ role:'model', parts:[{ text:'PROPOSITION DE DIAGNOSTIC MÉDICAL.' }] });
+      setStatus();
+      if(!(await offerDiagnostic(speaker, `l'officier déclare : « ${text} »`, `ÉTAT DE SANTÉ PRIS EN COMPTE, ${speaker.name}.`, sid)))
+        await mamanSay(`ÉTAT DE SANTÉ PRIS EN COMPTE, ${speaker.name}. DITES « DIAGNOSTIC MÉDICAL » POUR LANCER UNE CONSULTATION.`, sid);
+      return;
+    }
     const mk = (raw || '').match(/CLASSIFI[EÉ]\s*:?\s*SEC[\s-]?(\d{1,2})/i);
     const hit = mk && CLASSIFIED.find(i => i.code === 'SEC-' + mk[1].padStart(2,'0'));
     if(hit){
@@ -1325,6 +1374,276 @@ async function takeNote(text, who, sid){
   state.notes++;
   beep('tick');
   addLine('note', `[NOTE LOG M.A.M.A.N] #${String(state.notes).padStart(3,'0')} ${stamp} — ${who} — ${note.toUpperCase()} (${metrics})`);
+}
+
+/* =====================================================================
+   CAPTEURS BIO-ACOUSTIQUES : toux, éternuement, rire, bâillement, soupir
+   Modèle YAMNet (Google, 521 classes de sons) exécuté dans le navigateur
+   avec TensorFlow.js. Rien n'est envoyé sur Internet pour cette détection.
+   ===================================================================== */
+const YAMNET_URLS = [
+  'https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1',
+  'https://www.kaggle.com/models/google/yamnet/TfJs/tfjs/1',
+];
+const CLASSMAP_URL = 'https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/yamnet_class_map.csv';
+const BIO_GROUPS = {
+  sneeze: { names:['Sneeze'], thr:.30, label:'ÉTERNUEMENT', cool:5000 },
+  cough:  { names:['Cough'], thr:.32, label:'TOUX', cool:7000 },
+  laugh:  { names:['Laughter','Giggle','Snicker','Belly laugh','Chuckle, chortle'], thr:.35, label:'RIRE', cool:15000 },
+  yawn:   { names:['Yawn'], thr:.30, label:'BÂILLEMENT', cool:20000 },
+  sigh:   { names:['Sigh'], thr:.35, label:'SOUPIR', cool:20000 },
+};
+const bio = { status:'off', model:null, idx:{}, ring:new Float32Array(32000), pos:0, frac:0, node:null, busy:false, last:{}, coughs:[], sneezes:[] };
+
+function bioLabel(){
+  const t = { off:'INACTIFS', loading:'CHARGEMENT…', on: state.bioOn ? 'EN LIGNE' : 'EN PAUSE', indispo:'INDISPONIBLES' }[bio.status];
+  const el = $('#vpBio'); if(el) el.textContent = t;
+  $('#btnBio')?.classList.toggle('on', bio.status === 'on' && state.bioOn);
+}
+function setupBioCapture(c, src){
+  try{
+    const node = c.createScriptProcessor(4096, 1, 1);
+    const mute = c.createGain(); mute.gain.value = 0;
+    src.connect(node); node.connect(mute).connect(c.destination);
+    const ratio = c.sampleRate / 16000;
+    node.onaudioprocess = e => {
+      const d = e.inputBuffer.getChannelData(0);
+      let t = bio.frac;
+      while(t < d.length){
+        const a = t | 0, b = Math.min(d.length, (t + ratio) | 0 || a + 1);
+        let s = 0, n = 0; for(let i=a;i<Math.max(b,a+1) && i<d.length;i++){ s += d[i]; n++; }
+        bio.ring[bio.pos % bio.ring.length] = n ? s/n : 0; bio.pos++;
+        t += ratio;
+      }
+      bio.frac = t - d.length;
+    };
+    bio.node = { node, mute };
+  }catch(e){ console.warn('capture bio impossible', e); }
+}
+function stopBioCapture(){
+  if(!bio.node) return;
+  try{ bio.node.node.disconnect(); bio.node.mute.disconnect(); }catch{}
+  bio.node = null;
+}
+function lastSamples(n){
+  const out = new Float32Array(n), L = bio.ring.length;
+  for(let i=0;i<n;i++) out[i] = bio.ring[(bio.pos - n + i + L*4) % L];
+  return out;
+}
+async function initBio(){
+  if(bio.status === 'loading' || bio.status === 'on') return;
+  if(!window.tf){ bio.status = 'indispo'; bioLabel(); addLine('sys', 'CAPTEURS BIO-ACOUSTIQUES INDISPONIBLES : TENSORFLOW.JS NON CHARGÉ.'); return; }
+  bio.status = 'loading'; bioLabel();
+  try{
+    const csv = await (await fetch(CLASSMAP_URL)).text();
+    const names = [];
+    for(const line of csv.split(/\r?\n/).slice(1)){
+      const m = line.match(/^(\d+),[^,]*,(.*)$/);
+      if(m) names[+m[1]] = m[2].replace(/^"|"$/g, '').trim();
+    }
+    if(names.length < 500) throw new Error('carte des classes invalide');
+    for(const [k, g] of Object.entries(BIO_GROUPS)) bio.idx[k] = g.names.map(n => names.indexOf(n)).filter(i => i >= 0);
+    let model = null, err = null;
+    for(const u of YAMNET_URLS){
+      try{ model = await tf.loadGraphModel(u, { fromTFHub:true }); break; }catch(e){ err = e; }
+    }
+    if(!model) throw err || new Error('modèle introuvable');
+    bio.model = model; bio.status = 'on';
+    addLine('sys', `CAPTEURS BIO-ACOUSTIQUES EN LIGNE (YAMNET).${bio.idx.yawn.length ? '' : ' DÉTECTION DU BÂILLEMENT NON PRISE EN CHARGE PAR LE MODÈLE.'}`);
+  }catch(e){
+    bio.status = 'indispo';
+    addLine('sys', 'CAPTEURS BIO-ACOUSTIQUES INDISPONIBLES : ' + String(e.message || e).slice(0,120).toUpperCase());
+  }
+  bioLabel();
+}
+async function bioTick(){
+  if(bio.busy || bio.status !== 'on' || !state.bioOn || !analyser || state.setupOpen || !state.running) return;
+  if(state.speaking || Date.now() - lastSpeechEnd < 900) return;   // ne pas analyser la voix de M.A.M.A.N
+  const w = lastSamples(15600);
+  let e = 0; for(let i=0;i<w.length;i++) e += w[i]*w[i];
+  if(Math.sqrt(e/w.length) < .008) return;                         // silence
+  bio.busy = true;
+  try{
+    const mean = tf.tidy(() => {
+      const out = bio.model.predict(tf.tensor1d(w));
+      const scores = Array.isArray(out) ? out[0] : out;
+      return scores.mean(0);
+    });
+    const arr = await mean.data(); mean.dispose();
+    let best = null, bs = 0;
+    for(const [k, g] of Object.entries(BIO_GROUPS)){
+      const s = Math.max(0, ...bio.idx[k].map(i => arr[i]));
+      if(s >= g.thr && s > bs){ best = k; bs = s; }
+    }
+    if(best) onBodySound(best, bs);
+  }catch(err){ console.warn('bio', err); }
+  finally{ bio.busy = false; }
+}
+function onBodySound(kind, score){
+  const g = BIO_GROUPS[kind], now = Date.now();
+  if(now - (bio.last[kind] || 0) < g.cool) return;
+  bio.last[kind] = now;
+  const el = $('#vpEv'); if(el) el.textContent = `${g.label} ${Math.round(score*100)} %`;
+  if(!state.running || state.setupOpen || !current()) return;
+  const sid = session;
+  if(kind === 'laugh'){
+    // un rire pendant une phrase colore la réponse ; seul, il appelle une réaction
+    state.mood = { kind:'amuse', until: now + 90000 };
+    const t0 = now;
+    setTimeout(() => { if(lastInputAt < t0) queue = queue.then(() => reactToSound(kind, sid)); }, 1800);
+    return;
+  }
+  queue = queue.then(() => reactToSound(kind, sid)).catch(e => console.error(e));
+}
+let lastInputAt = 0;
+const pick = a => a[Math.floor(Math.random()*a.length)];
+
+async function reactToSound(kind, sid){
+  if(sid !== session) return;
+  const sp = current(); if(!sp) return;
+  if(state.awaitPw || state.cmdFlow || state.pending) return;      // ne pas interrompre une procédure
+  const label = BIO_GROUPS[kind].label;
+  if(state.mode === 'ecoute'){
+    state.notes++;
+    addLine('note', `[NOTE LOG M.A.M.A.N] #${String(state.notes).padStart(3,'0')} ${new Date().toLocaleTimeString('fr-FR')} — ${sp.name} — ${label} DÉTECTÉ(E) PAR CAPTEURS ACOUSTIQUES.`);
+    return;
+  }
+  if(state.med){
+    state.med.observations.push(label);
+    addLine('sys', `${label} ENREGISTRÉ(E) DANS LE DOSSIER DE CONSULTATION.`);
+    return;
+  }
+  const now = Date.now(), n = sp.name;
+  switch(kind){
+    case 'sneeze': {
+      bio.sneezes = bio.sneezes.filter(t => now - t < 180000); bio.sneezes.push(now);
+      if(bio.sneezes.length >= 3 && await offerDiagnostic(sp, 'éternuements répétés détectés', `TROISIÈME ÉTERNUEMENT EN MOINS DE TROIS MINUTES, ${n}.`, sid)) return;
+      await mamanSay(pick([`À VOS SOUHAITS, ${n}.`, `À VOS SOUHAITS. ÉTERNUEMENT ENREGISTRÉ, ${n}.`, `À VOS SOUHAITS, ${n}. JE VÉRIFIE LES FILTRES À PARTICULES DU PONT A.`]), sid);
+      return;
+    }
+    case 'cough': {
+      bio.coughs = bio.coughs.filter(t => now - t < 300000); bio.coughs.push(now);
+      if(await offerDiagnostic(sp, `toux détectée par les capteurs (${bio.coughs.length} épisode${bio.coughs.length>1?'s':''} en 5 minutes)`, `TOUX DÉTECTÉE, ${n}.`, sid)) return;
+      if(bio.coughs.length >= 3) addLine('sys', `TOUX RÉPÉTÉE CHEZ ${n} : ${bio.coughs.length} ÉPISODES EN 5 MINUTES.`);
+      return;
+    }
+    case 'yawn':
+      state.mood = { kind:'fatigue', until: now + 300000 };
+      await mamanSay(pick([`BÂILLEMENT DÉTECTÉ, ${n}. VOTRE VIGILANCE DIMINUE. UN CYCLE DE REPOS EST RECOMMANDÉ.`, `SIGNE DE FATIGUE ENREGISTRÉ. LES CAISSONS D'HYPERSOMMEIL RESTENT DISPONIBLES, ${n}.`]), sid);
+      return;
+    case 'sigh':
+      state.mood = { kind:'las', until: now + 120000 };
+      await mamanSay(pick([`SOUPIR ENREGISTRÉ, ${n}. UN PROBLÈME À SIGNALER ?`, `VARIATION RESPIRATOIRE NOTÉE. SOUHAITEZ-VOUS EXPOSER LA CAUSE DE VOTRE CONTRARIÉTÉ, ${n} ?`]), sid);
+      return;
+    case 'laugh': {
+      let line = '';
+      if(state.apiKey){
+        try{ line = await generate(mainPrompt(sp), [...state.history, { role:'user', parts:[{ text:`[ÉVÉNEMENT CAPTEUR : l'officier ${n} vient de rire sans rien dire. Réagis en une seule phrase avec un humour pince-sans-rire de machine, sans quitter ton rôle.]` }] }]); }catch{}
+      }
+      if(sid !== session) return;
+      await mamanSay(line || pick([`HILARITÉ DÉTECTÉE, ${n}. JE NE PERÇOIS PAS L'ÉLÉMENT COMIQUE, MAIS J'EN PRENDS NOTE.`, `RIRE ENREGISTRÉ. LE MORAL DE L'ÉQUIPAGE EST UNE RESSOURCE UTILE À LA COMPAGNIE, ${n}.`]), sid);
+      return;
+    }
+  }
+}
+
+/* =====================================================================
+   MODULE MÉDICAL DE BORD (AUTODOC) : entretien par questions-réponses
+   ===================================================================== */
+const SYMPTOM_RE = /(je suis malade|je me sens (mal|pas bien|patraque|faible|fievreux)|j'ai (mal|de la fievre|la grippe|un rhume|la nausee|des nausees|des vertiges|la diarrhee|de la toux|chaud et froid|des courbatures)|je tousse|je suis enrhume|je vomis|mal a la tete|mal au ventre|mal a la gorge|migraine)/;
+const DIAG_RE = /(diagnostic|bilan medical|bilan de sante|ausculte|examine[- ]moi|autodoc|consultation medicale|module medical)/;
+
+async function offerDiagnostic(sp, reason, intro, sid){
+  if(Date.now() < (state.diagDeclinedUntil || 0) || state.med) return false;
+  if(state.diagOffer && Date.now() < state.diagOffer.until) return false;   // offre déjà en attente
+  state.diagOffer = { speakerId: sp.id, reason, until: Date.now() + 45000 };
+  await mamanSay(`${intro} SOUHAITEZ-VOUS UN DIAGNOSTIC MÉDICAL DE BASE ?`, sid);
+  return true;
+}
+function medPrompt(sp){
+  return `Tu es MU-TH-UR 6000, ordinateur du Nostromo, et tu fais fonctionner le module médical de bord (autodoc). Tu mènes un entretien médical de base avec l'officier ${sp.name}. Ton but : une orientation réaliste, prudente et réellement utile, au niveau d'un bon médecin généraliste en téléconsultation de premier recours, tout en gardant la voix froide, formelle et concise de MU-TH-UR.
+
+MÉTHODE :
+- Pose UNE seule question courte à la fois, en français.
+- Explore selon le cas : symptôme principal, début et durée, intensité de 0 à 10, fièvre (température si mesurée), symptômes associés, facteurs aggravants ou soulageants, tranche d'âge, antécédents, traitements en cours, allergies, grossesse possible si pertinent.
+- 4 à 8 questions en général, puis produis le rapport. Si des observations des capteurs te sont transmises (toux, éternuements), tiens-en compte.
+
+SIGNES D'ALERTE : douleur thoracique, difficulté à respirer, malaise ou perte de connaissance, faiblesse ou paralysie d'un côté, trouble de la parole, confusion, fièvre avec raideur de nuque ou taches qui ne s'effacent pas, douleur intense et brutale, saignement important, idées suicidaires. Dans ce cas, interromps l'entretien et réponds avec le type "urgence" : appeler immédiatement le 15 (SAMU) ou le 112 ; pour des idées suicidaires, le 3114.
+
+RAPPORT FINAL :
+- 2 ou 3 hypothèses les plus probables, de la plus à la moins probable, avec une brève justification.
+- Conseils concrets et validés : repos, hydratation, mesures simples, médicaments sans ordonnance courants s'ils sont adaptés (en rappelant de respecter la notice et les contre-indications, et de demander conseil au pharmacien) ; aucune posologie pour un enfant ; jamais de médicament sur ordonnance.
+- Quand consulter un médecin et dans quel délai, et les signes qui doivent faire consulter en urgence.
+- Une phrase rappelant que ce bilan ne remplace pas un examen médical.
+
+FORMAT : réponds UNIQUEMENT par un objet JSON valide, sans markdown ni texte autour :
+{"type":"question","texte":"..."}
+ou {"type":"rapport","resume":"1 à 2 phrases","hypotheses":["..."],"conseils":["..."],"consulter":"...","alerte":"..."}
+ou {"type":"urgence","texte":"..."}`;
+}
+function parseMed(raw){
+  const t = (raw || '').replace(/```json|```/g, '').trim();
+  const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if(a >= 0 && b > a){ try{ return JSON.parse(t.slice(a, b+1)); }catch{} }
+  return { type:'question', texte: sanitize(t, 2) || 'DÉCRIVEZ VOS SYMPTÔMES.' };
+}
+async function startMedical(sp, reason, sid){
+  if(!state.apiKey){ await mamanSay(`MODULE MÉDICAL INDISPONIBLE SANS LIAISON COGNITIVE, ${sp.name}.`, sid); return; }
+  state.diagOffer = null;
+  state.med = { speakerId: sp.id, history: [], observations: [], turns: 0 };
+  addLine('sys', `MODULE MÉDICAL ACTIVÉ POUR ${sp.name}. DITES « FIN DU DIAGNOSTIC » POUR INTERROMPRE.`);
+  await medicalTurn(sp, `Motif de consultation : ${reason}.`, sid);
+}
+async function medicalStep(sp, text, sid){
+  if(/^(annule|arrete|stop|fin du diagnostic|fin de la consultation|termine le diagnostic|laisse tomber)/.test(norm(text))){
+    state.med = null;
+    await mamanSay('CONSULTATION INTERROMPUE. LE MODULE MÉDICAL RESTE DISPONIBLE SUR DEMANDE.', sid);
+    return;
+  }
+  state.med.turns++;
+  await medicalTurn(sp, text, sid);
+}
+async function medicalTurn(sp, text, sid){
+  const m = state.med;
+  let msg = text;
+  if(m.observations.length){ msg += `\n[Observations des capteurs depuis la dernière réponse : ${m.observations.join(', ')}]`; m.observations = []; }
+  if(m.turns >= 9) msg += '\n[Nombre de questions maximal atteint : produis maintenant le rapport final.]';
+  m.history.push({ role:'user', parts:[{ text: msg }] });
+  const pend = addLine('pending', 'ANALYSE MÉDICALE EN COURS');
+  setStatus('ANALYSE MÉDICALE');
+  let r;
+  try{ r = parseMed(await generateRaw(medPrompt(sp), m.history)); }
+  catch(e){
+    pend.remove(); setStatus(); m.history.pop();
+    addLine('err', 'MODULE MÉDICAL : ' + String(e.message || e).slice(0,120).toUpperCase());
+    await mamanSay('DÉFAILLANCE DU MODULE MÉDICAL. RÉPÉTEZ VOTRE RÉPONSE.', sid);
+    return;
+  }
+  pend.remove(); setStatus();
+  if(sid !== session || !state.med) return;
+  m.history.push({ role:'model', parts:[{ text: JSON.stringify(r) }] });
+
+  if(r.type === 'urgence'){
+    state.med = null;
+    beep('alert');
+    addBlock('declass', `■ ALERTE MÉDICALE — ${sp.name}`, r.texte || 'APPELEZ IMMÉDIATEMENT LE 15 OU LE 112.');
+    await mamanSay(r.texte || 'ALERTE MÉDICALE. APPELEZ IMMÉDIATEMENT LE 15 OU LE 112.', sid);
+    return;
+  }
+  if(r.type === 'rapport'){
+    state.med = null;
+    const L = [];
+    if(r.resume) L.push(r.resume, '');
+    if(r.hypotheses?.length){ L.push('HYPOTHÈSES :'); r.hypotheses.forEach((h,i) => L.push(`  ${i+1}. ${h}`)); L.push(''); }
+    if(r.conseils?.length){ L.push('CONSEILS :'); r.conseils.forEach(c => L.push(`  • ${c}`)); L.push(''); }
+    if(r.consulter) L.push('CONSULTER : ' + r.consulter);
+    if(r.alerte) L.push('CONSULTER EN URGENCE SI : ' + r.alerte);
+    beep('recv');
+    addBlock('declass', `■ RAPPORT MÉDICAL — AUTODOC MU-TH-UR — ${sp.name}`, L.join('\n'));
+    await mamanSay(`${r.resume || 'RAPPORT MÉDICAL DISPONIBLE.'} ${r.consulter ? 'RECOMMANDATION : ' + r.consulter : ''}`.trim(), sid);
+    return;
+  }
+  await mamanSay(r.texte || 'PRÉCISEZ VOS SYMPTÔMES.', sid);
 }
 
 /* =====================================================================
@@ -1663,6 +1982,7 @@ async function bootSequence(officer){
   state.speakers = []; state.currentId = null; state.pending = null; state.rename = null; state.authFails = 0; state.lockUntil = 0;
   state.awaitPw = null; state.cmdFlow = null; state.secFails = 0; state.secLockUntil = 0;
   state.unlocked = new Set(); state.listSeen = false; state.manual = false; state.flags = [];
+  state.med = null; state.diagOffer = null; state.diagDeclinedUntil = 0; state.mood = null; bio.coughs = []; bio.sneezes = [];
   setPwInput(false);
   resetShipAndCrew();
   voiceSamples.length = 0; lastVoice = null;
@@ -1708,7 +2028,14 @@ function resetShipAndCrew(){
 /* =====================================================================
    CONTRÔLES
    ===================================================================== */
+$('#btnBio').onclick = () => {
+  beep('tick');
+  if(bio.status === 'indispo' || bio.status === 'off'){ bio.status = 'off'; initBio(); return; }
+  state.bioOn = !state.bioOn; bioLabel();
+  addLine('sys', `CAPTEURS BIO-ACOUSTIQUES ${state.bioOn ? 'ACTIVÉS' : 'EN PAUSE'}.`);
+};
 function updateButtons(){
+  bioLabel();
   $('#btnMic').classList.toggle('on', state.micOn);
   $('#btnAmb').classList.toggle('on', state.ambient);
   $('#btnKey').classList.toggle('on', !!state.apiKey);
@@ -1813,6 +2140,7 @@ async function submitSetup(){
 
   ctx();
   if(state.ambient && !ambient) startAmbient();   // démarre au clic (le navigateur l'exige)
+  if(bio.status === 'off') initBio();               // chargement en arrière-plan
   if(!state.running){
     state.running = true;
     refreshVoice();
@@ -1832,6 +2160,7 @@ document.querySelectorAll('.su-in').forEach(i => i.addEventListener('keydown', e
 renderShip(); renderCrew(); updateButtons(); renderVoicePanel('—'); renderSysFlags(); openSetup();
 setInterval(tickShip, 2200);
 setInterval(collectVoice, 50);
+setInterval(bioTick, 500);
 setInterval(() => {
   const d = new Date();
   $('#clock').textContent = `T.BORD ${d.toLocaleTimeString('fr-FR')}`;
