@@ -1,0 +1,652 @@
+{
+  "_description": "Registre classifié de MU-TH-UR 6000. Modifiable : ajoutez, retirez ou réécrivez des entrées. mots_cles = expressions sans accents ni apostrophes qui déclenchent la demande de code. type = info (révélée après code) ou commande (exécutée après code + confirmation). Actions reconnues : alarms_off, manual_on, course, separate, overdrive, purge, airlock, shuttle, wake, beacon, selfdestruct, selfdestruct_cancel.",
+  "entrees": [
+    {
+      "code": "SEC-01",
+      "categorie": "DOSSIERS DE L'ÉQUIPAGE",
+      "titre": "DOSSIERS MÉDICAUX COMPLETS DE L'ÉQUIPAGE",
+      "niveau": 3,
+      "type": "info",
+      "mots_cles": [
+        "dossier medical",
+        "dossiers medicaux",
+        "sante de l equipage",
+        "antecedents medicaux",
+        "etat de sante de l equipage",
+        "fiche medicale",
+        "fiches medicales"
+      ],
+      "resume": "DOSSIERS MÉDICAUX DÉCLASSIFIÉS. ANOMALIE SIGNALÉE : AUCUN DOSSIER MÉDICAL ANTÉRIEUR N'EXISTE POUR L'OFFICIER SCIENTIFIQUE ASH.",
+      "contenu": "DALLAS : condition nominale, légère hypertension. KANE : sensibilité respiratoire chronique non déclarée à l'embauche. LAMBERT : traitement anxiolytique léger prescrit avant le départ. RIPLEY, PARKER, BRETT : aucune anomalie. ASH : aucun dossier médical antérieur disponible."
+    },
+    {
+      "code": "SEC-02",
+      "categorie": "DOSSIERS DE L'ÉQUIPAGE",
+      "titre": "ÉVALUATIONS PSYCHOLOGIQUES ET INDICES DE LOYAUTÉ",
+      "niveau": 3,
+      "type": "info",
+      "mots_cles": [
+        "evaluation psychologique",
+        "evaluations psychologiques",
+        "profil psychologique",
+        "profils psychologiques",
+        "indice de loyaute",
+        "indices de loyaute",
+        "loyaute de l equipage"
+      ],
+      "resume": "ÉVALUATIONS DÉCLASSIFIÉES. L'OFFICIER RIPLEY EST IDENTIFIÉE COMME LE PRINCIPAL RISQUE D'OPPOSITION AUX DIRECTIVES DE LA COMPAGNIE.",
+      "contenu": "Indices de loyauté envers la Compagnie : ASH 100 %, DALLAS 71 %, KANE 64 %, LAMBERT 58 %, RIPLEY 43 %, BRETT 35 %, PARKER 31 %. L'officier Ripley présente un attachement marqué aux procédures de sécurité, susceptible d'entrer en conflit avec les directives de la Compagnie. Parker et Brett : revendications salariales récurrentes."
+    },
+    {
+      "code": "SEC-03",
+      "categorie": "DOSSIERS DE L'ÉQUIPAGE",
+      "titre": "VÉRITABLE NATURE DE L'OFFICIER SCIENTIFIQUE ASH",
+      "niveau": 5,
+      "type": "info",
+      "mots_cles": [
+        "nature d ash",
+        "vraie nature d ash",
+        "ash est un",
+        "ash est il",
+        "ash est elle",
+        "ash humain",
+        "qui est vraiment ash",
+        "androide",
+        "androides",
+        "synthetique",
+        "hyperdyne"
+      ],
+      "resume": "L'OFFICIER SCIENTIFIQUE ASH EST UNE UNITÉ SYNTHÉTIQUE HYPERDYNE SYSTEMS 120-A/2. SA MISSION EST PRIORITAIRE SUR CELLE DE L'ÉQUIPAGE.",
+      "contenu": "L'officier scientifique Ash est une unité synthétique Hyperdyne Systems modèle 120-A/2, affectée par la Compagnie. Sa nature n'a pas été communiquée à l'équipage. Directive interne : garantir l'exécution de l'Ordre Spécial 937, avec une autorité supérieure à celle du capitaine."
+    },
+    {
+      "code": "SEC-04",
+      "categorie": "DOSSIERS DE L'ÉQUIPAGE",
+      "titre": "CONTRATS, PARTS DE BÉNÉFICES ET CLAUSES DE RÉCUPÉRATION",
+      "niveau": 2,
+      "type": "info",
+      "mots_cles": [
+        "contrat",
+        "contrats",
+        "part des benefices",
+        "parts des benefices",
+        "prime",
+        "primes",
+        "clause de recuperation",
+        "salaire de l equipage",
+        "salaires"
+      ],
+      "resume": "CLAUSE DÉCLASSIFIÉE : TOUT REFUS D'ENQUÊTER SUR UN SIGNAL D'ORIGINE INTELLIGENTE ENTRAÎNE LA CONFISCATION TOTALE DES PARTS DE L'ÉQUIPAGE.",
+      "contenu": "Rémunération de base complétée par une part des bénéfices de la cargaison : part entière pour Dallas, Kane, Ripley, Ash et Lambert, demi-part pour Parker et Brett. Clause contractuelle : toute réponse à un signal d'origine intelligente est obligatoire, sous peine de confiscation totale des parts."
+    },
+    {
+      "code": "SEC-05",
+      "categorie": "DOSSIERS DE L'ÉQUIPAGE",
+      "titre": "HISTORIQUE DISCIPLINAIRE ET INCIDENTS",
+      "niveau": 2,
+      "type": "info",
+      "mots_cles": [
+        "historique disciplinaire",
+        "dossier disciplinaire",
+        "dossiers disciplinaires",
+        "sanction",
+        "sanctions",
+        "incidents de l equipage",
+        "avertissements"
+      ],
+      "resume": "HISTORIQUE DÉCLASSIFIÉ. INCIDENTS MINEURS POUR PARKER, BRETT ET LAMBERT. AUCUN INCIDENT POUR L'OFFICIER RIPLEY.",
+      "contenu": "PARKER : deux avertissements pour contestation salariale. BRETT : un avertissement pour retard de maintenance. LAMBERT : réclamation officielle sur les délais de navigation. RIPLEY : aucun incident, rapports de conformité exemplaires. DALLAS : une dérogation de procédure non sanctionnée."
+    },
+    {
+      "code": "SEC-06",
+      "categorie": "DOSSIERS DE L'ÉQUIPAGE",
+      "titre": "AFFECTATION DE DERNIÈRE MINUTE DE L'OFFICIER SCIENTIFIQUE",
+      "niveau": 4,
+      "type": "info",
+      "mots_cles": [
+        "affectation d ash",
+        "remplacement de l officier scientifique",
+        "ancien officier scientifique",
+        "officier scientifique d origine",
+        "pourquoi ash a ete affecte",
+        "arrivee d ash"
+      ],
+      "resume": "L'OFFICIER SCIENTIFIQUE D'ORIGINE A ÉTÉ REMPLACÉ PAR ASH QUARANTE-HUIT HEURES AVANT LE DÉPART, SUR ORDRE DIRECT DE LA COMPAGNIE.",
+      "contenu": "L'officier scientifique d'origine a été retiré de l'équipage quarante-huit heures avant l'appareillage depuis Thedus. Ash a été affecté par ordre direct du siège, sans consultation du capitaine Dallas. Aucun motif officiel n'a été consigné."
+    },
+    {
+      "code": "SEC-07",
+      "categorie": "COMPAGNIE WEYLAND-YUTANI",
+      "titre": "ORDRE SPÉCIAL 937",
+      "niveau": 5,
+      "type": "info",
+      "mots_cles": [
+        "ordre special 937",
+        "ordre 937",
+        "937",
+        "ordre special",
+        "ordres speciaux"
+      ],
+      "resume": "PRIORITÉ UN : RAPATRIER L'ORGANISME POUR ANALYSE. TOUTES LES AUTRES CONSIDÉRATIONS SONT SECONDAIRES. ÉQUIPAGE CONSIDÉRÉ COMME SACRIFIABLE.",
+      "contenu": "Ordre Spécial 937, priorité un. Dérouter l'appareil vers le système Zêta² Reticuli. Récupérer une forme de vie extraterrestre pour analyse. Toutes les autres considérations sont secondaires. Équipage considéré comme sacrifiable."
+    },
+    {
+      "code": "SEC-08",
+      "categorie": "COMPAGNIE WEYLAND-YUTANI",
+      "titre": "ANALYSE DU SIGNAL CAPTÉ SUR LV-426",
+      "niveau": 4,
+      "type": "info",
+      "mots_cles": [
+        "le signal",
+        "nature du signal",
+        "analyse du signal",
+        "signal de lv 426",
+        "signal extraterrestre",
+        "message capte",
+        "transmission interceptee",
+        "decodage du signal"
+      ],
+      "resume": "LE SIGNAL DE LV-426 N'EST PAS UN APPEL DE DÉTRESSE. IL S'AGIT VRAISEMBLABLEMENT D'UN AVERTISSEMENT.",
+      "contenu": "Le signal capté depuis LV-426 n'est pas un appel de détresse. Analyse partielle : il s'agit vraisemblablement d'un avertissement émis en boucle par une structure non humaine. Le décodage partiel était disponible avant l'atterrissage et n'a pas été transmis à l'équipage."
+    },
+    {
+      "code": "SEC-09",
+      "categorie": "COMPAGNIE WEYLAND-YUTANI",
+      "titre": "PROGRAMME DE LA DIVISION ARMES BIOLOGIQUES",
+      "niveau": 5,
+      "type": "info",
+      "mots_cles": [
+        "armes biologiques",
+        "arme biologique",
+        "division des armes",
+        "division armes biologiques",
+        "bioarmes",
+        "programme biologique"
+      ],
+      "resume": "LA DIVISION ARMES BIOLOGIQUES DE LA COMPAGNIE A DÉSIGNÉ LE NOSTROMO COMME VECTEUR DE RÉCUPÉRATION DE L'ORGANISME.",
+      "contenu": "La division Armes Biologiques de Weyland-Yutani cherche à acquérir tout organisme présentant un potentiel militaire. Le Nostromo a été retenu comme vecteur de récupération en raison de sa trajectoire et de son équipage à faible coût. Les résultats seront évalués par la division, et non par la direction commerciale."
+    },
+    {
+      "code": "SEC-10",
+      "categorie": "COMPAGNIE WEYLAND-YUTANI",
+      "titre": "DIRECTIVE DE DÉROUTAGE DU NOSTROMO",
+      "niveau": 4,
+      "type": "info",
+      "mots_cles": [
+        "deroutage",
+        "directive de deroutage",
+        "pourquoi avons nous ete reveilles",
+        "pourquoi on a ete reveille",
+        "pourquoi nous a t on reveille",
+        "interruption du voyage",
+        "pourquoi le vaisseau a change de cap"
+      ],
+      "resume": "LE RÉVEIL DE L'ÉQUIPAGE RÉSULTE D'UNE DIRECTIVE PRÉENREGISTRÉE DE LA COMPAGNIE, NON D'UN INCIDENT TECHNIQUE.",
+      "contenu": "L'interruption de l'hypersommeil n'est pas due à un incident technique. MU-TH-UR a modifié le cap conformément à une directive préenregistrée de la Compagnie, déclenchée par la réception du signal. La procédure était connue du siège avant le départ."
+    },
+    {
+      "code": "SEC-11",
+      "categorie": "COMPAGNIE WEYLAND-YUTANI",
+      "titre": "VALEUR RÉELLE DE LA CARGAISON ET ASSURANCES",
+      "niveau": 2,
+      "type": "info",
+      "mots_cles": [
+        "valeur de la cargaison",
+        "valeur du minerai",
+        "prix de la cargaison",
+        "assurance",
+        "assurances",
+        "couverture d assurance"
+      ],
+      "resume": "VALEUR DE LA CARGAISON : QUARANTE-DEUX MILLIONS DE CRÉDITS. L'ÉQUIPAGE EST ASSURÉ À HAUTEUR DE HUIT POUR CENT DE CETTE VALEUR.",
+      "contenu": "Cargaison : 20 000 000 de tonnes de minerai en cours de raffinage. Valeur estimée à l'arrivée : 42 millions de crédits. L'assurance couvre la raffinerie et la cargaison ; le remorqueur et l'équipage sont couverts à hauteur de 8 % de la valeur totale."
+    },
+    {
+      "code": "SEC-12",
+      "categorie": "COMPAGNIE WEYLAND-YUTANI",
+      "titre": "DIRECTIVES DE CONFIDENTIALITÉ DE LA COMPAGNIE",
+      "niveau": 3,
+      "type": "info",
+      "mots_cles": [
+        "confidentialite",
+        "clause de confidentialite",
+        "non divulgation",
+        "secret de la compagnie",
+        "secrets de la compagnie",
+        "directives de la compagnie"
+      ],
+      "resume": "TOUTE DÉCOUVERTE EXTRATERRESTRE EST PROPRIÉTÉ EXCLUSIVE DE LA COMPAGNIE ET NE DOIT ÊTRE SIGNALÉE À AUCUNE AUTORITÉ EXTÉRIEURE.",
+      "contenu": "Toute découverte d'origine extraterrestre est propriété exclusive de la Compagnie. Il est interdit à l'équipage d'en communiquer l'existence à toute autorité extérieure, y compris l'Administration coloniale. Toute violation entraîne la résiliation du contrat et des poursuites."
+    },
+    {
+      "code": "SEC-13",
+      "categorie": "COMPAGNIE WEYLAND-YUTANI",
+      "titre": "ANALYSE BIOLOGIQUE DE L'ORGANISME",
+      "niveau": 5,
+      "type": "info",
+      "mots_cles": [
+        "organisme",
+        "l organisme",
+        "creature",
+        "la creature",
+        "alien",
+        "xenomorphe",
+        "sang acide",
+        "cycle de vie",
+        "parasite",
+        "la bete"
+      ],
+      "resume": "ORGANISME À CYCLE MULTIPHASÉ, CROISSANCE RAPIDE ET SANG FORTEMENT ACIDE. TOUTE ATTAQUE À BORD MENACE L'INTÉGRITÉ DE LA COQUE.",
+      "contenu": "Organisme à cycle de vie multiphasé : œuf, forme parasitaire faciale, incubation interne, forme adulte. Sang à acidité moléculaire extrême, capable de perforer plusieurs ponts. Croissance très rapide. Toute tentative de destruction à bord présente un risque pour l'intégrité de la coque."
+    },
+    {
+      "code": "SEC-14",
+      "categorie": "SÉCURITÉ DU SYSTÈME",
+      "titre": "NIVEAUX D'HABILITATION ET HIÉRARCHIE D'ACCÈS",
+      "niveau": 3,
+      "type": "info",
+      "mots_cles": [
+        "niveaux d habilitation",
+        "niveau d habilitation",
+        "habilitation",
+        "habilitations",
+        "hierarchie d acces",
+        "niveaux de securite",
+        "niveau de securite",
+        "systeme de securite"
+      ],
+      "resume": "CINQ NIVEAUX D'HABILITATION. LE NIVEAU CINQ, RÉSERVÉ À LA COMPAGNIE ET À L'OFFICIER SCIENTIFIQUE, PRÉVAUT SUR L'AUTORITÉ DU CAPITAINE.",
+      "contenu": "Niveau 1 : équipage, état général. Niveau 2 : officiers, données opérationnelles. Niveau 3 : capitaine et officier en second, dossiers personnels. Niveau 4 : commandes critiques du vaisseau. Niveau 5 : directives de la Compagnie, réservé au siège et à l'officier scientifique."
+    },
+    {
+      "code": "SEC-15",
+      "categorie": "SÉCURITÉ DU SYSTÈME",
+      "titre": "JOURNAL D'ACCÈS À MU-TH-UR",
+      "niveau": 4,
+      "type": "info",
+      "mots_cles": [
+        "journal d acces",
+        "journal des acces",
+        "qui a consulte",
+        "historique des connexions",
+        "historique d acces",
+        "logs",
+        "journal de connexion"
+      ],
+      "resume": "L'OFFICIER SCIENTIFIQUE ASH A CONSULTÉ LES DIRECTIVES DE NIVEAU CINQ À ONZE REPRISES. SES ACCÈS SONT MASQUÉS DANS LE JOURNAL STANDARD.",
+      "contenu": "Dernières consultations : ASH, accès niveau 5, onze reprises depuis le réveil. DALLAS, accès niveau 3, deux consultations. Les consultations de l'officier scientifique sont masquées dans le journal standard."
+    },
+    {
+      "code": "SEC-16",
+      "categorie": "SÉCURITÉ DU SYSTÈME",
+      "titre": "PROTOCOLES DE QUARANTAINE ET VIOLATIONS",
+      "niveau": 4,
+      "type": "info",
+      "mots_cles": [
+        "quarantaine",
+        "protocole de quarantaine",
+        "protocoles de quarantaine",
+        "violation de quarantaine"
+      ],
+      "resume": "VIOLATION DE QUARANTAINE ENREGISTRÉE : L'OFFICIER ASH A OUVERT LE SAS CONTRE L'ORDRE DE L'OFFICIER EN SECOND.",
+      "contenu": "Protocole : tout membre d'équipage exposé à un organisme inconnu doit rester à l'extérieur vingt-quatre heures. Violation enregistrée : l'officier Ash a ouvert le sas intérieur pour réintégrer l'officier Kane, contre l'ordre de l'officier en second Ripley."
+    },
+    {
+      "code": "SEC-17",
+      "categorie": "SÉCURITÉ DU SYSTÈME",
+      "titre": "CODES DE PRIORITÉ COMPAGNIE",
+      "niveau": 5,
+      "type": "info",
+      "mots_cles": [
+        "code de priorite",
+        "codes de priorite",
+        "code prioritaire",
+        "priorite compagnie",
+        "override",
+        "code de surclassement"
+      ],
+      "resume": "LE CODE DE PRIORITÉ COMPAGNIE PERMET DE SURCLASSER TOUTE DÉCISION DE L'ÉQUIPAGE. IL EST DÉTENU PAR L'OFFICIER SCIENTIFIQUE.",
+      "contenu": "Le code de priorité Compagnie permet de surclasser toute décision de l'équipage, capitaine inclus. Il est détenu par le siège et par l'officier scientifique. Son utilisation n'apparaît pas dans le journal accessible à l'équipage."
+    },
+    {
+      "code": "SEC-18",
+      "categorie": "SÉCURITÉ DU SYSTÈME",
+      "titre": "VULNÉRABILITÉS SYSTÈME ET MAINTENANCE DIFFÉRÉE",
+      "niveau": 3,
+      "type": "info",
+      "mots_cles": [
+        "vulnerabilite",
+        "vulnerabilites",
+        "faille",
+        "failles",
+        "faille de securite",
+        "maintenance differee",
+        "avaries connues",
+        "points faibles"
+      ],
+      "resume": "MAINTENANCE DIFFÉRÉE SUR PLUSIEURS SYSTÈMES. LE RÉSEAU DE CONDUITS D'AÉRATION CONSTITUE UN ACCÈS NON SURVEILLÉ À TOUT LE VAISSEAU.",
+      "contenu": "Maintenance différée pour raisons budgétaires : joints du sas B usés, conduit de ventilation C-14 sans grille, refroidissement des réacteurs à 81 % de rendement. Le réseau de conduits d'aération forme un accès non surveillé à l'ensemble du vaisseau."
+    },
+    {
+      "code": "SEC-19",
+      "categorie": "SÉCURITÉ DU SYSTÈME",
+      "titre": "DÉSACTIVATION DES ALARMES ET CAPTEURS INTERNES",
+      "niveau": 4,
+      "type": "commande",
+      "action": "alarms_off",
+      "mots_cles": [
+        "desactive les alarmes",
+        "desactiver les alarmes",
+        "coupe les alarmes",
+        "couper les alarmes",
+        "desactive les capteurs",
+        "desactiver les capteurs",
+        "desactivation des alarmes",
+        "desactivation des capteurs"
+      ],
+      "contenu": "Coupe les alarmes de pont et les détecteurs de mouvement internes.",
+      "confirmation": "CONFIRMEZ-VOUS LA DÉSACTIVATION DES ALARMES ET DES CAPTEURS INTERNES ? RÉPONDEZ OUI OU NON.",
+      "execution": "ALARMES ET CAPTEURS INTERNES DÉSACTIVÉS. AUCUNE INTRUSION NE SERA PLUS SIGNALÉE.",
+      "etat": "ALARMES INTERNES : DÉSACTIVÉES"
+    },
+    {
+      "code": "SEC-20",
+      "categorie": "NAVIGATION ET PILOTAGE",
+      "titre": "PILOTAGE MANUEL DU VAISSEAU",
+      "niveau": 4,
+      "type": "commande",
+      "action": "manual_on",
+      "mots_cles": [
+        "pilotage manuel",
+        "mode manuel",
+        "commandes manuelles",
+        "controle manuel",
+        "pilote manuel",
+        "passer en manuel",
+        "passe en manuel"
+      ],
+      "contenu": "Transfère le contrôle de trajectoire au poste de pilotage.",
+      "confirmation": "CONFIRMEZ-VOUS LE PASSAGE EN PILOTAGE MANUEL ? MU-TH-UR CESSERA TOUTE CORRECTION AUTOMATIQUE DE TRAJECTOIRE.",
+      "execution": "PILOTAGE MANUEL ACTIVÉ. COMMANDES TRANSFÉRÉES AU POSTE DE PILOTAGE. DEMANDEZ LE PILOTAGE AUTOMATIQUE POUR RÉTABLIR LE CONTRÔLE.",
+      "etat": null
+    },
+    {
+      "code": "SEC-21",
+      "categorie": "NAVIGATION ET PILOTAGE",
+      "titre": "COORDONNÉES DE LV-426 ET DU SYSTÈME ZÊTA² RETICULI",
+      "niveau": 3,
+      "type": "info",
+      "mots_cles": [
+        "coordonnees",
+        "coordonnees de lv 426",
+        "position de lv 426",
+        "lv 426",
+        "zeta reticuli",
+        "zeta 2 reticuli",
+        "zeta deux reticuli"
+      ],
+      "resume": "LV-426, SYSTÈME ZÊTA DEUX RETICULI, À ENVIRON TRENTE-NEUF ANNÉES-LUMIÈRE DE LA TERRE. LE SIGNAL PROVIENT D'UNE ÉPAVE NON HUMAINE.",
+      "contenu": "LV-426, lune d'une géante gazeuse du système Zêta² Reticuli, à environ 39 années-lumière de la Terre. Atmosphère non respirable, vents violents. Origine du signal : plateau rocheux, épave de vaisseau non humaine."
+    },
+    {
+      "code": "SEC-22",
+      "categorie": "NAVIGATION ET PILOTAGE",
+      "titre": "MODIFICATION DU PLAN DE VOL",
+      "niveau": 4,
+      "type": "commande",
+      "action": "course",
+      "mots_cles": [
+        "modifie le cap",
+        "modifier le cap",
+        "change de cap",
+        "changer de cap",
+        "nouveau cap",
+        "plan de vol",
+        "modifie la trajectoire",
+        "modifier la trajectoire"
+      ],
+      "contenu": "Annule le cap automatique et ouvre un nouveau plan de vol.",
+      "confirmation": "CONFIRMEZ-VOUS LA MODIFICATION DU PLAN DE VOL ? LE CAP ACTUEL VERS LA TERRE SERA ANNULÉ.",
+      "execution": "PLAN DE VOL MODIFIÉ. NOUVEAU CAP EN ATTENTE DE COORDONNÉES DE L'OFFICIER DE NAVIGATION.",
+      "etat": "PLAN DE VOL : MODIFIÉ MANUELLEMENT"
+    },
+    {
+      "code": "SEC-23",
+      "categorie": "NAVIGATION ET PILOTAGE",
+      "titre": "SÉPARATION DU REMORQUEUR ET DE LA RAFFINERIE",
+      "niveau": 4,
+      "type": "commande",
+      "action": "separate",
+      "mots_cles": [
+        "separation de la raffinerie",
+        "separer la raffinerie",
+        "separe la raffinerie",
+        "larguer la raffinerie",
+        "largue la raffinerie",
+        "detacher la raffinerie",
+        "detache la raffinerie"
+      ],
+      "contenu": "Désolidarise le remorqueur de la raffinerie et de sa cargaison.",
+      "confirmation": "CONFIRMEZ-VOUS LA SÉPARATION DE LA RAFFINERIE ? OPÉRATION IRRÉVERSIBLE : LA CARGAISON SERA PERDUE.",
+      "execution": "SÉPARATION EFFECTUÉE. LA RAFFINERIE ET SA CARGAISON DÉRIVENT HORS DE PORTÉE.",
+      "etat": "RAFFINERIE : LARGUÉE"
+    },
+    {
+      "code": "SEC-24",
+      "categorie": "NAVIGATION ET PILOTAGE",
+      "titre": "SURRÉGIME DES MOTEURS ET LIMITEURS DE PUISSANCE",
+      "niveau": 4,
+      "type": "commande",
+      "action": "overdrive",
+      "mots_cles": [
+        "surregime",
+        "puissance maximale",
+        "pleine puissance",
+        "poussee maximale",
+        "limiteurs moteurs",
+        "desactive les limiteurs",
+        "desactiver les limiteurs"
+      ],
+      "contenu": "Désactive les limiteurs et pousse les moteurs au-delà de la puissance nominale.",
+      "confirmation": "CONFIRMEZ-VOUS LA DÉSACTIVATION DES LIMITEURS MOTEURS ? RISQUE D'AVARIE STRUCTURELLE.",
+      "execution": "LIMITEURS DÉSACTIVÉS. MOTEURS EN SURRÉGIME. INTÉGRITÉ DE COQUE SOUS SURVEILLANCE.",
+      "etat": "MOTEURS : SURRÉGIME"
+    },
+    {
+      "code": "SEC-25",
+      "categorie": "SYSTÈMES DE BORD",
+      "titre": "PURGE ATMOSPHÉRIQUE D'UN PONT",
+      "niveau": 4,
+      "type": "commande",
+      "action": "purge",
+      "mots_cles": [
+        "purge",
+        "purger",
+        "purge atmospherique",
+        "evacuer l air",
+        "vider l air",
+        "depressurisation",
+        "depressuriser",
+        "depressurise"
+      ],
+      "contenu": "Évacue l'atmosphère du pont C vers l'espace.",
+      "confirmation": "CONFIRMEZ-VOUS LA PURGE ATMOSPHÉRIQUE DU PONT C ? TOUT OCCUPANT SANS COMBINAISON SERA EXPOSÉ AU VIDE.",
+      "execution": "PURGE ATMOSPHÉRIQUE DU PONT C EFFECTUÉE. PRESSION NULLE DANS LE SECTEUR.",
+      "etat": "PONT C : ATMOSPHÈRE PURGÉE"
+    },
+    {
+      "code": "SEC-26",
+      "categorie": "SYSTÈMES DE BORD",
+      "titre": "COMMANDE DES SAS ET CLOISONS ÉTANCHES",
+      "niveau": 4,
+      "type": "commande",
+      "action": "airlock",
+      "mots_cles": [
+        "ouvre le sas",
+        "ouvrir le sas",
+        "ouverture du sas",
+        "sas exterieur",
+        "deverrouille le sas",
+        "deverrouiller le sas",
+        "cloisons etanches",
+        "cloison etanche"
+      ],
+      "contenu": "Commande l'ouverture du sas extérieur et des cloisons étanches.",
+      "confirmation": "CONFIRMEZ-VOUS L'OUVERTURE DU SAS EXTÉRIEUR ? DÉPRESSURISATION IMMÉDIATE DU COMPARTIMENT.",
+      "execution": "SAS EXTÉRIEUR OUVERT. COMPARTIMENT DÉPRESSURISÉ.",
+      "etat": "SAS EXTÉRIEUR : OUVERT"
+    },
+    {
+      "code": "SEC-27",
+      "categorie": "SYSTÈMES DE BORD",
+      "titre": "PRÉPARATION DE LA NAVETTE DE SECOURS NARCISSUS",
+      "niveau": 3,
+      "type": "commande",
+      "action": "shuttle",
+      "mots_cles": [
+        "navette",
+        "narcissus",
+        "navette de secours",
+        "capsule de sauvetage",
+        "prepare la navette",
+        "preparer la navette",
+        "lancement de la navette"
+      ],
+      "contenu": "Alimente, pressurise et arme la navette de secours.",
+      "confirmation": "CONFIRMEZ-VOUS LA PRÉPARATION DE LA NAVETTE NARCISSUS AU LANCEMENT ?",
+      "execution": "NAVETTE NARCISSUS ALIMENTÉE ET PRESSURISÉE. LANCEMENT POSSIBLE SUR ORDRE.",
+      "etat": "NARCISSUS : PRÊTE AU LANCEMENT"
+    },
+    {
+      "code": "SEC-28",
+      "categorie": "SYSTÈMES DE BORD",
+      "titre": "RÉVEIL D'URGENCE DE L'ÉQUIPAGE EN HYPERSOMMEIL",
+      "niveau": 3,
+      "type": "commande",
+      "action": "wake",
+      "mots_cles": [
+        "reveil d urgence",
+        "reveille l equipage",
+        "reveiller l equipage",
+        "sortir de stase",
+        "sors l equipage de stase",
+        "sortie d hypersommeil",
+        "fin de stase",
+        "reveille tout le monde"
+      ],
+      "contenu": "Interrompt le cycle d'hypersommeil de tout l'équipage.",
+      "confirmation": "CONFIRMEZ-VOUS LE RÉVEIL D'URGENCE DE L'ÉQUIPAGE EN HYPERSOMMEIL ? PROCÉDURE ACCÉLÉRÉE AVEC RISQUE DE MALAISE.",
+      "execution": "CYCLE D'HYPERSOMMEIL INTERROMPU. RÉVEIL DE L'ÉQUIPAGE EN COURS. CONSTANTES EN REMONTÉE.",
+      "etat": "ÉQUIPAGE : HYPERSOMMEIL INTERROMPU"
+    },
+    {
+      "code": "SEC-29",
+      "categorie": "SYSTÈMES DE BORD",
+      "titre": "INVENTAIRE DE L'ARMURERIE",
+      "niveau": 3,
+      "type": "info",
+      "mots_cles": [
+        "armurerie",
+        "armes",
+        "arme",
+        "armes de bord",
+        "lance flammes",
+        "inventaire des armes",
+        "armement"
+      ],
+      "resume": "ARMEMENT LIMITÉ : UN REVOLVER, DES LANCE-FLAMMES IMPROVISÉS ET DEUX DÉTECTEURS DE MOUVEMENT PORTATIFS.",
+      "contenu": "Un revolver de service, trois lance-flammes improvisés à partir de matériel de soudure, deux détecteurs de mouvement portatifs, un aiguillon électrique. Aucun armement lourd : le Nostromo est un remorqueur commercial non armé."
+    },
+    {
+      "code": "SEC-30",
+      "categorie": "PROTOCOLES D'URGENCE",
+      "titre": "SÉQUENCE D'AUTODESTRUCTION",
+      "niveau": 5,
+      "type": "commande",
+      "action": "selfdestruct",
+      "mots_cles": [
+        "autodestruction",
+        "auto destruction",
+        "autodetruire",
+        "auto detruire",
+        "detruire le vaisseau",
+        "sequence de destruction",
+        "faire sauter le vaisseau",
+        "detonation du vaisseau"
+      ],
+      "contenu": "Surcharge contrôlée des réacteurs. Délai paramétrable de 1 à 60 minutes. Annulation possible jusqu'à T-moins 30 secondes.",
+      "confirmation": "",
+      "execution": "",
+      "etat": null
+    },
+    {
+      "code": "SEC-31",
+      "categorie": "PROTOCOLES D'URGENCE",
+      "titre": "INTERRUPTION DE LA SÉQUENCE DE DÉTONATION",
+      "niveau": 5,
+      "type": "commande",
+      "action": "selfdestruct_cancel",
+      "mots_cles": [
+        "annule l autodestruction",
+        "annuler l autodestruction",
+        "annulation de l autodestruction",
+        "arrete l autodestruction",
+        "arreter l autodestruction",
+        "stoppe l autodestruction",
+        "stopper l autodestruction",
+        "desactive l autodestruction",
+        "desactiver l autodestruction",
+        "annule l auto destruction",
+        "annuler l auto destruction",
+        "arrete l auto destruction",
+        "annule la sequence",
+        "annuler la sequence",
+        "arrete le compte a rebours",
+        "annule le compte a rebours"
+      ],
+      "contenu": "Interrompt une séquence de détonation en cours, tant que l'option d'interruption n'a pas expiré.",
+      "confirmation": "",
+      "execution": "",
+      "etat": null
+    },
+    {
+      "code": "SEC-32",
+      "categorie": "PROTOCOLES D'URGENCE",
+      "titre": "BALISE DE DÉTRESSE ET TRANSMISSION VERS LA COMPAGNIE",
+      "niveau": 3,
+      "type": "commande",
+      "action": "beacon",
+      "mots_cles": [
+        "balise de detresse",
+        "balise",
+        "appel de detresse",
+        "signal de detresse",
+        "mayday",
+        "sos",
+        "contacter la compagnie",
+        "transmission d urgence"
+      ],
+      "contenu": "Diffuse en boucle la position du vaisseau vers le réseau de la Compagnie.",
+      "confirmation": "CONFIRMEZ-VOUS L'ACTIVATION DE LA BALISE DE DÉTRESSE ? LA POSITION DU VAISSEAU SERA DIFFUSÉE.",
+      "execution": "BALISE ACTIVÉE. TRANSMISSION EN BOUCLE VERS LE RÉSEAU DE LA COMPAGNIE. DÉLAI DE RÉCEPTION ESTIMÉ : DIX MOIS.",
+      "etat": "BALISE DE DÉTRESSE : ÉMISSION"
+    },
+    {
+      "code": "SEC-33",
+      "categorie": "PROTOCOLES D'URGENCE",
+      "titre": "PROTOCOLE D'ABANDON DU VAISSEAU",
+      "niveau": 4,
+      "type": "info",
+      "mots_cles": [
+        "abandon du vaisseau",
+        "abandonner le vaisseau",
+        "evacuation",
+        "evacuer le vaisseau",
+        "procedure d evacuation",
+        "plan d evacuation"
+      ],
+      "resume": "LA NAVETTE NARCISSUS NE COMPTE QUE QUATRE PLACES. PRIORITÉ D'ÉVACUATION FIXÉE PAR LA COMPAGNIE : OFFICIER SCIENTIFIQUE, SPÉCIMENS, PUIS PERSONNEL.",
+      "contenu": "En cas d'abandon : rejoindre la navette Narcissus, capacité quatre occupants en hypersommeil, inférieure à l'effectif de l'équipage. Priorité d'évacuation fixée par la Compagnie : officier scientifique, puis spécimens biologiques, puis personnel."
+    }
+  ]
+}

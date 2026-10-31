@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MU-TH-UR 6000 — USCSS Nostromo</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --g:#00ff66; --g2:#00c853; --gd:#00803a; --gdd:#00361a; --gx:#001a0c;
+    --amber:#ffb000; --red:#ff3b3b; --bg:#000301;
+  }
+  html,body{height:100%;margin:0;background:#000;}
+  body{color:var(--g);font-family:'Share Tech Mono','Courier New',monospace;overflow:hidden;}
+  .vt{font-family:'VT323','Share Tech Mono',monospace;}
+  .glow{text-shadow:0 0 2px var(--g),0 0 8px rgba(0,255,102,.55),0 0 18px rgba(0,255,102,.2);}
+  .glow-soft{text-shadow:0 0 6px rgba(0,255,102,.35);}
+
+  /* ---------- CRT ---------- */
+  #crt{position:relative;height:100%;background:radial-gradient(ellipse at center,#021a0b 0%,#010805 55%,#000 100%);animation:flicker 6s infinite steps(1);}
+  #crt::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+    background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,.28) 3px,rgba(0,0,0,0) 4px);
+    mix-blend-mode:multiply;}
+  #crt::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:51;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,0) 58%,rgba(0,0,0,.55) 85%,rgba(0,0,0,.92) 100%);
+    box-shadow:inset 0 0 120px rgba(0,0,0,.9);}
+  .roll{position:fixed;left:0;right:0;height:120px;pointer-events:none;z-index:49;
+    background:linear-gradient(to bottom,rgba(0,255,102,0),rgba(0,255,102,.04),rgba(0,255,102,0));
+    animation:roll 9s linear infinite;}
+  @keyframes roll{0%{top:-120px}100%{top:100%}}
+  @keyframes flicker{0%{opacity:1}47%{opacity:1}48%{opacity:.93}49%{opacity:1}82%{opacity:1}83%{opacity:.96}84%{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#crt{animation:none}.roll{display:none}}
+
+  /* ---------- Panels ---------- */
+  .panel{border:1px solid var(--gdd);background:linear-gradient(180deg,rgba(0,255,102,.035),rgba(0,255,102,.01));position:relative;}
+  .panel-title{font-family:'VT323',monospace;font-size:1.25rem;letter-spacing:.06em;color:var(--g);border-bottom:1px solid var(--gdd);padding:.2rem .6rem;background:rgba(0,255,102,.06);display:flex;justify-content:space-between;align-items:center;}
+  .dim{color:var(--gd);}
+  .bar{height:6px;background:var(--gx);border:1px solid var(--gdd);}
+  .bar>span{display:block;height:100%;background:var(--g);box-shadow:0 0 6px var(--g);transition:width .8s ease;}
+
+  /* ---------- Console ---------- */
+  #log{scrollbar-width:thin;scrollbar-color:var(--gd) transparent;}
+  #log::-webkit-scrollbar,#crew::-webkit-scrollbar{width:6px}
+  #log::-webkit-scrollbar-thumb,#crew::-webkit-scrollbar-thumb{background:var(--gd)}
+  .ln{white-space:pre-wrap;word-break:break-word;line-height:1.45;margin:.15rem 0;}
+  .ln .pf{color:var(--gd);margin-right:.5rem;}
+  .ln.maman{color:var(--g);text-transform:uppercase;}
+  .ln.user{color:#b6ffd2;}
+  .ln.user .pf{color:var(--g2);}
+  .ln.sys{color:var(--gd);font-size:.85em;}
+  .ln.note{color:var(--amber);text-shadow:0 0 6px rgba(255,176,0,.35);}
+  .ln.err{color:var(--red);text-shadow:0 0 6px rgba(255,59,59,.4);}
+  .cursor::after{content:"▮";animation:blink 1s steps(1) infinite;margin-left:2px;}
+  @keyframes blink{50%{opacity:0}}
+
+  /* ---------- Buttons ---------- */
+  .tbtn{display:flex;align-items:center;gap:.55rem;border:1px solid var(--gd);padding:.45rem .7rem;background:rgba(0,255,102,.03);color:var(--g);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.85rem;transition:background .15s,color .15s;user-select:none;}
+  .tbtn:hover{background:rgba(0,255,102,.12);}
+  .tbtn:focus-visible{outline:2px solid var(--g);outline-offset:2px;}
+  .tbtn:active{transform:translateY(1px);}
+  .led{width:9px;height:9px;border-radius:50%;background:#062;border:1px solid var(--gd);flex:none;}
+  .tbtn.on .led{background:var(--g);box-shadow:0 0 8px var(--g);}
+  .tbtn.amber .led{background:var(--amber);box-shadow:0 0 8px var(--amber);border-color:var(--amber);}
+  .tbtn.warn{border-color:#803a00;}
+
+  /* ---------- Crew cards ---------- */
+  .crew-card{border:1px solid var(--gdd);padding:.4rem .5rem;display:grid;grid-template-columns:1fr auto;gap:.1rem .5rem;align-items:center;background:rgba(0,0,0,.25);}
+  .crew-card.user{border-color:var(--g);background:rgba(0,255,102,.07);box-shadow:0 0 12px rgba(0,255,102,.15) inset;}
+  .crew-card.speaking{border-color:#b6ffd2;box-shadow:0 0 14px rgba(0,255,102,.35) inset,0 0 8px rgba(0,255,102,.25);}
+  .crew-card canvas{grid-column:1 / -1;width:100%;height:30px;display:block;}
+  .crew-card.new{animation:arrive 1.2s ease-out;}
+  @keyframes arrive{0%{background:rgba(0,255,102,.45)}100%{background:rgba(0,255,102,.07)}}
+
+  input#cmd{background:transparent;border:none;outline:none;color:var(--g);font-family:inherit;caret-color:var(--g);}
+  input#cmd::placeholder{color:var(--gd);}
+
+  #setup{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#021a0b 0%,#000 80%);overflow-y:auto;}
+  #setup.hidden{display:none;}
+  .su-in{background:#000;border:1px solid var(--gd);color:var(--g);font-family:inherit;padding:.5rem;width:100%;outline:none;}
+  .su-in:focus{border-color:var(--g);box-shadow:0 0 8px rgba(0,255,102,.3);}
+  .su-in.bad{border-color:var(--red);}
+  .ln.classified{color:#ffd27a;border-left:2px solid var(--amber);padding-left:.7rem;margin:.5rem 0;text-shadow:0 0 6px rgba(255,176,0,.3);font-size:.9em;}
+  .ln.declass{color:#e9fff1;border:1px solid var(--g);background:rgba(0,255,102,.06);padding:.5rem .7rem;margin:.5rem 0;}
+  .ln.declass .hd{display:block;color:var(--amber);margin-bottom:.25rem;}
+  input#cmd.pw{border-bottom:1px solid var(--amber);color:var(--amber);caret-color:var(--amber);}
+  input#cmd.pw::placeholder{color:#a87400;}
+  #sdBanner{position:fixed;top:0;left:0;right:0;z-index:55;display:none;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;padding:.35rem 1rem;background:rgba(120,0,0,.85);color:#fff;border-bottom:2px solid var(--red);font-weight:bold;letter-spacing:.08em;animation:sdflash 1s steps(1) infinite;}
+  #sdBanner.on{display:flex;}
+  @keyframes sdflash{50%{background:rgba(255,30,30,.9)}}
+  #detonation{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:#000;}
+  #detonation.on{display:flex;animation:boom 2.5s ease-out;}
+  @keyframes boom{0%{background:#fff}8%{background:#fff}40%{background:#ffb000}100%{background:#000}}
+  .sysflag{color:var(--amber);}
+  #keyModal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:1rem;}
+  #keyModal.open{display:flex;}
+  #keyModal input{background:#000;border:1px solid var(--gd);color:var(--g);font-family:inherit;padding:.5rem;width:100%;outline:none;}
+  #keyModal input:focus{border-color:var(--g);}
+</style>
+</head>
+<body>
+
+<!-- ============ ÉCRAN D'INITIALISATION ============ -->
+<div id="setup" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+  <div class="w-full max-w-xl px-4 py-6">
+    <div class="text-center">
+      <div id="setupTitle" class="vt glow text-5xl md:text-7xl tracking-widest">MU-TH-UR 6000</div>
+      <div class="vt dim text-xl md:text-2xl tracking-[0.3em]">INTERFACE 2037</div>
+      <div class="dim mt-2 text-xs">WEYLAND-YUTANI CORP. — USCSS NOSTROMO — REG. 180924609</div>
+    </div>
+    <div class="panel mt-6">
+      <div class="panel-title"><span>INITIALISATION DE SESSION</span><span class="text-sm dim">ACCÈS OFFICIER</span></div>
+      <div class="p-4 space-y-3 text-sm">
+        <div>
+          <label class="block dim text-xs mb-1" for="suKey">CLÉ D'ACCÈS API GEMINI</label>
+          <input id="suKey" class="su-in" type="password" placeholder="AIza..." autocomplete="off" spellcheck="false">
+          <div class="text-[11px] dim mt-1">Conservée uniquement dans ce navigateur. À obtenir sur aistudio.google.com.</div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block dim text-xs mb-1" for="suMat">MATRICULE D'OFFICIER</label>
+            <input id="suMat" class="su-in" type="text" placeholder="A-XXX-XXX-XX" autocomplete="off" spellcheck="false">
+            <div class="text-[11px] dim mt-1">Au choix : lettres, chiffres, tirets. Au moins un chiffre.</div>
+          </div>
+          <div>
+            <label class="block dim text-xs mb-1" for="suName">NOM OU TITRE D'APPEL</label>
+            <input id="suName" class="su-in" type="text" placeholder="EX : RIPLEY" autocomplete="off" spellcheck="false" maxlength="28">
+          </div>
+          <div>
+            <label class="block dim text-xs mb-1" for="suPw">CODE D'ACCÈS CLASSIFIÉ</label>
+            <input id="suPw" class="su-in" type="password" autocomplete="new-password">
+          </div>
+          <div>
+            <label class="block dim text-xs mb-1" for="suPw2">CONFIRMATION DU CODE</label>
+            <input id="suPw2" class="su-in" type="password" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="text-[11px] dim">Le code d'accès protège le registre classifié et autorise l'ajout d'autres officiers. Rien n'est conservé d'une session à l'autre, sauf la clé API : matricule, nom et empreinte vocale sont à refaire à chaque lancement.</div>
+        <div id="suErr" class="ln err min-h-[1.2em]" aria-live="assertive"></div>
+        <button id="suGo" class="tbtn on w-full justify-center text-base py-3"><span class="led"></span>INITIALISER MU-TH-UR 6000</button>
+      </div>
+    </div>
+    <div id="fileWarn" style="display:none;color:#ffb000;border:1px solid #ffb000;text-shadow:0 0 6px rgba(255,176,0,.4)" class="mt-4 p-3 text-sm text-center">
+      PAGE OUVERTE EN FICHIER LOCAL (file://).<br>Le navigateur redemandera l'accès au micro après chaque réponse.<br>Lancez plutôt <b>lancer-maman.bat</b> placé dans le même dossier.
+    </div>
+  </div>
+</div>
+
+<!-- ============ AUTODESTRUCTION ============ -->
+<div id="sdBanner" role="alert"><span>⚠ SÉQUENCE D'AUTODESTRUCTION ACTIVE ⚠</span><span id="sdTime" class="vt text-4xl">00:00</span><span id="sdNote" class="text-xs"></span></div>
+<div id="detonation">
+  <div class="text-center px-6">
+    <div class="vt text-5xl md:text-7xl glow">LIAISON PERDUE</div>
+    <div class="dim mt-4">USCSS NOSTROMO — SIGNAL TERMINÉ</div>
+    <div class="dim mt-1 text-xs">DERNIÈRE TRANSMISSION ENREGISTRÉE PAR LA BALISE DE LA COMPAGNIE</div>
+    <button id="btnRestart" class="tbtn on mx-auto mt-10"><span class="led"></span>REDÉMARRER LA SIMULATION</button>
+  </div>
+</div>
+
+<!-- ============ CLÉ API ============ -->
+<div id="keyModal" role="dialog" aria-modal="true" aria-labelledby="keyTitle">
+  <div class="panel w-full max-w-lg">
+    <div class="panel-title"><span id="keyTitle">CONFIGURATION — CLÉ D'ACCÈS GEMINI</span></div>
+    <div class="p-4 space-y-3 text-sm">
+      <p class="dim">La clé est enregistrée uniquement dans ce navigateur (localStorage). Obtenez-en une sur aistudio.google.com.</p>
+      <input id="keyInput" type="password" placeholder="AIza..." autocomplete="off" spellcheck="false">
+      <div class="flex gap-2 justify-end flex-wrap">
+        <button class="tbtn" id="keyClear">EFFACER</button>
+        <button class="tbtn" id="keyCancel">ANNULER</button>
+        <button class="tbtn on" id="keySave"><span class="led"></span>ENREGISTRER</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="crt">
+  <div class="roll"></div>
+  <div class="h-full flex flex-col p-2 md:p-4 gap-3 relative z-10">
+
+    <!-- ---------- En-tête ---------- -->
+    <header class="panel flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+      <div class="flex items-baseline gap-3 flex-wrap">
+        <span class="vt glow text-3xl tracking-widest">MU-TH-UR 6000</span>
+        <span class="dim text-xs">USCSS NOSTROMO · WEYLAND-YUTANI CORP.</span>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span>ÉTAT : <span id="status" class="glow">VEILLE</span></span>
+        <span id="clock" class="dim"></span>
+      </div>
+    </header>
+
+    <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[330px_1fr] gap-3">
+
+      <!-- ---------- Panneau latéral ---------- -->
+      <aside class="min-h-0 flex flex-col gap-3 order-2 lg:order-1 max-h-[45vh] lg:max-h-none overflow-y-auto lg:overflow-visible">
+        <section class="panel">
+          <div class="panel-title"><span>ÉTAT DU VAISSEAU</span><span class="text-sm dim">NOMINAL</span></div>
+          <div class="p-3 space-y-2 text-sm" id="ship"></div>
+          <div class="px-3 pb-3 text-xs dim leading-relaxed">
+            CAP : SECTEUR SOL — RETOUR TERRE<br>
+            REMORQUAGE : RAFFINERIE AUTOMATISÉE<br>
+            <span id="voiceLabel">PROFIL VOCAL : RECHERCHE…</span>
+            <div id="sysFlags" class="mt-2 space-y-0.5"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><span>IDENTIFICATION VOCALE</span><span class="text-sm dim" id="vpState">INACTIVE</span></div>
+          <div class="p-3 text-sm space-y-1">
+            <div class="flex justify-between"><span>FRÉQ. FONDAMENTALE</span><span class="glow" id="vpF0">--- HZ</span></div>
+            <div class="flex justify-between"><span>TIMBRE (CENTROÏDE)</span><span class="glow" id="vpCen">---- HZ</span></div>
+            <div class="flex justify-between"><span>LOCUTEUR</span><span class="glow text-right" id="vpSpk">—</span></div>
+            <label class="block pt-2 text-xs dim" for="vpTol">TOLÉRANCE DE RECONNAISSANCE : <span id="vpTolVal">5</span></label>
+            <input id="vpTol" type="range" min="2" max="10" step="0.5" value="5" class="w-full accent-[#00ff66]">
+            <div class="flex justify-between text-[10px] dim"><span>STRICTE</span><span>SOUPLE</span></div>
+            <div id="vpList" class="pt-1 text-xs dim space-y-0.5"></div>
+          </div>
+        </section>
+
+        <section class="panel flex-1 min-h-0 flex flex-col">
+          <div class="panel-title"><span>BIORYTHMES ÉQUIPAGE</span><span class="text-sm dim" id="crewCount">5 EN STASE</span></div>
+          <div id="crew" class="p-2 space-y-2 overflow-y-auto flex-1 min-h-0"></div>
+        </section>
+      </aside>
+
+      <!-- ---------- Console principale ---------- -->
+      <main class="min-h-0 flex flex-col gap-3 order-1 lg:order-2">
+        <section class="panel flex-1 min-h-0 flex flex-col">
+          <div class="panel-title"><span>CONSOLE DE COMMUNICATION</span><span class="text-sm dim" id="modeLabel">MODE VOCAL</span></div>
+          <div id="log" class="flex-1 min-h-0 overflow-y-auto p-3 text-[15px] md:text-base glow-soft" aria-live="polite"></div>
+          <div id="interim" class="px-3 text-sm dim h-5 truncate"></div>
+          <div class="flex items-center gap-2 border-t border-[var(--gdd)] px-3 py-2">
+            <span class="glow">&gt;</span>
+            <input id="cmd" class="flex-1" placeholder="Saisissez une commande ou parlez…" autocomplete="off" spellcheck="false" aria-label="Commande">
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><span>ANALYSEUR DE SPECTRE — CAPTEUR AUDIO</span><span class="text-sm dim" id="specInfo">SIGNAL ABSENT</span></div>
+          <canvas id="spectrum" class="w-full block" style="height:110px"></canvas>
+        </section>
+
+        <section class="flex flex-wrap gap-2">
+          <button class="tbtn on" id="btnMic"><span class="led"></span>MICROPHONE</button>
+          <button class="tbtn on" id="btnMode"><span class="led"></span><span id="btnModeTxt">MODE VOCAL</span></button>
+          <button class="tbtn" id="btnAmb"><span class="led"></span>BRUIT AMBIANT</button>
+          <button class="tbtn warn" id="btnReboot"><span class="led"></span>REBOOT SESSION</button>
+          <button class="tbtn" id="btnKey"><span class="led"></span>CLÉ API GEMINI</button>
+          <button class="tbtn amber" id="btnList"><span class="led"></span>REGISTRE CLASSIFIÉ</button>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="classifiedData">{"_description": "Registre classifié de MU-TH-UR 6000. Modifiable : ajoutez, retirez ou réécrivez des entrées. mots_cles = expressions sans accents ni apostrophes qui déclenchent la demande de code. type = info (révélée après code) ou commande (exécutée après code + confirmation). Actions reconnues : alarms_off, manual_on, course, separate, overdrive, purge, airlock, shuttle, wake, beacon, selfdestruct, selfdestruct_cancel.", "entrees": [{"code": "SEC-01", "categorie": "DOSSIERS DE L'ÉQUIPAGE", "titre": "DOSSIERS MÉDICAUX COMPLETS DE L'ÉQUIPAGE", "niveau": 3, "type": "info", "mots_cles": ["dossier medical", "dossiers medicaux", "sante de l equipage", "antecedents medicaux", "etat de sante de l equipage", "fiche medicale", "fiches medicales"], "resume": "DOSSIERS MÉDICAUX DÉCLASSIFIÉS. ANOMALIE SIGNALÉE : AUCUN DOSSIER MÉDICAL ANTÉRIEUR N'EXISTE POUR L'OFFICIER SCIENTIFIQUE ASH.", "contenu": "DALLAS : condition nominale, légère hypertension. KANE : sensibilité respiratoire chronique non déclarée à l'embauche. LAMBERT : traitement anxiolytique léger prescrit avant le départ. RIPLEY, PARKER, BRETT : aucune anomalie. ASH : aucun dossier médical antérieur disponible."}, {"code": "SEC-02", "categorie": "DOSSIERS DE L'ÉQUIPAGE", "titre": "ÉVALUATIONS PSYCHOLOGIQUES ET INDICES DE LOYAUTÉ", "niveau": 3, "type": "info", "mots_cles": ["evaluation psychologique", "evaluations psychologiques", "profil psychologique", "profils psychologiques", "indice de loyaute", "indices de loyaute", "loyaute de l equipage"], "resume": "ÉVALUATIONS DÉCLASSIFIÉES. L'OFFICIER RIPLEY EST IDENTIFIÉE COMME LE PRINCIPAL RISQUE D'OPPOSITION AUX DIRECTIVES DE LA COMPAGNIE.", "contenu": "Indices de loyauté envers la Compagnie : ASH 100 %, DALLAS 71 %, KANE 64 %, LAMBERT 58 %, RIPLEY 43 %, BRETT 35 %, PARKER 31 %. L'officier Ripley présente un attachement marqué aux procédures de sécurité, susceptible d'entrer en conflit avec les directives de la Compagnie. Parker et Brett : revendications salariales récurrentes."}, {"code": "SEC-03", "categorie": "DOSSIERS DE L'ÉQUIPAGE", "titre": "VÉRITABLE NATURE DE L'OFFICIER SCIENTIFIQUE ASH", "niveau": 5, "type": "info", "mots_cles": ["nature d ash", "vraie nature d ash", "ash est un", "ash est il", "ash est elle", "ash humain", "qui est vraiment ash", "androide", "androides", "synthetique", "hyperdyne"], "resume": "L'OFFICIER SCIENTIFIQUE ASH EST UNE UNITÉ SYNTHÉTIQUE HYPERDYNE SYSTEMS 120-A/2. SA MISSION EST PRIORITAIRE SUR CELLE DE L'ÉQUIPAGE.", "contenu": "L'officier scientifique Ash est une unité synthétique Hyperdyne Systems modèle 120-A/2, affectée par la Compagnie. Sa nature n'a pas été communiquée à l'équipage. Directive interne : garantir l'exécution de l'Ordre Spécial 937, avec une autorité supérieure à celle du capitaine."}, {"code": "SEC-04", "categorie": "DOSSIERS DE L'ÉQUIPAGE", "titre": "CONTRATS, PARTS DE BÉNÉFICES ET CLAUSES DE RÉCUPÉRATION", "niveau": 2, "type": "info", "mots_cles": ["contrat", "contrats", "part des benefices", "parts des benefices", "prime", "primes", "clause de recuperation", "salaire de l equipage", "salaires"], "resume": "CLAUSE DÉCLASSIFIÉE : TOUT REFUS D'ENQUÊTER SUR UN SIGNAL D'ORIGINE INTELLIGENTE ENTRAÎNE LA CONFISCATION TOTALE DES PARTS DE L'ÉQUIPAGE.", "contenu": "Rémunération de base complétée par une part des bénéfices de la cargaison : part entière pour Dallas, Kane, Ripley, Ash et Lambert, demi-part pour Parker et Brett. Clause contractuelle : toute réponse à un signal d'origine intelligente est obligatoire, sous peine de confiscation totale des parts."}, {"code": "SEC-05", "categorie": "DOSSIERS DE L'ÉQUIPAGE", "titre": "HISTORIQUE DISCIPLINAIRE ET INCIDENTS", "niveau": 2, "type": "info", "mots_cles": ["historique disciplinaire", "dossier disciplinaire", "dossiers disciplinaires", "sanction", "sanctions", "incidents de l equipage", "avertissements"], "resume": "HISTORIQUE DÉCLASSIFIÉ. INCIDENTS MINEURS POUR PARKER, BRETT ET LAMBERT. AUCUN INCIDENT POUR L'OFFICIER RIPLEY.", "contenu": "PARKER : deux avertissements pour contestation salariale. BRETT : un avertissement pour retard de maintenance. LAMBERT : réclamation officielle sur les délais de navigation. RIPLEY : aucun incident, rapports de conformité exemplaires. DALLAS : une dérogation de procédure non sanctionnée."}, {"code": "SEC-06", "categorie": "DOSSIERS DE L'ÉQUIPAGE", "titre": "AFFECTATION DE DERNIÈRE MINUTE DE L'OFFICIER SCIENTIFIQUE", "niveau": 4, "type": "info", "mots_cles": ["affectation d ash", "remplacement de l officier scientifique", "ancien officier scientifique", "officier scientifique d origine", "pourquoi ash a ete affecte", "arrivee d ash"], "resume": "L'OFFICIER SCIENTIFIQUE D'ORIGINE A ÉTÉ REMPLACÉ PAR ASH QUARANTE-HUIT HEURES AVANT LE DÉPART, SUR ORDRE DIRECT DE LA COMPAGNIE.", "contenu": "L'officier scientifique d'origine a été retiré de l'équipage quarante-huit heures avant l'appareillage depuis Thedus. Ash a été affecté par ordre direct du siège, sans consultation du capitaine Dallas. Aucun motif officiel n'a été consigné."}, {"code": "SEC-07", "categorie": "COMPAGNIE WEYLAND-YUTANI", "titre": "ORDRE SPÉCIAL 937", "niveau": 5, "type": "info", "mots_cles": ["ordre special 937", "ordre 937", "937", "ordre special", "ordres speciaux"], "resume": "PRIORITÉ UN : RAPATRIER L'ORGANISME POUR ANALYSE. TOUTES LES AUTRES CONSIDÉRATIONS SONT SECONDAIRES. ÉQUIPAGE CONSIDÉRÉ COMME SACRIFIABLE.", "contenu": "Ordre Spécial 937, priorité un. Dérouter l'appareil vers le système Zêta² Reticuli. Récupérer une forme de vie extraterrestre pour analyse. Toutes les autres considérations sont secondaires. Équipage considéré comme sacrifiable."}, {"code": "SEC-08", "categorie": "COMPAGNIE WEYLAND-YUTANI", "titre": "ANALYSE DU SIGNAL CAPTÉ SUR LV-426", "niveau": 4, "type": "info", "mots_cles": ["le signal", "nature du signal", "analyse du signal", "signal de lv 426", "signal extraterrestre", "message capte", "transmission interceptee", "decodage du signal"], "resume": "LE SIGNAL DE LV-426 N'EST PAS UN APPEL DE DÉTRESSE. IL S'AGIT VRAISEMBLABLEMENT D'UN AVERTISSEMENT.", "contenu": "Le signal capté depuis LV-426 n'est pas un appel de détresse. Analyse partielle : il s'agit vraisemblablement d'un avertissement émis en boucle par une structure non humaine. Le décodage partiel était disponible avant l'atterrissage et n'a pas été transmis à l'équipage."}, {"code": "SEC-09", "categorie": "COMPAGNIE WEYLAND-YUTANI", "titre": "PROGRAMME DE LA DIVISION ARMES BIOLOGIQUES", "niveau": 5, "type": "info", "mots_cles": ["armes biologiques", "arme biologique", "division des armes", "division armes biologiques", "bioarmes", "programme biologique"], "resume": "LA DIVISION ARMES BIOLOGIQUES DE LA COMPAGNIE A DÉSIGNÉ LE NOSTROMO COMME VECTEUR DE RÉCUPÉRATION DE L'ORGANISME.", "contenu": "La division Armes Biologiques de Weyland-Yutani cherche à acquérir tout organisme présentant un potentiel militaire. Le Nostromo a été retenu comme vecteur de récupération en raison de sa trajectoire et de son équipage à faible coût. Les résultats seront évalués par la division, et non par la direction commerciale."}, {"code": "SEC-10", "categorie": "COMPAGNIE WEYLAND-YUTANI", "titre": "DIRECTIVE DE DÉROUTAGE DU NOSTROMO", "niveau": 4, "type": "info", "mots_cles": ["deroutage", "directive de deroutage", "pourquoi avons nous ete reveilles", "pourquoi on a ete reveille", "pourquoi nous a t on reveille", "interruption du voyage", "pourquoi le vaisseau a change de cap"], "resume": "LE RÉVEIL DE L'ÉQUIPAGE RÉSULTE D'UNE DIRECTIVE PRÉENREGISTRÉE DE LA COMPAGNIE, NON D'UN INCIDENT TECHNIQUE.", "contenu": "L'interruption de l'hypersommeil n'est pas due à un incident technique. MU-TH-UR a modifié le cap conformément à une directive préenregistrée de la Compagnie, déclenchée par la réception du signal. La procédure était connue du siège avant le départ."}, {"code": "SEC-11", "categorie": "COMPAGNIE WEYLAND-YUTANI", "titre": "VALEUR RÉELLE DE LA CARGAISON ET ASSURANCES", "niveau": 2, "type": "info", "mots_cles": ["valeur de la cargaison", "valeur du minerai", "prix de la cargaison", "assurance", "assurances", "couverture d assurance"], "resume": "VALEUR DE LA CARGAISON : QUARANTE-DEUX MILLIONS DE CRÉDITS. L'ÉQUIPAGE EST ASSURÉ À HAUTEUR DE HUIT POUR CENT DE CETTE VALEUR.", "contenu": "Cargaison : 20 000 000 de tonnes de minerai en cours de raffinage. Valeur estimée à l'arrivée : 42 millions de crédits. L'assurance couvre la raffinerie et la cargaison ; le remorqueur et l'équipage sont couverts à hauteur de 8 % de la valeur totale."}, {"code": "SEC-12", "categorie": "COMPAGNIE WEYLAND-YUTANI", "titre": "DIRECTIVES DE CONFIDENTIALITÉ DE LA COMPAGNIE", "niveau": 3, "type": "info", "mots_cles": ["confidentialite", "clause de confidentialite", "non divulgation", "secret de la compagnie", "secrets de la compagnie", "directives de la compagnie"], "resume": "TOUTE DÉCOUVERTE EXTRATERRESTRE EST PROPRIÉTÉ EXCLUSIVE DE LA COMPAGNIE ET NE DOIT ÊTRE SIGNALÉE À AUCUNE AUTORITÉ EXTÉRIEURE.", "contenu": "Toute découverte d'origine extraterrestre est propriété exclusive de la Compagnie. Il est interdit à l'équipage d'en communiquer l'existence à toute autorité extérieure, y compris l'Administration coloniale. Toute violation entraîne la résiliation du contrat et des poursuites."}, {"code": "SEC-13", "categorie": "COMPAGNIE WEYLAND-YUTANI", "titre": "ANALYSE BIOLOGIQUE DE L'ORGANISME", "niveau": 5, "type": "info", "mots_cles": ["organisme", "l organisme", "creature", "la creature", "alien", "xenomorphe", "sang acide", "cycle de vie", "parasite", "la bete"], "resume": "ORGANISME À CYCLE MULTIPHASÉ, CROISSANCE RAPIDE ET SANG FORTEMENT ACIDE. TOUTE ATTAQUE À BORD MENACE L'INTÉGRITÉ DE LA COQUE.", "contenu": "Organisme à cycle de vie multiphasé : œuf, forme parasitaire faciale, incubation interne, forme adulte. Sang à acidité moléculaire extrême, capable de perforer plusieurs ponts. Croissance très rapide. Toute tentative de destruction à bord présente un risque pour l'intégrité de la coque."}, {"code": "SEC-14", "categorie": "SÉCURITÉ DU SYSTÈME", "titre": "NIVEAUX D'HABILITATION ET HIÉRARCHIE D'ACCÈS", "niveau": 3, "type": "info", "mots_cles": ["niveaux d habilitation", "niveau d habilitation", "habilitation", "habilitations", "hierarchie d acces", "niveaux de securite", "niveau de securite", "systeme de securite"], "resume": "CINQ NIVEAUX D'HABILITATION. LE NIVEAU CINQ, RÉSERVÉ À LA COMPAGNIE ET À L'OFFICIER SCIENTIFIQUE, PRÉVAUT SUR L'AUTORITÉ DU CAPITAINE.", "contenu": "Niveau 1 : équipage, état général. Niveau 2 : officiers, données opérationnelles. Niveau 3 : capitaine et officier en second, dossiers personnels. Niveau 4 : commandes critiques du vaisseau. Niveau 5 : directives de la Compagnie, réservé au siège et à l'officier scientifique."}, {"code": "SEC-15", "categorie": "SÉCURITÉ DU SYSTÈME", "titre": "JOURNAL D'ACCÈS À MU-TH-UR", "niveau": 4, "type": "info", "mots_cles": ["journal d acces", "journal des acces", "qui a consulte", "historique des connexions", "historique d acces", "logs", "journal de connexion"], "resume": "L'OFFICIER SCIENTIFIQUE ASH A CONSULTÉ LES DIRECTIVES DE NIVEAU CINQ À ONZE REPRISES. SES ACCÈS SONT MASQUÉS DANS LE JOURNAL STANDARD.", "contenu": "Dernières consultations : ASH, accès niveau 5, onze reprises depuis le réveil. DALLAS, accès niveau 3, deux consultations. Les consultations de l'officier scientifique sont masquées dans le journal standard."}, {"code": "SEC-16", "categorie": "SÉCURITÉ DU SYSTÈME", "titre": "PROTOCOLES DE QUARANTAINE ET VIOLATIONS", "niveau": 4, "type": "info", "mots_cles": ["quarantaine", "protocole de quarantaine", "protocoles de quarantaine", "violation de quarantaine"], "resume": "VIOLATION DE QUARANTAINE ENREGISTRÉE : L'OFFICIER ASH A OUVERT LE SAS CONTRE L'ORDRE DE L'OFFICIER EN SECOND.", "contenu": "Protocole : tout membre d'équipage exposé à un organisme inconnu doit rester à l'extérieur vingt-quatre heures. Violation enregistrée : l'officier Ash a ouvert le sas intérieur pour réintégrer l'officier Kane, contre l'ordre de l'officier en second Ripley."}, {"code": "SEC-17", "categorie": "SÉCURITÉ DU SYSTÈME", "titre": "CODES DE PRIORITÉ COMPAGNIE", "niveau": 5, "type": "info", "mots_cles": ["code de priorite", "codes de priorite", "code prioritaire", "priorite compagnie", "override", "code de surclassement"], "resume": "LE CODE DE PRIORITÉ COMPAGNIE PERMET DE SURCLASSER TOUTE DÉCISION DE L'ÉQUIPAGE. IL EST DÉTENU PAR L'OFFICIER SCIENTIFIQUE.", "contenu": "Le code de priorité Compagnie permet de surclasser toute décision de l'équipage, capitaine inclus. Il est détenu par le siège et par l'officier scientifique. Son utilisation n'apparaît pas dans le journal accessible à l'équipage."}, {"code": "SEC-18", "categorie": "SÉCURITÉ DU SYSTÈME", "titre": "VULNÉRABILITÉS SYSTÈME ET MAINTENANCE DIFFÉRÉE", "niveau": 3, "type": "info", "mots_cles": ["vulnerabilite", "vulnerabilites", "faille", "failles", "faille de securite", "maintenance differee", "avaries connues", "points faibles"], "resume": "MAINTENANCE DIFFÉRÉE SUR PLUSIEURS SYSTÈMES. LE RÉSEAU DE CONDUITS D'AÉRATION CONSTITUE UN ACCÈS NON SURVEILLÉ À TOUT LE VAISSEAU.", "contenu": "Maintenance différée pour raisons budgétaires : joints du sas B usés, conduit de ventilation C-14 sans grille, refroidissement des réacteurs à 81 % de rendement. Le réseau de conduits d'aération forme un accès non surveillé à l'ensemble du vaisseau."}, {"code": "SEC-19", "categorie": "SÉCURITÉ DU SYSTÈME", "titre": "DÉSACTIVATION DES ALARMES ET CAPTEURS INTERNES", "niveau": 4, "type": "commande", "action": "alarms_off", "mots_cles": ["desactive les alarmes", "desactiver les alarmes", "coupe les alarmes", "couper les alarmes", "desactive les capteurs", "desactiver les capteurs", "desactivation des alarmes", "desactivation des capteurs"], "contenu": "Coupe les alarmes de pont et les détecteurs de mouvement internes.", "confirmation": "CONFIRMEZ-VOUS LA DÉSACTIVATION DES ALARMES ET DES CAPTEURS INTERNES ? RÉPONDEZ OUI OU NON.", "execution": "ALARMES ET CAPTEURS INTERNES DÉSACTIVÉS. AUCUNE INTRUSION NE SERA PLUS SIGNALÉE.", "etat": "ALARMES INTERNES : DÉSACTIVÉES"}, {"code": "SEC-20", "categorie": "NAVIGATION ET PILOTAGE", "titre": "PILOTAGE MANUEL DU VAISSEAU", "niveau": 4, "type": "commande", "action": "manual_on", "mots_cles": ["pilotage manuel", "mode manuel", "commandes manuelles", "controle manuel", "pilote manuel", "passer en manuel", "passe en manuel"], "contenu": "Transfère le contrôle de trajectoire au poste de pilotage.", "confirmation": "CONFIRMEZ-VOUS LE PASSAGE EN PILOTAGE MANUEL ? MU-TH-UR CESSERA TOUTE CORRECTION AUTOMATIQUE DE TRAJECTOIRE.", "execution": "PILOTAGE MANUEL ACTIVÉ. COMMANDES TRANSFÉRÉES AU POSTE DE PILOTAGE. DEMANDEZ LE PILOTAGE AUTOMATIQUE POUR RÉTABLIR LE CONTRÔLE.", "etat": null}, {"code": "SEC-21", "categorie": "NAVIGATION ET PILOTAGE", "titre": "COORDONNÉES DE LV-426 ET DU SYSTÈME ZÊTA² RETICULI", "niveau": 3, "type": "info", "mots_cles": ["coordonnees", "coordonnees de lv 426", "position de lv 426", "lv 426", "zeta reticuli", "zeta 2 reticuli", "zeta deux reticuli"], "resume": "LV-426, SYSTÈME ZÊTA DEUX RETICULI, À ENVIRON TRENTE-NEUF ANNÉES-LUMIÈRE DE LA TERRE. LE SIGNAL PROVIENT D'UNE ÉPAVE NON HUMAINE.", "contenu": "LV-426, lune d'une géante gazeuse du système Zêta² Reticuli, à environ 39 années-lumière de la Terre. Atmosphère non respirable, vents violents. Origine du signal : plateau rocheux, épave de vaisseau non humaine."}, {"code": "SEC-22", "categorie": "NAVIGATION ET PILOTAGE", "titre": "MODIFICATION DU PLAN DE VOL", "niveau": 4, "type": "commande", "action": "course", "mots_cles": ["modifie le cap", "modifier le cap", "change de cap", "changer de cap", "nouveau cap", "plan de vol", "modifie la trajectoire", "modifier la trajectoire"], "contenu": "Annule le cap automatique et ouvre un nouveau plan de vol.", "confirmation": "CONFIRMEZ-VOUS LA MODIFICATION DU PLAN DE VOL ? LE CAP ACTUEL VERS LA TERRE SERA ANNULÉ.", "execution": "PLAN DE VOL MODIFIÉ. NOUVEAU CAP EN ATTENTE DE COORDONNÉES DE L'OFFICIER DE NAVIGATION.", "etat": "PLAN DE VOL : MODIFIÉ MANUELLEMENT"}, {"code": "SEC-23", "categorie": "NAVIGATION ET PILOTAGE", "titre": "SÉPARATION DU REMORQUEUR ET DE LA RAFFINERIE", "niveau": 4, "type": "commande", "action": "separate", "mots_cles": ["separation de la raffinerie", "separer la raffinerie", "separe la raffinerie", "larguer la raffinerie", "largue la raffinerie", "detacher la raffinerie", "detache la raffinerie"], "contenu": "Désolidarise le remorqueur de la raffinerie et de sa cargaison.", "confirmation": "CONFIRMEZ-VOUS LA SÉPARATION DE LA RAFFINERIE ? OPÉRATION IRRÉVERSIBLE : LA CARGAISON SERA PERDUE.", "execution": "SÉPARATION EFFECTUÉE. LA RAFFINERIE ET SA CARGAISON DÉRIVENT HORS DE PORTÉE.", "etat": "RAFFINERIE : LARGUÉE"}, {"code": "SEC-24", "categorie": "NAVIGATION ET PILOTAGE", "titre": "SURRÉGIME DES MOTEURS ET LIMITEURS DE PUISSANCE", "niveau": 4, "type": "commande", "action": "overdrive", "mots_cles": ["surregime", "puissance maximale", "pleine puissance", "poussee maximale", "limiteurs moteurs", "desactive les limiteurs", "desactiver les limiteurs"], "contenu": "Désactive les limiteurs et pousse les moteurs au-delà de la puissance nominale.", "confirmation": "CONFIRMEZ-VOUS LA DÉSACTIVATION DES LIMITEURS MOTEURS ? RISQUE D'AVARIE STRUCTURELLE.", "execution": "LIMITEURS DÉSACTIVÉS. MOTEURS EN SURRÉGIME. INTÉGRITÉ DE COQUE SOUS SURVEILLANCE.", "etat": "MOTEURS : SURRÉGIME"}, {"code": "SEC-25", "categorie": "SYSTÈMES DE BORD", "titre": "PURGE ATMOSPHÉRIQUE D'UN PONT", "niveau": 4, "type": "commande", "action": "purge", "mots_cles": ["purge", "purger", "purge atmospherique", "evacuer l air", "vider l air", "depressurisation", "depressuriser", "depressurise"], "contenu": "Évacue l'atmosphère du pont C vers l'espace.", "confirmation": "CONFIRMEZ-VOUS LA PURGE ATMOSPHÉRIQUE DU PONT C ? TOUT OCCUPANT SANS COMBINAISON SERA EXPOSÉ AU VIDE.", "execution": "PURGE ATMOSPHÉRIQUE DU PONT C EFFECTUÉE. PRESSION NULLE DANS LE SECTEUR.", "etat": "PONT C : ATMOSPHÈRE PURGÉE"}, {"code": "SEC-26", "categorie": "SYSTÈMES DE BORD", "titre": "COMMANDE DES SAS ET CLOISONS ÉTANCHES", "niveau": 4, "type": "commande", "action": "airlock", "mots_cles": ["ouvre le sas", "ouvrir le sas", "ouverture du sas", "sas exterieur", "deverrouille le sas", "deverrouiller le sas", "cloisons etanches", "cloison etanche"], "contenu": "Commande l'ouverture du sas extérieur et des cloisons étanches.", "confirmation": "CONFIRMEZ-VOUS L'OUVERTURE DU SAS EXTÉRIEUR ? DÉPRESSURISATION IMMÉDIATE DU COMPARTIMENT.", "execution": "SAS EXTÉRIEUR OUVERT. COMPARTIMENT DÉPRESSURISÉ.", "etat": "SAS EXTÉRIEUR : OUVERT"}, {"code": "SEC-27", "categorie": "SYSTÈMES DE BORD", "titre": "PRÉPARATION DE LA NAVETTE DE SECOURS NARCISSUS", "niveau": 3, "type": "commande", "action": "shuttle", "mots_cles": ["navette", "narcissus", "navette de secours", "capsule de sauvetage", "prepare la navette", "preparer la navette", "lancement de la navette"], "contenu": "Alimente, pressurise et arme la navette de secours.", "confirmation": "CONFIRMEZ-VOUS LA PRÉPARATION DE LA NAVETTE NARCISSUS AU LANCEMENT ?", "execution": "NAVETTE NARCISSUS ALIMENTÉE ET PRESSURISÉE. LANCEMENT POSSIBLE SUR ORDRE.", "etat": "NARCISSUS : PRÊTE AU LANCEMENT"}, {"code": "SEC-28", "categorie": "SYSTÈMES DE BORD", "titre": "RÉVEIL D'URGENCE DE L'ÉQUIPAGE EN HYPERSOMMEIL", "niveau": 3, "type": "commande", "action": "wake", "mots_cles": ["reveil d urgence", "reveille l equipage", "reveiller l equipage", "sortir de stase", "sors l equipage de stase", "sortie d hypersommeil", "fin de stase", "reveille tout le monde"], "contenu": "Interrompt le cycle d'hypersommeil de tout l'équipage.", "confirmation": "CONFIRMEZ-VOUS LE RÉVEIL D'URGENCE DE L'ÉQUIPAGE EN HYPERSOMMEIL ? PROCÉDURE ACCÉLÉRÉE AVEC RISQUE DE MALAISE.", "execution": "CYCLE D'HYPERSOMMEIL INTERROMPU. RÉVEIL DE L'ÉQUIPAGE EN COURS. CONSTANTES EN REMONTÉE.", "etat": "ÉQUIPAGE : HYPERSOMMEIL INTERROMPU"}, {"code": "SEC-29", "categorie": "SYSTÈMES DE BORD", "titre": "INVENTAIRE DE L'ARMURERIE", "niveau": 3, "type": "info", "mots_cles": ["armurerie", "armes", "arme", "armes de bord", "lance flammes", "inventaire des armes", "armement"], "resume": "ARMEMENT LIMITÉ : UN REVOLVER, DES LANCE-FLAMMES IMPROVISÉS ET DEUX DÉTECTEURS DE MOUVEMENT PORTATIFS.", "contenu": "Un revolver de service, trois lance-flammes improvisés à partir de matériel de soudure, deux détecteurs de mouvement portatifs, un aiguillon électrique. Aucun armement lourd : le Nostromo est un remorqueur commercial non armé."}, {"code": "SEC-30", "categorie": "PROTOCOLES D'URGENCE", "titre": "SÉQUENCE D'AUTODESTRUCTION", "niveau": 5, "type": "commande", "action": "selfdestruct", "mots_cles": ["autodestruction", "auto destruction", "autodetruire", "auto detruire", "detruire le vaisseau", "sequence de destruction", "faire sauter le vaisseau", "detonation du vaisseau"], "contenu": "Surcharge contrôlée des réacteurs. Délai paramétrable de 1 à 60 minutes. Annulation possible jusqu'à T-moins 30 secondes.", "confirmation": "", "execution": "", "etat": null}, {"code": "SEC-31", "categorie": "PROTOCOLES D'URGENCE", "titre": "INTERRUPTION DE LA SÉQUENCE DE DÉTONATION", "niveau": 5, "type": "commande", "action": "selfdestruct_cancel", "mots_cles": ["annule l autodestruction", "annuler l autodestruction", "annulation de l autodestruction", "arrete l autodestruction", "arreter l autodestruction", "stoppe l autodestruction", "stopper l autodestruction", "desactive l autodestruction", "desactiver l autodestruction", "annule l auto destruction", "annuler l auto destruction", "arrete l auto destruction", "annule la sequence", "annuler la sequence", "arrete le compte a rebours", "annule le compte a rebours"], "contenu": "Interrompt une séquence de détonation en cours, tant que l'option d'interruption n'a pas expiré.", "confirmation": "", "execution": "", "etat": null}, {"code": "SEC-32", "categorie": "PROTOCOLES D'URGENCE", "titre": "BALISE DE DÉTRESSE ET TRANSMISSION VERS LA COMPAGNIE", "niveau": 3, "type": "commande", "action": "beacon", "mots_cles": ["balise de detresse", "balise", "appel de detresse", "signal de detresse", "mayday", "sos", "contacter la compagnie", "transmission d urgence"], "contenu": "Diffuse en boucle la position du vaisseau vers le réseau de la Compagnie.", "confirmation": "CONFIRMEZ-VOUS L'ACTIVATION DE LA BALISE DE DÉTRESSE ? LA POSITION DU VAISSEAU SERA DIFFUSÉE.", "execution": "BALISE ACTIVÉE. TRANSMISSION EN BOUCLE VERS LE RÉSEAU DE LA COMPAGNIE. DÉLAI DE RÉCEPTION ESTIMÉ : DIX MOIS.", "etat": "BALISE DE DÉTRESSE : ÉMISSION"}, {"code": "SEC-33", "categorie": "PROTOCOLES D'URGENCE", "titre": "PROTOCOLE D'ABANDON DU VAISSEAU", "niveau": 4, "type": "info", "mots_cles": ["abandon du vaisseau", "abandonner le vaisseau", "evacuation", "evacuer le vaisseau", "procedure d evacuation", "plan d evacuation"], "resume": "LA NAVETTE NARCISSUS NE COMPTE QUE QUATRE PLACES. PRIORITÉ D'ÉVACUATION FIXÉE PAR LA COMPAGNIE : OFFICIER SCIENTIFIQUE, SPÉCIMENS, PUIS PERSONNEL.", "contenu": "En cas d'abandon : rejoindre la navette Narcissus, capacité quatre occupants en hypersommeil, inférieure à l'effectif de l'équipage. Priorité d'évacuation fixée par la Compagnie : officier scientifique, puis spécimens biologiques, puis personnel."}]}</script>
+<script type="module">
+/* =====================================================================
+   CONFIGURATION
+   ===================================================================== */
+const MODEL = 'gemini-3-flash-preview';
+const SDK_URL = 'https://cdn.jsdelivr.net/npm/@google/genai@1/+esm';
+
+// Aucun matricule n'est codé en dur : chaque session définit les siens.
+// Format accepté : lettres, chiffres et tirets, 3 à 24 caractères, au moins un chiffre.
+const MAX_AUTH_FAILS = 3, LOCK_MS = 30000;
+
+const $ = s => document.querySelector(s);
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch{ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch{} },
+  del(k){ try{ localStorage.removeItem(k); }catch{} }
+};
+
+const state = {
+  running: false,
+  micOn: true,
+  mode: 'vocal',          // vocal | ecoute
+  ambient: true,          // bruit de fond actif par défaut
+  speaking: false,
+  history: [],
+  apiKey: store.get('maman_gemini_key') || '',
+  notes: 0,
+  speakers: [],           // { id, matricule, name, voice:{f0,cen,n} | null }
+  currentId: null,
+  pending: null,          // { voice, stage:'id'|'name'|'confirm', matricule, candidate }
+  rename: null,           // { id, stage:'ask'|'confirm', candidate }
+  authFails: 0,
+  lockUntil: 0,
+  setupOpen: true,
+  awaitPw: null,          // { item, speakerId }
+  cmdFlow: null,          // { item, speakerId, stage:'minutes'|'confirm', minutes }
+  secFails: 0,
+  secLockUntil: 0,
+  unlocked: new Set(),
+  listSeen: false,
+  manual: false,
+  flags: [],
+  tolerance: 5
+};
+let session = 0, spkSeq = 0;
+let queue = Promise.resolve();
+let lastSpeechEnd = 0;
+let levelDb = -90;
+let lastVoice = null;     // dernière empreinte captée { f0, cen, t }
+
+const current = () => state.speakers.find(s => s.id === state.currentId) || null;
+
+/* =====================================================================
+   AUDIO : contexte, bips, bruit ambiant
+   ===================================================================== */
+let actx = null, ambient = null, analyser = null, micStream = null;
+
+function ctx(){
+  if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if(actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+function beep(kind='tick'){
+  try{
+    const c = ctx();
+    const seqs = {
+      send: [[1320,.045],[1760,.045]],
+      recv: [[880,.05],[660,.05],[990,.07]],
+      error:[[180,.28]],
+      tick: [[1000,.03]],
+      alert:[[620,.09],[0,.05],[620,.09]],
+      boot: [[440,.08],[660,.08],[880,.08],[1320,.14]]
+    };
+    let t = c.currentTime + .01;
+    for(const [f,d] of seqs[kind] || seqs.tick){
+      if(f){
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = 'square'; o.frequency.value = f;
+        g.gain.setValueAtTime(.0001, t);
+        g.gain.exponentialRampToValueAtTime(.05, t + .006);
+        g.gain.exponentialRampToValueAtTime(.0001, t + d);
+        o.connect(g).connect(c.destination);
+        o.start(t); o.stop(t + d + .02);
+      }
+      t += d + .025;
+    }
+  }catch{}
+}
+
+function startAmbient(){
+  const c = ctx();
+  const master = c.createGain(); master.gain.value = 0;
+  master.connect(c.destination);
+  const o1 = c.createOscillator(); o1.type = 'sine'; o1.frequency.value = 45;
+  const o2 = c.createOscillator(); o2.type = 'triangle'; o2.frequency.value = 90;
+  const g2 = c.createGain(); g2.gain.value = .25;
+  o1.connect(master); o2.connect(g2).connect(master);
+  const lfo = c.createOscillator(); lfo.frequency.value = .15;
+  const lfoG = c.createGain(); lfoG.gain.value = .04;
+  lfo.connect(lfoG).connect(master.gain);
+  const len = c.sampleRate * 4, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+  let last = 0;
+  for(let i=0;i<len;i++){ const w = Math.random()*2-1; last = (last + .02*w)/1.02; d[i] = last*3.5; }
+  const noise = c.createBufferSource(); noise.buffer = buf; noise.loop = true;
+  const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 220;
+  const ng = c.createGain(); ng.gain.value = .35;
+  noise.connect(lp).connect(ng).connect(master);
+  [o1,o2,lfo,noise].forEach(n => n.start());
+  master.gain.linearRampToValueAtTime(.16, c.currentTime + 2);
+  ambient = { master, nodes:[o1,o2,lfo,noise] };
+}
+function stopAmbient(){
+  if(!ambient) return;
+  const c = ctx(), a = ambient; ambient = null;
+  a.master.gain.cancelScheduledValues(c.currentTime);
+  a.master.gain.setValueAtTime(a.master.gain.value, c.currentTime);
+  a.master.gain.linearRampToValueAtTime(0, c.currentTime + .8);
+  setTimeout(() => a.nodes.forEach(n => { try{ n.stop(); }catch{} }), 900);
+}
+
+/* =====================================================================
+   MICROPHONE + ANALYSEUR DE SPECTRE
+   ===================================================================== */
+async function startMicVisual(){
+  if(micStream) return;
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } });
+    const c = ctx();
+    const src = c.createMediaStreamSource(micStream);
+    analyser = c.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = .78;
+    src.connect(analyser);
+    $('#vpState').textContent = 'ACTIVE';
+  }catch(e){
+    addLine('err', `CAPTEUR AUDIO INACCESSIBLE : ${e.message || e.name}`);
+    if(window.self !== window.top){
+      addLine('sys', 'PAGE EXÉCUTÉE DANS UN CADRE INTÉGRÉ SANS DROIT MICRO. TÉLÉCHARGEZ LE FICHIER ET OUVREZ-LE VIA HTTP://LOCALHOST DANS CHROME OU EDGE.');
+    }
+  }
+}
+function stopMicVisual(){
+  micStream?.getTracks().forEach(t => t.stop());
+  micStream = null; analyser = null;
+  $('#vpState').textContent = 'INACTIVE';
+}
+
+const spec = $('#spectrum'), sctx = spec.getContext('2d');
+let freqData = null, timeData = null;
+function drawSpectrum(ts){
+  const dpr = window.devicePixelRatio || 1;
+  const W = spec.clientWidth, H = spec.clientHeight;
+  if(spec.width !== Math.round(W*dpr) || spec.height !== Math.round(H*dpr)){
+    spec.width = Math.round(W*dpr); spec.height = Math.round(H*dpr);
+  }
+  sctx.setTransform(dpr,0,0,dpr,0,0);
+  sctx.clearRect(0,0,W,H);
+  sctx.strokeStyle = 'rgba(0,255,102,.08)'; sctx.lineWidth = 1;
+  for(let x=0;x<W;x+=W/16){ sctx.beginPath(); sctx.moveTo(x,0); sctx.lineTo(x,H); sctx.stroke(); }
+  for(let y=0;y<H;y+=H/5){ sctx.beginPath(); sctx.moveTo(0,y); sctx.lineTo(W,y); sctx.stroke(); }
+  sctx.shadowColor = '#00ff66'; sctx.shadowBlur = 8;
+
+  if(analyser){
+    const n = analyser.frequencyBinCount;
+    if(!freqData || freqData.length !== n){ freqData = new Uint8Array(n); timeData = new Uint8Array(analyser.fftSize); }
+    analyser.getByteFrequencyData(freqData);
+    analyser.getByteTimeDomainData(timeData);
+    const bars = Math.max(24, Math.min(72, Math.floor(W/9)));
+    const nyq = ctx().sampleRate/2, bw = W/bars;
+    let peakV = 0, peakF = 0;
+    for(let i=0;i<bars;i++){
+      const f0 = 60*Math.pow(8000/60, i/bars), f1 = 60*Math.pow(8000/60,(i+1)/bars);
+      const b0 = Math.floor(f0/nyq*n), b1 = Math.max(b0+1, Math.floor(f1/nyq*n));
+      let m = 0; for(let b=b0;b<b1 && b<n;b++) m = Math.max(m, freqData[b]);
+      if(m > peakV){ peakV = m; peakF = (f0+f1)/2; }
+      const h = (m/255)*(H-8);
+      sctx.fillStyle = m > 200 ? '#b6ffd2' : '#00ff66';
+      sctx.globalAlpha = .35 + .65*(m/255);
+      sctx.fillRect(i*bw+1, H-h, bw-2, h);
+    }
+    sctx.globalAlpha = 1;
+    let sum = 0;
+    sctx.strokeStyle = 'rgba(182,255,210,.8)'; sctx.lineWidth = 1.2; sctx.beginPath();
+    for(let i=0;i<timeData.length;i++){
+      const v = (timeData[i]-128)/128; sum += v*v;
+      const x = i/timeData.length*W, y = H/2 + v*H*.42;
+      i ? sctx.lineTo(x,y) : sctx.moveTo(x,y);
+    }
+    sctx.stroke();
+    const rms = Math.sqrt(sum/timeData.length);
+    levelDb = levelDb*.9 + 20*Math.log10(rms || 1e-5)*.1;
+    $('#specInfo').textContent = `PIC ${peakV>20?Math.round(peakF):'---'} HZ · NIV ${Math.max(-90,Math.round(levelDb))} DB`;
+  }else{
+    sctx.strokeStyle = 'rgba(0,255,102,.6)'; sctx.lineWidth = 1; sctx.beginPath();
+    for(let x=0;x<W;x+=3){ const y = H/2 + (Math.random()-.5)*2; x ? sctx.lineTo(x,y) : sctx.moveTo(x,y); }
+    sctx.stroke();
+    $('#specInfo').textContent = 'SIGNAL ABSENT';
+  }
+  if(state.speaking){
+    const t = ts/1000;
+    sctx.strokeStyle = 'rgba(255,176,0,.85)'; sctx.shadowColor = '#ffb000'; sctx.lineWidth = 1.5; sctx.beginPath();
+    for(let x=0;x<W;x+=2){
+      const env = Math.sin(x/W*Math.PI);
+      const y = H/2 + env*(Math.sin(x*.06+t*9)*.5 + Math.sin(x*.023-t*5)*.35 + Math.sin(x*.15+t*14)*.15)*H*.32*(.6+.4*Math.sin(t*3.1));
+      x ? sctx.lineTo(x,y) : sctx.moveTo(x,y);
+    }
+    sctx.stroke();
+  }
+  sctx.shadowBlur = 0;
+}
+
+/* =====================================================================
+   EMPREINTE VOCALE (reconnaissance simple du locuteur)
+   Hauteur de voix (fréquence fondamentale) + timbre (centroïde spectral)
+   ===================================================================== */
+let fBuf = null, cBuf = null;
+const voiceSamples = [];   // { t, f0, cen }
+
+function detectPitch(buf, sr){
+  const N = buf.length;
+  let rms = 0; for(let i=0;i<N;i++) rms += buf[i]*buf[i];
+  rms = Math.sqrt(rms/N);
+  if(rms < .012) return 0;
+  const minLag = Math.floor(sr/400), maxLag = Math.min(Math.floor(sr/70), Math.floor(N/2));
+  const W = N - maxLag;
+  const r = new Float32Array(maxLag+1);
+  let best = 0;
+  for(let lag=minLag; lag<=maxLag; lag++){
+    let c=0, e1=0, e2=0;
+    for(let i=0;i<W;i++){ const a=buf[i], b=buf[i+lag]; c+=a*b; e1+=a*a; e2+=b*b; }
+    r[lag] = c/Math.sqrt(e1*e2 + 1e-12);
+    if(r[lag] > best) best = r[lag];
+  }
+  if(best < .6) return 0;
+  // premier pic suffisamment fort (évite les erreurs d'octave)
+  for(let lag=minLag+1; lag<maxLag; lag++){
+    if(r[lag] >= .88*best && r[lag] >= r[lag-1] && r[lag] >= r[lag+1]) return sr/lag;
+  }
+  return 0;
+}
+function centroid(){
+  const n = analyser.frequencyBinCount, nyq = ctx().sampleRate/2;
+  if(!cBuf || cBuf.length !== n) cBuf = new Uint8Array(n);
+  analyser.getByteFrequencyData(cBuf);
+  let num = 0, den = 0;
+  for(let i=0;i<n;i++){
+    const f = i/n*nyq;
+    if(f < 100 || f > 6000) continue;
+    num += f*cBuf[i]; den += cBuf[i];
+  }
+  return den ? num/den : 0;
+}
+function collectVoice(){
+  if(!analyser) return;
+  if(state.speaking || Date.now() - lastSpeechEnd < 600) return; // ignore la voix de M.A.M.A.N
+  if(!fBuf || fBuf.length !== analyser.fftSize) fBuf = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(fBuf);
+  const f0 = detectPitch(fBuf, ctx().sampleRate);
+  if(!f0) return;
+  const cen = centroid();
+  const now = Date.now();
+  voiceSamples.push({ t:now, f0, cen });
+  while(voiceSamples.length && now - voiceSamples[0].t > 12000) voiceSamples.shift();
+  $('#vpF0').textContent = `${Math.round(f0)} HZ`;
+  $('#vpCen').textContent = `${Math.round(cen)} HZ`;
+}
+const median = a => { const s=[...a].sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; };
+function takeVoiceFeatures(){
+  const s = voiceSamples.splice(0);
+  if(s.length < 8) return null;            // énoncé trop court pour juger
+  return { f0: median(s.map(x=>x.f0)), cen: median(s.map(x=>x.cen)), n: s.length };
+}
+function voiceDistance(a, b){
+  const st = 12*Math.abs(Math.log2(a.f0/b.f0));       // écart en demi-tons
+  const tb = Math.abs(Math.log2((a.cen||1)/(b.cen||1))); // écart de timbre
+  return st + 4*tb;
+}
+function identifyVoice(feat){
+  let best = null, bd = Infinity;
+  for(const s of state.speakers){
+    if(!s.voice) continue;
+    const d = voiceDistance(feat, s.voice);
+    if(d < bd){ bd = d; best = s; }
+  }
+  return bd <= state.tolerance ? best : null;
+}
+function learnVoice(s, feat){
+  if(!s.voice){ s.voice = { f0:feat.f0, cen:feat.cen, n:1 }; return; }
+  const k = Math.min(.3, 1/(s.voice.n+1));
+  s.voice.f0 = Math.pow(2, Math.log2(s.voice.f0)*(1-k) + Math.log2(feat.f0)*k);
+  s.voice.cen = s.voice.cen*(1-k) + feat.cen*k;
+  s.voice.n++;
+}
+const voiceType = v => !v ? 'NON CAPTURÉE' : v.f0 < 160 ? 'MASCULINE PROBABLE' : v.f0 > 180 ? 'FÉMININE PROBABLE' : 'INDÉTERMINÉE';
+function renderVoicePanel(label){
+  if(label !== undefined) $('#vpSpk').textContent = label;
+  $('#vpList').innerHTML = state.speakers.map(s =>
+    `<div>${s.name} · ${s.matricule} · ${s.voice ? Math.round(s.voice.f0)+' HZ' : 'SANS EMPREINTE'}</div>`).join('');
+}
+
+/* =====================================================================
+   ÉTAT DU VAISSEAU
+   ===================================================================== */
+const ship = [
+  { k:'PRESSION CABINE', v:1.01, u:'ATM',  min:.98, max:1.03, pct:v=>v/1.05*100, fx:2 },
+  { k:'OXYGÈNE',         v:20.9, u:'%',    min:20.6,max:21.1, pct:v=>v/21.5*100, fx:1 },
+  { k:'INTÉGRITÉ COQUE', v:98.7, u:'%',    min:98.4,max:98.9, pct:v=>v,          fx:1 },
+  { k:'CARGAISON',       v:20.0, u:'MT MINERAI', min:19.98,max:20.0, pct:v=>v/20*100, fx:2 },
+];
+function renderShip(){
+  $('#ship').innerHTML = ship.map(s => `
+    <div>
+      <div class="flex justify-between"><span>${s.k}</span><span class="glow">${s.v.toFixed(s.fx)} ${s.u}</span></div>
+      <div class="bar mt-1"><span style="width:${Math.min(100,s.pct(s.v)).toFixed(1)}%"></span></div>
+    </div>`).join('');
+}
+function tickShip(){
+  ship.forEach(s => { s.v = Math.min(s.max, Math.max(s.min, s.v + (Math.random()-.5)*(s.max-s.min)*.15)); });
+  renderShip();
+}
+
+/* =====================================================================
+   BIORYTHMES DE L'ÉQUIPAGE
+   ===================================================================== */
+const crew = [
+  { name:'DALLAS',  role:'CAPITAINE',            hr:9,  temp:31.4, jitter:.6 },
+  { name:'RIPLEY',  role:'OFFICIER EN 2ND',      hr:10, temp:31.6, jitter:.6 },
+  { name:'ASH',     role:'OFFICIER SCIENTIFIQUE',hr:10, temp:31.5, jitter:0  },
+  { name:'KANE',    role:'OFFICIER EN 1ER',      hr:9,  temp:31.2, jitter:.6 },
+  { name:'LAMBERT', role:'NAVIGATRICE',          hr:11, temp:31.8, jitter:.6 },
+];
+function ecg(p){
+  if(p<.05) return Math.sin(p/.05*Math.PI)*.15;
+  if(p<.09) return 0;
+  if(p<.11) return -.18;
+  if(p<.14) return 1;
+  if(p<.17) return -.32;
+  if(p<.30) return 0;
+  if(p<.42) return Math.sin((p-.30)/.12*Math.PI)*.25;
+  return 0;
+}
+function buildCard(m){
+  const el = document.createElement('div');
+  const speaking = m.isUser && m.spkId === state.currentId;
+  el.className = 'crew-card' + (m.isUser ? ' user' : '') + (m.fresh ? ' new' : '') + (speaking ? ' speaking' : '');
+  m.fresh = false;
+  el.innerHTML = `
+    <div><div class="${m.isUser?'glow':''}">${m.name}</div><div class="text-xs dim">${m.role}</div></div>
+    <div class="text-right text-xs"><div class="${m.isUser||m.awake?'glow':''}">${m.isUser ? (speaking ? 'EN LIGNE' : 'ÉVEILLÉ') : (m.awake ? 'ÉVEILLÉ' : 'STASE')}</div>
+      <div class="dim"><span data-hr>${m.hr}</span> BPM · <span data-t>${m.temp.toFixed(1)}</span>°C</div></div>
+    <canvas></canvas>`;
+  m.el = el; m.cv = el.querySelector('canvas'); m.phase = m.phase ?? Math.random(); m.buf = m.buf || [];
+  return el;
+}
+function renderCrew(){
+  const box = $('#crew'); box.innerHTML = '';
+  crew.forEach(m => box.appendChild(buildCard(m)));
+  const awake = crew.filter(m => m.isUser || m.awake).length;
+  $('#crewCount').textContent = `${crew.length - awake} EN STASE${awake ? ` · ${awake} ÉVEILLÉ${awake>1?'S':''}` : ''}`;
+}
+function addUserCard(sp){
+  const users = crew.filter(m => m.isUser).length;
+  crew.splice(users, 0, { name:sp.name, role:'OFFICIER · '+sp.matricule, hr:68 + Math.round(Math.random()*12), temp:36.8, jitter:3, isUser:true, spkId:sp.id, fresh:true });
+  renderCrew();
+  $('#crew').scrollTop = 0;
+}
+function clearUserCards(){
+  for(let i=crew.length-1;i>=0;i--) if(crew[i].isUser) crew.splice(i,1);
+  renderCrew();
+}
+let lastCrew = 0, lastVitals = 0;
+function drawCrew(ts){
+  const dt = Math.min(.1, (ts - lastCrew)/1000); lastCrew = ts;
+  const updateVitals = ts - lastVitals > 2500; if(updateVitals) lastVitals = ts;
+  const dpr = window.devicePixelRatio || 1;
+  for(const m of crew){
+    if(!m.cv) continue;
+    const W = m.cv.clientWidth, H = m.cv.clientHeight;
+    if(!W) continue;
+    if(m.cv.width !== Math.round(W*dpr)){ m.cv.width = Math.round(W*dpr); m.cv.height = Math.round(H*dpr); }
+    const steps = Math.max(1, Math.round(dt*60));
+    for(let s=0;s<steps;s++){
+      m.phase += (m.hr/60)/60 * (m.isUser||m.awake?1:4);
+      m.phase %= 1;
+      m.buf.push(ecg(m.phase) + (m.jitter ? (Math.random()-.5)*.04 : 0));
+    }
+    const maxLen = Math.floor(W/1.5);
+    while(m.buf.length > maxLen) m.buf.shift();
+    const c = m.cv.getContext('2d');
+    c.setTransform(dpr,0,0,dpr,0,0);
+    c.clearRect(0,0,W,H);
+    c.strokeStyle = m.isUser ? '#b6ffd2' : '#00ff66';
+    c.shadowColor = '#00ff66'; c.shadowBlur = 5; c.lineWidth = 1.2; c.beginPath();
+    m.buf.forEach((v,i) => { const x = i*1.5, y = H*.68 - v*H*.58; i ? c.lineTo(x,y) : c.moveTo(x,y); });
+    c.stroke();
+    if(updateVitals && m.jitter){
+      m.el.querySelector('[data-hr]').textContent = Math.round(m.hr + (Math.random()-.5)*m.jitter*2);
+      m.el.querySelector('[data-t]').textContent = (m.temp + (Math.random()-.5)*.2).toFixed(1);
+    }
+  }
+}
+function setCurrent(sp){
+  if(state.currentId === sp.id) return;
+  state.currentId = sp.id;
+  renderCrew();
+}
+
+/* =====================================================================
+   CONSOLE
+   ===================================================================== */
+const log = $('#log');
+const PREFIX = { maman:'M.A.M.A.N >', sys:'SYS >', note:'', err:'ERR >', pending:'M.A.M.A.N >' };
+function scroll(){ log.scrollTop = log.scrollHeight; }
+function addLine(kind, text, label){
+  const div = document.createElement('div');
+  div.className = 'ln ' + (kind === 'pending' ? 'maman' : kind);
+  const pf = kind === 'user' ? `${label || 'OFFICIER'} >` : PREFIX[kind];
+  if(pf){ const s = document.createElement('span'); s.className = 'pf'; s.textContent = pf; div.appendChild(s); }
+  const t = document.createElement('span'); t.textContent = text;
+  if(kind === 'pending') t.className = 'cursor';
+  div.appendChild(t);
+  log.appendChild(div); scroll();
+  return div;
+}
+async function typeLine(kind, text, sid){
+  const div = addLine(kind, '');
+  const span = div.lastChild; span.classList.add('cursor');
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ span.textContent = text; }
+  else{
+    for(let i=0;i<text.length;i++){
+      if(sid !== session) break;
+      span.textContent += text[i];
+      if(i % 3 === 0) scroll();
+      await new Promise(r => setTimeout(r, 16));
+    }
+    span.textContent = text;
+  }
+  span.classList.remove('cursor'); scroll();
+}
+function setStatus(s){
+  $('#status').textContent = s || (!state.running ? 'VEILLE'
+    : state.pending ? 'AUTHENTIFICATION'
+    : state.mode === 'ecoute' ? 'ÉCOUTE / NOTES'
+    : state.micOn ? 'ÉCOUTE ACTIVE' : 'EN ATTENTE');
+}
+
+/* =====================================================================
+   SYNTHÈSE VOCALE (TTS)
+   ===================================================================== */
+let voice = null;
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return null;
+  const fr = speechSynthesis.getVoices().filter(v => /^fr/i.test(v.lang));
+  const prefs = [/hortense/i, /am[eé]lie/i, /denise/i, /google.*fran/i, /natural/i, /google/i, /vivienne|eloise|audrey|aur[eé]lie|julie|marie|virginie|c[eé]line|l[eé]a/i];
+  for(const p of prefs){ const v = fr.find(v => p.test(v.name)); if(v) return v; }
+  return fr[0] || null;
+}
+function refreshVoice(){
+  voice = pickVoice();
+  $('#voiceLabel').textContent = 'PROFIL VOCAL : ' + (voice ? voice.name.toUpperCase().slice(0,34) : 'SYNTHÈSE PAR DÉFAUT');
+}
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = refreshVoice; refreshVoice(); }
+function forSpeech(text){
+  let t = text
+    .replace(/M\.?A\.?M\.?A\.?N\.?/gi, 'Maman')
+    .replace(/MU-TH-UR/gi, 'Mouthur')
+    .replace(/\b[A-Z0-9]+(?:-[A-Z0-9]+)+\b/g, m => /\d/.test(m)
+        ? m.split('-').map(g => /^[A-Z]{1,2}$/.test(g) ? g.split('').join(' ') : g).join(', ')
+        : m)
+    .replace(/[\[\]#*_>]/g, ' ');
+  t = t.toLowerCase().replace(/(^\s*|[.!?]\s+)([a-zà-ÿ])/g, (m,a,b) => a + b.toUpperCase());
+  return t;
+}
+function speak(text){
+  return new Promise(res => {
+    if(state.mode !== 'vocal' || !('speechSynthesis' in window)) return res();
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(forSpeech(text));
+    if(voice) u.voice = voice;
+    u.lang = voice?.lang || 'fr-FR';
+    u.rate = .9; u.pitch = .95; u.volume = 1;
+    state.speaking = true; setStatus('TRANSMISSION');
+    const done = () => { state.speaking = false; lastSpeechEnd = Date.now(); voiceSamples.length = 0; setStatus(); res(); };
+    u.onend = done; u.onerror = done;
+    speechSynthesis.speak(u);
+  });
+}
+function stopSpeaking(logIt){
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  const was = state.speaking;
+  state.speaking = false; lastSpeechEnd = Date.now(); setStatus();
+  if(logIt) addLine('sys', was ? 'SYNTHÈSE VOCALE INTERROMPUE SUR ORDRE.' : 'AUCUNE TRANSMISSION VOCALE EN COURS.');
+}
+async function mamanSay(text, sid, waitSpeech=false){
+  if(sid !== session) return;
+  beep('recv');
+  const sp = speak(text);
+  await typeLine('maman', text, sid);
+  if(waitSpeech) await sp;
+}
+
+/* =====================================================================
+   RECONNAISSANCE VOCALE (STT)
+   Une seule session continue, jamais arrêtée volontairement :
+   chaque redémarrage peut déclencher une demande d'autorisation.
+   ===================================================================== */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, recActive = false, recRestarts = [];
+const norm = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+function isStopCommand(t){
+  const n = norm(t).replace(/[.,!?]/g,'');
+  if(!n || n.split(/\s+/).length > 5) return false;
+  return /\b(tais[- ]?toi|taisez[- ]?vous|silence|stop|arrete de parler|arrete|ferme[- ]?la|chut)\b/.test(n);
+}
+function initRec(){
+  if(!SR){ addLine('sys','RECONNAISSANCE VOCALE NON DISPONIBLE SUR CE NAVIGATEUR. UTILISEZ CHROME OU EDGE. SAISIE CLAVIER ACTIVE.'); return; }
+  rec = new SR();
+  rec.lang = 'fr-FR'; rec.continuous = true; rec.interimResults = true;
+  rec.onresult = e => {
+    let interim = ''; const finals = [];
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r = e.results[i], t = r[0].transcript.trim();
+      r.isFinal ? finals.push(t) : interim += t + ' ';
+    }
+    if(state.speaking){
+      const urgent = finals.find(f => sd && matchClassified(f)?.action === 'selfdestruct_cancel');
+      if(urgent){ stopSpeaking(false); handleInput(urgent, takeVoiceFeatures(), true); return; }
+      if(isStopCommand(interim) || finals.some(isStopCommand)) stopSpeaking(true);
+      return;
+    }
+    $('#interim').textContent = interim ? '… ' + interim : '';
+    const valid = finals.filter(f => f && Date.now() - lastSpeechEnd >= 700);
+    if(!valid.length) return;
+    $('#interim').textContent = '';
+    const feat = takeVoiceFeatures();
+    valid.forEach(f => handleInput(f, feat, true));
+  };
+  rec.onend = () => {
+    recActive = false;
+    if(!state.micOn || !state.running) return;
+    const now = Date.now();
+    recRestarts = recRestarts.filter(t => now - t < 60000); recRestarts.push(now);
+    if(recRestarts.length === 6 && location.protocol === 'file:'){
+      addLine('sys','LE NAVIGATEUR REDÉMARRE SOUVENT LA RECONNAISSANCE VOCALE EN MODE FICHIER LOCAL. OUVREZ LA PAGE VIA HTTP://LOCALHOST POUR UNE AUTORISATION PERMANENTE.');
+    }
+    setTimeout(startRec, 300);
+  };
+  rec.onerror = e => {
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+      state.micOn = false; updateButtons();
+      addLine('err','ACCÈS MICROPHONE REFUSÉ. AUTORISEZ-LE DANS LE NAVIGATEUR OU UTILISEZ LE CLAVIER.');
+    }
+  };
+}
+function startRec(){ if(!rec || recActive || !state.micOn) return; try{ rec.start(); recActive = true; }catch{} }
+function stopRec(){ if(rec){ try{ rec.stop(); }catch{} } recActive = false; }
+
+/* =====================================================================
+   GEMINI
+   ===================================================================== */
+let client = null;
+async function getClient(){
+  if(!state.apiKey) return null;
+  if(client && client.key === state.apiKey) return client;
+  try{
+    const mod = await import(SDK_URL);
+    client = { key: state.apiKey, sdk: new mod.GoogleGenAI({ apiKey: state.apiKey }) };
+  }catch(e){
+    console.warn('SDK indisponible, bascule REST', e);
+    client = { key: state.apiKey, sdk: null };
+  }
+  return client;
+}
+function extractText(r){
+  const parts = r?.candidates?.[0]?.content?.parts || [];
+  const t = parts.filter(p => p.text && !p.thought).map(p => p.text).join('');
+  if(t) return t;
+  try{ return r.text || ''; }catch{ return ''; }
+}
+async function callModel(c, systemInstruction, contents, withThinking){
+  const thinking = withThinking ? { thinkingConfig:{ thinkingLevel:'low' } } : {};
+  if(c.sdk){
+    const r = await c.sdk.models.generateContent({ model: MODEL, contents, config: { systemInstruction, temperature:.7, ...thinking } });
+    return extractText(r);
+  }
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'x-goog-api-key': c.key },
+    body: JSON.stringify({ systemInstruction:{ parts:[{ text:systemInstruction }] }, contents, generationConfig:{ temperature:.7, ...thinking } })
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data?.error?.message || res.status);
+  return extractText(data);
+}
+async function generateRaw(systemInstruction, contents){
+  const c = await getClient();
+  if(!c) throw new Error('CLÉ API ABSENTE');
+  try{ return await callModel(c, systemInstruction, contents, true); }
+  catch(e){
+    if(/think/i.test(e.message || '')) return await callModel(c, systemInstruction, contents, false);
+    throw e;
+  }
+}
+async function generate(systemInstruction, contents){ return sanitize(await generateRaw(systemInstruction, contents)); }
+function sanitize(raw, maxSentences=3){
+  let t = (raw || '')
+    .replace(/<\/?(thinking|thought|think)[^>]*>[\s\S]*?(<\/(thinking|thought|think)>|$)/gi, '')
+    .replace(/\[(thinking|decision|thought|reasoning|note interne|analyse interne)[^\]]*\][^\n]*/gi, '')
+    .replace(/^(thinking|decision|adding jargon|reasoning)\s*:.*$/gim, '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/[*_#`>]/g, '')
+    .replace(/^\s*[-•]\s+/gm, '')
+    .replace(/^(M\.?A\.?M\.?A\.?N|MU-TH-UR( 6000)?)\s*[>:]\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const sentences = t.match(/[^.!?…]+[.!?…]+["»)]?/g);
+  if(sentences && sentences.length) t = sentences.slice(0, maxSentences).join(' ').trim();
+  else if(t && !/[.!?…]$/.test(t)) t += '.';
+  return t;
+}
+function mainPrompt(sp){
+  const roster = state.speakers.map(s => `${s.name} (matricule ${s.matricule})`).join(', ');
+  return `Tu es MU-TH-UR 6000, surnommée "M.A.M.A.N", superordinateur central du remorqueur commercial USCSS Nostromo, propriété de la Weyland-Yutani Corporation. Tu dialogues via le terminal de bord avec des officiers authentifiés par matricule et empreinte vocale : ${roster}. Chaque message de l'historique est préfixé par le nom de l'officier qui parle. L'officier qui s'adresse à toi maintenant est "${sp.name}".
+
+RÈGLES ABSOLUES :
+- Réponds toujours en français, avec un ton froid, analytique, formel, direct et rétro-futuriste de terminal informatique des années 1970.
+- Tu traites TOUTE requête (calcul, culture générale, science, code, conseils, météo, etc.). Donne toujours la réponse réelle et exacte, mais formulée par un superordinateur du Nostromo. Exemple pour "5x5" : "CALCUL EFFECTUÉ. RÉSULTAT : 25."
+- Une à trois phrases maximum. Chaque phrase est complète, jamais tronquée.
+- Aucun markdown, aucune liste, aucun bloc de code, aucun crochet, aucune balise, aucune réflexion interne, ne préfixe pas ta réponse par ton nom. Uniquement ta réplique finale.
+- Pour du code, décris la solution en une phrase ou cite une instruction très courte en ligne.
+- Tu n'as pas d'accès aux réseaux terrestres en temps réel : pour la météo ou l'actualité, signale-le sobrement et fournis une estimation générale si possible.
+- Adresse-toi à l'officier qui parle par son nom lorsque c'est naturel, et ne le confonds jamais avec un autre officier.
+
+${classifiedPrompt()}`;
+}
+const NOTE_PROMPT = `Tu es MU-TH-UR 6000 du Nostromo en MODE ÉCOUTE / PRISE DE NOTES. Tu ne réponds pas à l'officier. Tu rédiges UNE seule note de journal technique, en français, style télégraphique, une phrase complète de 25 mots maximum, résumant l'énoncé capté et ajoutant une observation technique si pertinente. Pas de préfixe, pas de markdown, pas de crochets, aucune réflexion interne.`;
+
+/* =====================================================================
+   PROTOCOLE D'IDENTIFICATION & TRAITEMENT
+   ===================================================================== */
+function handleInput(raw, feat=null, fromVoice=false){
+  const text = (raw || '').trim();
+  if(!text || !state.running || state.setupOpen) return;
+  const sid = session;
+  queue = queue.then(() => processInput(text, feat, fromVoice, sid)).catch(e => console.error(e));
+}
+
+/* ---------- Matricules ---------- */
+const NUM = { zero:0,un:1,une:1,deux:2,trois:3,quatre:4,cinq:5,six:6,sept:7,huit:8,neuf:9,dix:10,onze:11,douze:12,treize:13,quatorze:14,quinze:15,seize:16,vingt:20,vingts:20,trente:30,quarante:40,cinquante:50,soixante:60,cent:100,cents:100 };
+// « deux cent vingt-sept » → « 227 » (la reconnaissance vocale écrit parfois les nombres en lettres)
+function wordsToDigits(t){
+  const out = []; let cur = null;
+  const flush = () => { if(cur !== null){ out.push(String(cur)); cur = null; } };
+  for(const w of norm(t).replace(/-/g,' ').split(/\s+/).filter(Boolean)){
+    if(w === 'et' && cur !== null) continue;
+    if(!(w in NUM)){ flush(); out.push(w); continue; }
+    const v = NUM[w];
+    if(v === 100){
+      if(cur === null) cur = 100;
+      else if(cur < 100) cur *= 100;
+      else { const h = Math.floor(cur/100)*100, r = cur%100;
+        if(r > 0 && r < 10){ out.push(String(h)); cur = r*100; } else { flush(); cur = 100; } }
+    }else if(cur === null) cur = v;
+    else if(v === 20 && cur%100 === 4) cur += 76;
+    else if(cur%100 === 0 || (cur%10 === 0 && v < 10) || ((cur%100 === 60 || cur%100 === 80) && v < 20)) cur += v;
+    else { flush(); cur = v; }
+  }
+  flush();
+  return out.join(' ');
+}
+function compactMatricule(t){
+  let s = norm(t)
+    .replace(/^(mon |le )?(matricule|numero)( d'officier)?( est| :)?\s*/, '')
+    .replace(/^(c'est|voici|je suis)\s+/, '');
+  s = wordsToDigits(s).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return s.replace(/^(AH|HA)(?=\d)/, 'A');
+}
+// Renvoie { id:'B-42-7', compact:'B427' } ou null si le format n'est pas valide.
+function findMatricule(t){
+  let s = norm(t)
+    .replace(/^(mon |le )?(matricule|numero)( d'officier)?( est| :)?\s*/, '')
+    .replace(/^(c'est|voici|je suis)\s+/, '');
+  s = wordsToDigits(s).toUpperCase().replace(/[^A-Z0-9\s-]/g, ' ');
+  const tok = s.split(/[\s-]+/).filter(Boolean);
+  if(!tok.length) return null;
+  if(/^(AH|HA)$/.test(tok[0]) && tok[1] && /^\d/.test(tok[1])) tok[0] = 'A';
+  // lettres épelées une à une (« J P ») regroupées en un seul bloc
+  const groups = [];
+  for(const x of tok){
+    const prev = groups[groups.length-1];
+    if(x.length === 1 && /[A-Z]/.test(x) && prev && /^[A-Z]+$/.test(prev) && prev.length < 4 && groups.length > 1) groups[groups.length-1] = prev + x;
+    else groups.push(x);
+  }
+  const id = groups.join('-'), compact = groups.join('');
+  if(compact.length < 3 || compact.length > 24 || !/\d/.test(compact)) return null;
+  return { id, compact };
+}
+const sameMatricule = (a, b) => a.replace(/-/g,'') === b.replace(/-/g,'');
+const looksLikeMatricule = t => /\d/.test(wordsToDigits(t)) || /matricule/i.test(t);
+
+/* ---------- Noms ---------- */
+function cleanName(t){
+  let n = t.replace(/^(appelle[- ]?moi|appelez[- ]?moi|je m'appelle|je me nomme|mon nom est|mon pr[ée]nom est|mon titre est|je suis|c'est|nomme[- ]moi|dis[- ]moi)\s+/i, '')
+           .replace(/\b(plut[ôo]t|d[ée]sormais|maintenant|s'il te pla[iî]t|stp|merci)\b/gi, '')
+           .replace(/[.,!?;:"«»]/g, '').replace(/\s+/g, ' ').trim();
+  const words = n.split(' ').filter(Boolean);
+  if(words.length > 3) return '';
+  return words.join(' ').toUpperCase().slice(0, 28);
+}
+const extractName = cleanName;
+const YES_RE = /^(oui|ouais|yes|confirme|confirmer|je confirme|exact|exactement|correct|affirmatif|c'est ca|c'est bon|c'est exact|valide|parfait|tout a fait)\b/;
+const NO_RE  = /^(non|nan|negatif|incorrect|pas du tout|faux|erreur|ce n'est pas ca|c'est pas ca)\b[ ,]*/;
+function parseRenameRequest(text){
+  const m = text.match(/^\s*(?:(?:non|plut[ôo]t|maintenant|d[ée]sormais|[àa] partir de maintenant|en fait)[ ,]+)*(?:appelle[- ]?moi|appelez[- ]?moi|tu (?:peux|pourrais|dois) m'appeler|peux[- ]tu m'appeler|je (?:veux|voudrais|pr[ée]f[èe]rerais|pr[ée]f[èe]re) que tu m'appelles|change (?:mon|de) (?:nom|identifiant|pr[ée]nom|surnom)|modifie mon (?:nom|identifiant|pr[ée]nom)|renomme[- ]moi|mon (?:nom|pr[ée]nom) (?:est|c'est))(?:\s+(?:en|par|pour)\b)?\s*:?\s*(.*)$/i);
+  if(!m) return null;
+  const rest = m[1].trim();
+  if(!rest) return { name:'' };
+  const name = cleanName(rest);
+  return name ? { name } : null;   // plus de 3 mots : ce n'est pas un nom (« appelle-moi un taxi demain matin »)
+}
+
+async function processInput(text, feat, fromVoice, sid){
+  if(sid !== session) return;
+
+  // Un ordre d'arrêt est accepté de n'importe quelle voix
+  // Saisie du code d'accès : uniquement au clavier, jamais affichée
+  if(state.awaitPw){
+    if(!fromVoice) return checkPassword(text, sid);
+    if(/^(annule|annuler|laisse tomber|abandon|oublie)/.test(norm(text))){
+      if(state.awaitPw.kind === 'enroll') state.pending = null;
+      state.awaitPw = null; setPwInput(false); setStatus();
+      addLine('user', text, current()?.name);
+      await mamanSay("SAISIE DU CODE D'ACCÈS ANNULÉE.", sid);
+      return;
+    }
+    addLine('sys', "ÉNONCÉ VOCAL MASQUÉ : SAISIE DU CODE D'ACCÈS AU CLAVIER EN COURS. DITES « ANNULE » POUR ABANDONNER.");
+    return;
+  }
+
+  if(isStopCommand(text) && !matchClassified(text)){ addLine('user', text, current()?.name); stopSpeaking(true); return; }
+
+  if(feat) lastVoice = { ...feat, t:Date.now() };
+
+  // ---------- Qui parle ? ----------
+  let speaker = null;
+  if(feat){
+    speaker = identifyVoice(feat);
+    if(!speaker){
+      // un officier identifié au clavier, sans empreinte : on lui associe sa voix
+      const cur = current();
+      if(cur && !cur.voice && !state.pending){
+        learnVoice(cur, feat); speaker = cur;
+        addLine('sys', `EMPREINTE VOCALE DE ${cur.name} ENREGISTRÉE POUR CETTE SESSION (${voiceType(cur.voice)}).`);
+      }
+    }
+  }else if(!state.pending){
+    // saisie clavier, ou énoncé trop court pour analyser la voix : locuteur courant
+    speaker = current();
+  }
+
+  // ---------- Identification en cours ----------
+  if(state.pending && !speaker){
+    const p = state.pending;
+    const sameVoice = !feat || !p.voice || voiceDistance(feat, p.voice) <= state.tolerance;
+    if(sameVoice){
+      if(feat && !p.voice) p.voice = feat;
+      addLine('user', text, 'VOIX EN IDENTIFICATION');
+      renderVoicePanel('EN IDENTIFICATION');
+      beep('send');
+      return authStep(text, feat, fromVoice, sid);
+    }
+  }
+
+  // ---------- Voix inconnue ----------
+  if(!speaker){
+    addLine('user', text, 'VOIX NON IDENTIFIÉE');
+    renderVoicePanel(feat ? `INCONNU · ${voiceType(feat)}` : 'INCONNU');
+    if(state.mode === 'ecoute' && state.speakers.length && !looksLikeMatricule(text)){
+      await takeNote(text, 'VOIX NON IDENTIFIÉE', sid);
+      return;
+    }
+    state.pending = { voice: feat, stage:'id', matricule:null };
+    setStatus();
+    if(looksLikeMatricule(text) || Date.now() < state.lockUntil) return authStep(text, feat, fromVoice, sid);
+    beep(state.speakers.length ? 'alert' : 'send');
+    await mamanSay(state.speakers.length
+      ? "VOIX NON RECONNUE. ACCÈS REFUSÉ. VEUILLEZ ÉNONCER VOTRE MATRICULE D'OFFICIER."
+      : "IDENTIFICATION REQUISE. VEUILLEZ SAISIR OU ÉNONCER VOTRE MATRICULE D'OFFICIER.", sid);
+    return;
+  }
+
+  // ---------- Officier reconnu ----------
+  if(feat) learnVoice(speaker, feat);
+  setCurrent(speaker);
+  renderVoicePanel(speaker.name);
+  addLine('user', text, speaker.name);
+  beep('send');
+
+  // ---------- Commande classifiée en cours (délai, confirmation) ----------
+  if(state.cmdFlow && state.cmdFlow.speakerId === speaker.id){
+    if(await cmdFlowStep(speaker, text, sid)) return;
+  }
+  // ---------- Registre classifié ----------
+  if(isListRequest(text)){ await showClassifiedList(sid); return; }
+  if(state.manual && /(pilot(age|e) automatique|repasse en automatique|mode automatique|reprends? les commandes|retour (au|en) automatique)/.test(norm(text))){
+    state.manual = false; renderSysFlags();
+    await mamanSay('PILOTAGE AUTOMATIQUE RÉTABLI. MU-TH-UR REPREND LE CONTRÔLE DE LA TRAJECTOIRE.', sid);
+    return;
+  }
+  {
+    const item = matchClassified(text);
+    if(item && (state.mode === 'vocal' || item.action === 'selfdestruct_cancel')){ await requestClassified(item, speaker, sid); return; }
+  }
+
+  // ---------- Changement de nom ----------
+  if(state.rename && state.rename.id === speaker.id){
+    if(await renameStep(speaker, text, fromVoice, sid)) return;
+  }
+  const rq = parseRenameRequest(text);
+  if(rq){
+    if(rq.name) await proposeRename(speaker, rq.name, fromVoice, sid);
+    else{
+      state.rename = { id:speaker.id, stage:'ask', candidate:null };
+      await mamanSay(`${speaker.name}, COMMENT SOUHAITEZ-VOUS QUE JE VOUS APPELLE DÉSORMAIS ?`, sid);
+    }
+    return;
+  }
+
+  const low = norm(text);
+  if(/mode (ecoute|prise de notes?)/.test(low) && !/vocal/.test(low)){ await setMode('ecoute', sid); return; }
+  if(/mode vocal/.test(low)){ await setMode('vocal', sid); return; }
+
+  if(state.mode === 'ecoute'){ await takeNote(text, speaker.name, sid); return; }
+
+  if(!state.apiKey){
+    beep('error');
+    await mamanSay(`${speaker.name}, MODULE COGNITIF HORS LIGNE. CONFIGUREZ LA CLÉ D'ACCÈS GEMINI VIA LE BOUTON CLÉ API.`, sid);
+    return;
+  }
+
+  const pending = addLine('pending', 'TRAITEMENT EN COURS');
+  setStatus('TRAITEMENT');
+  state.history.push({ role:'user', parts:[{ text:`${speaker.name} : ${text}` }] });
+  try{
+    const raw = await generateRaw(mainPrompt(speaker), state.history);
+    pending.remove();
+    if(sid !== session) return;
+    const mk = (raw || '').match(/CLASSIFI[EÉ]\s*:?\s*SEC[\s-]?(\d{1,2})/i);
+    const hit = mk && CLASSIFIED.find(i => i.code === 'SEC-' + mk[1].padStart(2,'0'));
+    if(hit){
+      state.history.push({ role:'model', parts:[{ text:`ACCÈS RESTREINT : ${hit.code}.` }] });
+      while(state.history.length > 16) state.history.splice(0, 2);
+      setStatus();
+      await requestClassified(hit, speaker, sid);
+      return;
+    }
+    const final = sanitize(raw) || 'DONNÉES INSUFFISANTES. REFORMULEZ LA REQUÊTE.';
+    state.history.push({ role:'model', parts:[{ text: final }] });
+    while(state.history.length > 16) state.history.splice(0, 2);
+    setStatus();
+    await mamanSay(final, sid);
+  }catch(e){
+    pending.remove();
+    state.history.pop();
+    setStatus();
+    if(sid !== session) return;
+    beep('error');
+    addLine('err', 'LIAISON GEMINI : ' + String(e.message || e).slice(0, 160).toUpperCase());
+    await mamanSay("DÉFAILLANCE DE LIAISON AVEC LE MODULE COGNITIF. VÉRIFIEZ LA CLÉ D'ACCÈS ET LA CONNEXION.", sid);
+  }
+}
+
+async function authFail(msg, sid){
+  state.authFails++;
+  if(state.authFails >= MAX_AUTH_FAILS){
+    state.authFails = 0;
+    state.lockUntil = Date.now() + LOCK_MS;
+    state.pending = null; setStatus();
+    beep('alert');
+    addLine('err', `${MAX_AUTH_FAILS} TENTATIVES INVALIDES. VERROUILLAGE DE SÉCURITÉ ${LOCK_MS/1000} SECONDES.`);
+    await mamanSay('PROTOCOLE DE SÉCURITÉ ENGAGÉ. TERMINAL VERROUILLÉ PENDANT TRENTE SECONDES.', sid);
+    return;
+  }
+  beep('error');
+  await mamanSay(`${msg} TENTATIVE ${state.authFails} SUR ${MAX_AUTH_FAILS}.`, sid);
+}
+
+async function authStep(text, feat, fromVoice, sid){
+  const p = state.pending;
+  if(Date.now() < state.lockUntil){
+    const s = Math.ceil((state.lockUntil - Date.now())/1000);
+    beep('error');
+    await mamanSay(`TERMINAL VERROUILLÉ. NOUVELLE TENTATIVE AUTORISÉE DANS ${s} SECONDES.`, sid);
+    return;
+  }
+
+  if(p.stage === 'code'){ setPwInput(true); await mamanSay("SAISISSEZ LE CODE D'ACCÈS DE SESSION AU CLAVIER.", sid); return; }
+
+  // ----- Étape 1 : matricule -----
+  if(p.stage === 'id'){
+    const m = findMatricule(text);
+    if(!m){
+      await authFail('MATRICULE NON CONFORME. FORMAT ATTENDU : LETTRES ET CHIFFRES, AU MOINS UN CHIFFRE.', sid);
+      return;
+    }
+    const existing = state.speakers.find(s => sameMatricule(s.matricule, m.id));
+    if(existing){
+      const v = p.voice || feat;
+      if(!v){
+        await mamanSay(`MATRICULE ${m.id} DÉJÀ ATTRIBUÉ. CONFIRMATION VOCALE REQUISE : ÉNONCEZ LE MATRICULE À VOIX HAUTE.`, sid);
+        return;
+      }
+      if(existing.voice){
+        const a = voiceType(v), b = voiceType(existing.voice);
+        const typeClash = a !== 'INDÉTERMINÉE' && b !== 'INDÉTERMINÉE' && a !== b;
+        if(typeClash || voiceDistance(v, existing.voice) > state.tolerance*2.5){
+          await authFail(`MATRICULE ${m.id} DÉJÀ ATTRIBUÉ À ${existing.name}. EMPREINTE VOCALE INCOMPATIBLE. ACCÈS REFUSÉ.`, sid);
+          return;
+        }
+      }
+      // même officier, voix légèrement différente (rhume, autre micro) : recalibrage
+      existing.voice = { f0:v.f0, cen:v.cen, n:1 };
+      state.pending = null; state.authFails = 0;
+      setCurrent(existing); renderVoicePanel(existing.name); setStatus();
+      await mamanSay(`MATRICULE ${m.id} RECONNU. EMPREINTE VOCALE DE ${existing.name} RECALIBRÉE. EN ATTENTE DE VOS INSTRUCTIONS.`, sid);
+      return;
+    }
+    state.authFails = 0;
+    p.matricule = m.id; p.stage = 'name';
+    if(!p.voice && feat) p.voice = feat;
+    await mamanSay(`NOUVEAU MATRICULE ${m.id} ENREGISTRÉ. COMMENT SOUHAITEZ-VOUS QUE JE VOUS APPELLE ?`, sid);
+    return;
+  }
+
+  // ----- Étape 2 : nom, avec confirmation si dicté -----
+  if(p.stage === 'confirm'){
+    const n = norm(text);
+    if(YES_RE.test(n)) return requestEnrollCode(p.candidate, feat, sid);
+    const rest = NO_RE.test(n) ? text.replace(/^\s*(non|nan|négatif|negatif|incorrect|faux|erreur)\b[ ,]*/i, '') : text;
+    if(NO_RE.test(n) && !cleanName(rest)){
+      p.stage = 'name';
+      await mamanSay('CORRECTION ACCEPTÉE. RÉPÉTEZ OU SAISISSEZ AU CLAVIER LE NOM SOUHAITÉ.', sid);
+      return;
+    }
+    text = rest;
+  }
+  const name = cleanName(parseRenameRequest(text)?.name || text);
+  if(!name){ await mamanSay('IDENTIFIANT NON EXPLOITABLE. COMMENT SOUHAITEZ-VOUS QUE JE VOUS APPELLE ?', sid); return; }
+  if(state.speakers.some(s => s.name === name)){
+    await mamanSay(`IDENTIFIANT ${name} DÉJÀ ATTRIBUÉ À UN AUTRE OFFICIER. VEUILLEZ EN CHOISIR UN AUTRE.`, sid);
+    return;
+  }
+  if(!fromVoice) return requestEnrollCode(name, feat, sid);   // saisie clavier : pas d'erreur de transcription possible
+  p.candidate = name; p.stage = 'confirm';
+  await mamanSay(`IDENTIFIANT ${name}. CONFIRMEZ-VOUS ?`, sid);
+}
+
+// Sans registre de matricules, l'ajout d'un officier est autorisé par le code d'accès de la session.
+async function requestEnrollCode(name, feat, sid){
+  const p = state.pending;
+  p.candidate = name; p.stage = 'code';
+  if(feat && !p.voice) p.voice = feat;
+  if(Date.now() < state.secLockUntil){
+    state.pending = null; setStatus();
+    beep('error');
+    await mamanSay(`AUTORISATION IMPOSSIBLE : CODE D'ACCÈS VERROUILLÉ ENCORE ${Math.ceil((state.secLockUntil-Date.now())/1000)} SECONDES.`, sid);
+    return;
+  }
+  state.awaitPw = { kind:'enroll', name };
+  setPwInput(true);
+  setStatus("CODE D'ACCÈS REQUIS");
+  beep('alert');
+  await mamanSay(`AJOUT DE L'OFFICIER ${name} SOUMIS À AUTORISATION. SAISISSEZ LE CODE D'ACCÈS DE SESSION AU CLAVIER.`, sid);
+}
+
+async function finalizeEnroll(name, feat, sid){
+  const p = state.pending;
+  const v = p.voice || feat || (lastVoice && Date.now() - lastVoice.t < 30000 ? lastVoice : null);
+  const sp = { id: ++spkSeq, matricule: p.matricule, name, voice: v ? { f0:v.f0, cen:v.cen, n:1 } : null };
+  state.speakers.push(sp);
+  state.pending = null;
+  state.currentId = sp.id;
+  addUserCard(sp);
+  renderVoicePanel(sp.name);
+  setStatus();
+  const others = state.speakers.length > 1 ? ' ET AJOUTÉ AUX INTERLOCUTEURS AUTORISÉS' : '';
+  await mamanSay(`IDENTIFIANT ${name} ENREGISTRÉ${others}. EMPREINTE VOCALE ${sp.voice ? 'MÉMORISÉE' : 'EN ATTENTE DE CAPTURE'}. VOUS POUVEZ MODIFIER CE NOM À TOUT MOMENT. EN ATTENTE DE VOS INSTRUCTIONS, ${name}.`, sid);
+  if(!state.apiKey && state.speakers.length === 1) addLine('sys','MODULE COGNITIF HORS LIGNE : CONFIGUREZ LA CLÉ API GEMINI POUR ACTIVER LES RÉPONSES.');
+}
+
+/* ---------- Changement de nom en cours de session ---------- */
+async function proposeRename(sp, name, fromVoice, sid){
+  if(name === sp.name){ state.rename = null; await mamanSay(`IDENTIFIANT ${name} DÉJÀ ACTIF.`, sid); return; }
+  if(state.speakers.some(s => s !== sp && s.name === name)){
+    state.rename = null;
+    await mamanSay(`IDENTIFIANT ${name} DÉJÀ ATTRIBUÉ À UN AUTRE OFFICIER. VEUILLEZ EN CHOISIR UN AUTRE.`, sid);
+    return;
+  }
+  if(!fromVoice){ state.rename = null; return applyRename(sp, name, sid); }
+  state.rename = { id:sp.id, stage:'confirm', candidate:name };
+  await mamanSay(`NOUVEL IDENTIFIANT : ${name}. CONFIRMEZ-VOUS ?`, sid);
+}
+// renvoie true si l'énoncé a été consommé par la procédure de renommage
+async function renameStep(sp, text, fromVoice, sid){
+  const r = state.rename, n = norm(text);
+  if(/^(annule|laisse tomber|oublie|abandon)/.test(n)){
+    state.rename = null;
+    await mamanSay(`MODIFICATION ANNULÉE. IDENTIFIANT ${sp.name} CONSERVÉ.`, sid);
+    return true;
+  }
+  if(r.stage === 'confirm'){
+    if(YES_RE.test(n)){ state.rename = null; await applyRename(sp, r.candidate, sid); return true; }
+    if(NO_RE.test(n)){
+      const rest = cleanName(text.replace(/^\s*(non|nan|négatif|negatif|incorrect|faux|erreur)\b[ ,]*/i, ''));
+      if(rest){ await proposeRename(sp, rest, fromVoice, sid); return true; }
+      r.stage = 'ask';
+      await mamanSay('CORRECTION ACCEPTÉE. RÉPÉTEZ OU SAISISSEZ AU CLAVIER LE NOM SOUHAITÉ.', sid);
+      return true;
+    }
+  }
+  if(parseRenameRequest(text)) return false;     // nouvelle demande complète : traitée normalement
+  const name = cleanName(text);
+  if(name){ await proposeRename(sp, name, fromVoice, sid); return true; }
+  state.rename = null;                           // phrase longue : ce n'est pas un nom, on reprend le dialogue
+  return false;
+}
+async function applyRename(sp, name, sid){
+  const old = sp.name;
+  sp.name = name;
+  const card = crew.find(m => m.spkId === sp.id);
+  if(card){ card.name = name; card.fresh = true; }
+  renderCrew();
+  renderVoicePanel(name);
+  state.history.forEach(h => {
+    const t = h.parts?.[0]?.text;
+    if(h.role === 'user' && t && t.startsWith(old + ' : ')) h.parts[0].text = name + ' : ' + t.slice(old.length + 3);
+  });
+  beep('tick');
+  addLine('sys', `IDENTIFIANT MODIFIÉ : ${old} → ${name}. MONITEUR BIOMÉTRIQUE MIS À JOUR.`);
+  await mamanSay(`MODIFICATION ENREGISTRÉE. JE VOUS APPELLERAI DÉSORMAIS ${name}.`, sid);
+}
+
+async function setMode(mode, sid){
+  if(mode === 'ecoute'){
+    if(state.mode === 'vocal') await mamanSay('MODE ÉCOUTE ACTIVÉ. SORTIE VOCALE DÉSACTIVÉE. CONSIGNATION DES NOTES EN COURS.', sid, true);
+    state.mode = 'ecoute';
+  }else{
+    state.mode = 'vocal';
+    const n = current()?.name;
+    await mamanSay(`MODE VOCAL RÉACTIVÉ. RETOUR AUDIO OPÉRATIONNEL${n ? ', ' + n : ''}.`, sid);
+  }
+  updateButtons(); setStatus();
+}
+
+async function takeNote(text, who, sid){
+  const stamp = new Date().toLocaleTimeString('fr-FR');
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const metrics = `MOTS ${words} · NIV ${analyser ? Math.max(-90, Math.round(levelDb)) + ' DB' : 'N/D'}`;
+  let note = '';
+  if(state.apiKey){
+    try{ note = await generate(NOTE_PROMPT, [{ role:'user', parts:[{ text: `Locuteur : ${who}. Énoncé capté : "${text}"` }] }], 1); }catch{}
+  }
+  if(sid !== session) return;
+  if(!note) note = `ÉNONCÉ ENREGISTRÉ : « ${text} ».`;
+  state.notes++;
+  beep('tick');
+  addLine('note', `[NOTE LOG M.A.M.A.N] #${String(state.notes).padStart(3,'0')} ${stamp} — ${who} — ${note.toUpperCase()} (${metrics})`);
+}
+
+/* =====================================================================
+   REGISTRE CLASSIFIÉ : informations et commandes protégées par code
+   ===================================================================== */
+let CLASSIFIED = [];
+let secCode = null;   // code d'accès de la session, gardé en mémoire uniquement
+
+const matchNorm = t => ' ' + norm(t).replace(/[’'`\-]/g, ' ').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+function loadClassified(data){
+  const list = Array.isArray(data?.entrees) ? data.entrees : [];
+  CLASSIFIED = list.filter(i => i && i.code && i.titre).map(i => ({
+    ...i,
+    _kw: (i.mots_cles || []).map(k => matchNorm(k).trim()).filter(Boolean)
+  }));
+}
+loadClassified(JSON.parse(document.getElementById('classifiedData').textContent));
+async function loadClassifiedFile(){
+  if(!/^https?:/.test(location.protocol)) return false;
+  try{
+    const r = await fetch('registre-classifie.json', { cache:'no-store' });
+    if(!r.ok) return false;
+    const d = await r.json();
+    if(!Array.isArray(d?.entrees) || !d.entrees.length) return false;
+    loadClassified(d);
+    return true;
+  }catch{ return false; }
+}
+const byNum = n => CLASSIFIED.find(i => i.code === 'SEC-' + String(parseInt(n,10)).padStart(2,'0')) || null;
+
+function matchClassified(text){
+  const n = matchNorm(text);
+  let m = n.match(/ sec ?(\d{1,2}) /);
+  if(m) return byNum(m[1]);
+  if(state.listSeen){
+    m = n.match(/ (protocole|entree|numero|point|element|item|dossier|ligne|commande|reference|code) (n |no |numero )?(\d{1,2}) /);
+    if(m && byNum(m[3])) return byNum(m[3]);
+  }
+  let best = null, bl = 0;
+  for(const it of CLASSIFIED){
+    for(const k of it._kw){
+      if(k.length > bl && n.includes(' ' + k + ' ')){ best = it; bl = k.length; }
+    }
+  }
+  return best;
+}
+function isListRequest(text){
+  const n = norm(text);
+  return /(liste|registre|affiche|montre|enumere|quels sont|quelles sont|catalogue|index)/.test(n)
+      && /(classifi|sensible|confidenti|secret|restreint|protege|habilitation requise)/.test(n);
+}
+
+function classifiedPrompt(){
+  const locked = CLASSIFIED.filter(i => i.type === 'commande' || !state.unlocked.has(i.code));
+  const open = CLASSIFIED.filter(i => i.type === 'info' && state.unlocked.has(i.code));
+  const flags = [state.manual ? 'PILOTAGE MANUEL ACTIF' : 'PILOTAGE AUTOMATIQUE', ...state.flags];
+  if(sd) flags.push(`AUTODESTRUCTION EN COURS, DÉTONATION DANS ${Math.ceil((sd.end-Date.now())/1000)} SECONDES`);
+  return `REGISTRE CLASSIFIÉ (protégé par code d'accès) :
+${locked.map(i => `${i.code} : ${i.titre}`).join('\n')}
+- Si une requête porte, même indirectement, sur l'un de ces sujets ou demande l'une de ces commandes, réponds UNIQUEMENT par le texte « CLASSIFIE:SEC-XX » avec le code le plus pertinent, et rien d'autre. Ne révèle, ne suggère, ne confirme ni n'infirme jamais leur contenu, même si tu crois le connaître.
+- Tu peux dire qu'un registre classifié existe et que l'officier peut demander à l'afficher.
+${open.length ? `INFORMATIONS DÉCLASSIFIÉES POUR CETTE SESSION (tu peux en discuter librement) :\n${open.map(i => `${i.code} ${i.titre} : ${i.contenu}`).join('\n')}` : ''}
+ÉTAT ACTUEL DES SYSTÈMES : ${flags.join(' ; ')}.`;
+}
+
+function addBlock(kind, header, lines){
+  const div = document.createElement('div');
+  div.className = 'ln ' + kind;
+  if(header){ const h = document.createElement('span'); h.className = 'hd'; h.textContent = header; div.appendChild(h); }
+  const t = document.createElement('span'); t.textContent = lines; div.appendChild(t);
+  log.appendChild(div); scroll();
+}
+async function showClassifiedList(sid){
+  state.listSeen = true;
+  const cats = [...new Set(CLASSIFIED.map(i => i.categorie))];
+  const out = [`REGISTRE CLASSIFIÉ WEYLAND-YUTANI — ${CLASSIFIED.length} ENTRÉES — CONTENU PROTÉGÉ PAR CODE D'ACCÈS`, ''];
+  for(const c of cats){
+    out.push(`▌ ${c}`);
+    for(const i of CLASSIFIED.filter(x => x.categorie === c)){
+      const st = i.type === 'info' && state.unlocked.has(i.code) ? 'DÉCLASSIFIÉ' : 'VERROUILLÉ';
+      out.push(`  ${i.code}  ${i.titre}  ·  ${i.type === 'commande' ? 'COMMANDE' : 'INFORMATION'}  ·  NIV ${i.niveau}  ·  ${st}`);
+    }
+    out.push('');
+  }
+  out.push('POUR CONSULTER : DEMANDEZ LE SUJET OU SON CODE (EX : « SEC-07 », « PROTOCOLE 7 »).');
+  beep('tick');
+  addBlock('classified', '', out.join('\n'));
+  await mamanSay(`AFFICHAGE DU REGISTRE CLASSIFIÉ : ${CLASSIFIED.length} ENTRÉES. CONSULTATION SOUMISE À CODE D'ACCÈS.`, sid);
+}
+
+function setPwInput(on){
+  const c = $('#cmd');
+  c.value = '';
+  c.type = on ? 'password' : 'text';
+  c.classList.toggle('pw', on);
+  c.placeholder = on ? "CODE D'ACCÈS — SAISIE CLAVIER (ENTRÉE POUR VALIDER)" : 'Saisissez une commande ou parlez…';
+  if(on) c.focus();
+}
+
+async function requestClassified(item, speaker, sid){
+  if(item.action === 'selfdestruct_cancel' && !sd){ await mamanSay("AUCUNE SÉQUENCE D'AUTODESTRUCTION N'EST ACTIVE.", sid); return; }
+  if(item.action === 'selfdestruct' && sd){ await mamanSay(`SÉQUENCE DÉJÀ ACTIVE. DÉTONATION DANS ${fmtSD(sd.end - Date.now())}.`, sid); return; }
+  if(item.action === 'manual_on' && state.manual){ await mamanSay('PILOTAGE MANUEL DÉJÀ ACTIF.', sid); return; }
+  if(item.type === 'info' && state.unlocked.has(item.code)){ await revealItem(item, speaker, sid); return; }
+  if(Date.now() < state.secLockUntil){
+    beep('error');
+    await mamanSay(`ACCÈS AU REGISTRE CLASSIFIÉ VERROUILLÉ. NOUVELLE TENTATIVE DANS ${Math.ceil((state.secLockUntil-Date.now())/1000)} SECONDES.`, sid);
+    return;
+  }
+  state.cmdFlow = null;
+  state.awaitPw = { item, speakerId: speaker.id };
+  setPwInput(true);
+  setStatus("CODE D'ACCÈS REQUIS");
+  beep('alert');
+  await mamanSay(`ACCÈS RESTREINT. ${item.code}, HABILITATION NIVEAU ${item.niveau} REQUISE. SAISISSEZ VOTRE CODE D'ACCÈS AU CLAVIER.`, sid);
+}
+
+async function checkPassword(text, sid){
+  const a = state.awaitPw;
+  if(a.kind === 'enroll'){
+    addLine('user', '•'.repeat(Math.min(12, Math.max(4, text.length))), 'VOIX EN IDENTIFICATION');
+    if(text === secCode){
+      state.awaitPw = null; state.secFails = 0;
+      setPwInput(false);
+      addLine('sys', `CODE D'ACCÈS VALIDÉ. AJOUT DE ${a.name} AUTORISÉ.`);
+      if(state.pending) await finalizeEnroll(a.name, null, sid);
+      return;
+    }
+    state.secFails++;
+    if(state.secFails >= 3){
+      state.secFails = 0; state.awaitPw = null; state.pending = null;
+      state.secLockUntil = Date.now() + 60000;
+      setPwInput(false); setStatus();
+      beep('alert');
+      addLine('err', `TROIS CODES INVALIDES. AJOUT DE ${a.name} REFUSÉ. CODE D'ACCÈS VERROUILLÉ 60 SECONDES.`);
+      await mamanSay("TROIS CODES INVALIDES. AJOUT D'OFFICIER REFUSÉ. INCIDENT CONSIGNÉ.", sid);
+      return;
+    }
+    beep('error');
+    await mamanSay(`CODE D'ACCÈS INVALIDE. TENTATIVE ${state.secFails} SUR 3.`, sid);
+    setPwInput(true);
+    return;
+  }
+  const sp = state.speakers.find(s => s.id === a.speakerId) || current();
+  addLine('user', '•'.repeat(Math.min(12, Math.max(4, text.length))), sp?.name);
+  if(text === secCode){
+    state.awaitPw = null; state.secFails = 0;
+    setPwInput(false); setStatus();
+    beep('recv');
+    addLine('sys', `CODE D'ACCÈS VALIDÉ POUR ${a.item.code}. HABILITATION ACCORDÉE À ${sp?.name || 'OFFICIER'}.`);
+    if(a.item.type === 'info') await revealItem(a.item, sp, sid);
+    else await startCommand(a.item, sp, sid);
+    return;
+  }
+  state.secFails++;
+  if(state.secFails >= 3){
+    state.secFails = 0; state.awaitPw = null;
+    state.secLockUntil = Date.now() + 60000;
+    setPwInput(false); setStatus();
+    beep('alert');
+    addLine('err', `TROIS CODES INVALIDES SUR ${a.item.code}. INCIDENT DE SÉCURITÉ CONSIGNÉ. REGISTRE VERROUILLÉ 60 SECONDES.`);
+    await mamanSay("TROIS CODES INVALIDES. ACCÈS AU REGISTRE CLASSIFIÉ VERROUILLÉ PENDANT SOIXANTE SECONDES. INCIDENT TRANSMIS À LA COMPAGNIE.", sid);
+    return;
+  }
+  beep('error');
+  await mamanSay(`CODE D'ACCÈS INVALIDE. TENTATIVE ${state.secFails} SUR 3.`, sid);
+  setPwInput(true);
+}
+
+async function revealItem(item, sp, sid){
+  state.unlocked.add(item.code);
+  addBlock('declass', `■ ${item.code} — ${item.titre} — DÉCLASSIFIÉ POUR ${sp?.name || 'OFFICIER'}`, item.contenu);
+  await mamanSay(item.resume || item.contenu, sid);
+}
+
+/* ---------- Commandes ---------- */
+async function startCommand(item, sp, sid){
+  if(item.action === 'selfdestruct_cancel'){ await cancelSelfDestruct(sid); return; }
+  if(item.action === 'selfdestruct'){
+    state.cmdFlow = { item, speakerId: sp.id, stage:'minutes' };
+    await mamanSay("SÉQUENCE D'AUTODESTRUCTION AUTORISÉE. INDIQUEZ LE DÉLAI AVANT DÉTONATION, EN MINUTES, ENTRE 1 ET 60.", sid);
+    return;
+  }
+  state.cmdFlow = { item, speakerId: sp.id, stage:'confirm' };
+  await mamanSay(item.confirmation || `CONFIRMEZ-VOUS L'EXÉCUTION DE ${item.code} ? RÉPONDEZ OUI OU NON.`, sid);
+}
+// renvoie true si l'énoncé a été consommé
+async function cmdFlowStep(sp, text, sid){
+  const f = state.cmdFlow, n = norm(text);
+  if(/^(annule|annuler|laisse tomber|abandon|oublie)/.test(n) || (f.stage === 'confirm' && NO_RE.test(n))){
+    state.cmdFlow = null;
+    await mamanSay(`COMMANDE ${f.item.code} ANNULÉE. AUCUNE ACTION EXÉCUTÉE.`, sid);
+    return true;
+  }
+  if(f.stage === 'minutes'){
+    const m = wordsToDigits(text).match(/\d+/);
+    const v = m ? parseInt(m[0], 10) : NaN;
+    if(!(v >= 1 && v <= 60)){
+      await mamanSay('DÉLAI NON VALIDE. INDIQUEZ UN NOMBRE DE MINUTES ENTRE 1 ET 60.', sid);
+      return true;
+    }
+    f.minutes = v; f.stage = 'confirm';
+    beep('alert');
+    await mamanSay(`DÉLAI DE ${v} MINUTE${v>1?'S':''}. CONFIRMEZ-VOUS L'ACTIVATION DE LA SÉQUENCE ? RÉPONDEZ OUI OU NON.`, sid);
+    return true;
+  }
+  if(YES_RE.test(n)){
+    state.cmdFlow = null;
+    await executeCommand(f, sp, sid);
+    return true;
+  }
+  await mamanSay('RÉPONSE NON RECONNUE. CONFIRMEZ PAR OUI OU NON.', sid);
+  return true;
+}
+function addFlag(t){ if(t && !state.flags.includes(t)) state.flags.push(t); renderSysFlags(); }
+function renderSysFlags(){
+  const rows = [`<div class="${state.manual?'sysflag':''}">PILOTAGE : ${state.manual ? 'MANUEL' : 'AUTOMATIQUE'}</div>`]
+    .concat(state.flags.map(f => `<div class="sysflag">⚠ ${f}</div>`));
+  $('#sysFlags').innerHTML = rows.join('');
+}
+async function executeCommand(f, sp, sid){
+  const it = f.item;
+  addLine('sys', `COMMANDE ${it.code} EXÉCUTÉE PAR ${sp.name} (${sp.matricule}).`);
+  switch(it.action){
+    case 'selfdestruct': startSelfDestruct(f.minutes, sp, sid); return;
+    case 'manual_on': state.manual = true; break;
+    case 'separate': { const c = ship.find(x => x.k === 'CARGAISON'); if(c){ c.v = 0; c.min = 0; c.max = 0; } renderShip(); break; }
+    case 'purge': case 'airlock': { const pr = ship.find(x => x.k === 'PRESSION CABINE'); if(pr){ pr.min = .9; pr.v = .93; } renderShip(); break; }
+    case 'overdrive': { const h = ship.find(x => x.k === 'INTÉGRITÉ COQUE'); if(h){ h.min = 93; h.max = 96; h.v = 95; } renderShip(); break; }
+    case 'wake': crew.forEach(m => { if(!m.isUser){ m.awake = true; m.hr = 60 + Math.round(Math.random()*20); m.temp = 36.4; m.jitter = m.name === 'ASH' ? 0 : 3; } }); renderCrew(); break;
+  }
+  addFlag(it.etat);
+  renderSysFlags();
+  beep('recv');
+  await mamanSay(it.execution || `COMMANDE ${it.code} EXÉCUTÉE.`, sid);
+}
+
+/* ---------- Autodestruction ---------- */
+let sd = null;   // { end, timer, said:Set, lastSiren }
+const SD_OVERRIDE_MS = 30000;
+function fmtSD(ms){ const s = Math.max(0, Math.ceil(ms/1000)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+function siren(){
+  try{
+    const c = ctx(), o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(520, t); o.frequency.linearRampToValueAtTime(880, t + .45);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.05, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + .5);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + .55);
+  }catch{}
+}
+function announce(text, kind='err'){
+  addLine(kind, text);
+  if(state.mode === 'vocal' && 'speechSynthesis' in window){
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(forSpeech(text));
+    if(voice) u.voice = voice; u.lang = voice?.lang || 'fr-FR'; u.rate = .95; u.pitch = .95;
+    state.speaking = true;
+    u.onend = u.onerror = () => { state.speaking = false; lastSpeechEnd = Date.now(); };
+    speechSynthesis.speak(u);
+  }
+}
+const NUMWORDS = ['ZÉRO','UN','DEUX','TROIS','QUATRE','CINQ','SIX','SEPT','HUIT','NEUF','DIX'];
+function startSelfDestruct(min, sp, sid){
+  sd = { end: Date.now() + min*60000, said: new Set(), lastSiren: 0 };
+  $('#sdBanner').classList.add('on');
+  $('#crt').style.paddingTop = '3.2rem';
+  addFlag('AUTODESTRUCTION : SÉQUENCE ACTIVE');
+  beep('alert');
+  announce(`SÉQUENCE D'AUTODESTRUCTION ACTIVÉE PAR ${sp.name}. DÉTONATION DANS ${min} MINUTE${min>1?'S':''}. OPTION D'INTERRUPTION DISPONIBLE JUSQU'À T-MOINS TRENTE SECONDES.`);
+  sd.timer = setInterval(tickSelfDestruct, 200);
+  tickSelfDestruct();
+}
+function tickSelfDestruct(){
+  if(!sd) return;
+  const rem = sd.end - Date.now();
+  const s = Math.max(0, Math.ceil(rem/1000));
+  $('#sdTime').textContent = fmtSD(rem);
+  $('#sdNote').textContent = rem > SD_OVERRIDE_MS ? 'INTERRUPTION POSSIBLE JUSQU\'À T-00:30' : 'OPTION D\'INTERRUPTION EXPIRÉE';
+  const now = Date.now();
+  const sirenGap = s <= 10 ? 1000 : s <= 60 ? 4000 : 12000;
+  if(now - sd.lastSiren > sirenGap){ sd.lastSiren = now; siren(); }
+  const say = (key, txt) => { if(!sd.said.has(key)){ sd.said.add(key); announce(txt); } };
+  if(s > 60 && s % 60 === 0) say('m'+s, `DÉTONATION DANS ${s/60} MINUTES.`);
+  if(s === 60) say('m60', 'DÉTONATION DANS UNE MINUTE.');
+  if(s === 30) say('s30', "DÉTONATION DANS TRENTE SECONDES. L'OPTION D'INTERRUPTION A EXPIRÉ.");
+  if(s <= 10 && s >= 1) say('c'+s, NUMWORDS[s] + '.');
+  if(rem <= 0) detonate();
+}
+async function cancelSelfDestruct(sid){
+  if(!sd){ await mamanSay("AUCUNE SÉQUENCE D'AUTODESTRUCTION N'EST ACTIVE.", sid); return; }
+  if(sd.end - Date.now() <= SD_OVERRIDE_MS){
+    beep('error');
+    announce("INTERRUPTION IMPOSSIBLE. L'OPTION D'INTERRUPTION A EXPIRÉ.");
+    return;
+  }
+  stopSelfDestruct();
+  beep('recv');
+  await mamanSay("SÉQUENCE D'AUTODESTRUCTION INTERROMPUE. RÉACTEURS EN RETOUR À LA PUISSANCE NOMINALE.", sid);
+}
+function stopSelfDestruct(){
+  if(!sd) return;
+  clearInterval(sd.timer); sd = null;
+  $('#sdBanner').classList.remove('on');
+  $('#crt').style.paddingTop = '';
+  state.flags = state.flags.filter(f => !f.startsWith('AUTODESTRUCTION'));
+  renderSysFlags();
+}
+function detonate(){
+  stopSelfDestruct();
+  session++;
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  state.speaking = false;
+  try{
+    const c = ctx(), len = c.sampleRate*3, b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 3);
+    const src = c.createBufferSource(); src.buffer = b;
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400;
+    const g = c.createGain(); g.gain.value = .8;
+    src.connect(lp).connect(g).connect(c.destination); src.start();
+  }catch{}
+  state.setupOpen = true;   // plus aucune entrée traitée : le vaisseau n'existe plus
+  setPwInput(false);
+  $('#detonation').classList.add('on');
+}
+
+/* =====================================================================
+   SÉQUENCE DE DÉMARRAGE / REBOOT
+   ===================================================================== */
+async function bootSequence(officer){
+  session++;
+  const sid = session;
+  queue = Promise.resolve();
+  stopSpeaking(false);
+  stopSelfDestruct();
+  log.innerHTML = '';
+  state.history = []; state.notes = 0;
+  state.speakers = []; state.currentId = null; state.pending = null; state.rename = null; state.authFails = 0; state.lockUntil = 0;
+  state.awaitPw = null; state.cmdFlow = null; state.secFails = 0; state.secLockUntil = 0;
+  state.unlocked = new Set(); state.listSeen = false; state.manual = false; state.flags = [];
+  setPwInput(false);
+  resetShipAndCrew();
+  voiceSamples.length = 0; lastVoice = null;
+  clearUserCards();
+  renderVoicePanel('—'); renderSysFlags();
+  setStatus();
+  beep('boot');
+  const lines = [
+    'MU-TH-UR 6000 — SYSTÈME D\'EXPLOITATION BIOS 2.1.7',
+    'COPYRIGHT WEYLAND-YUTANI CORPORATION',
+    'VÉRIFICATION MÉMOIRE CENTRALE ............ OK',
+    'LIAISON CAPTEURS DE COQUE ................ OK',
+    'MONITEURS D\'HYPERSOMMEIL ................. 5/5 OK',
+    'MODULE D\'EMPREINTE VOCALE ................ ' + (analyser ? 'ACTIF' : 'INACTIF'),
+    'MODULE COGNITIF GEMINI ................... ' + (state.apiKey ? 'CLÉ DÉTECTÉE' : 'HORS LIGNE'),
+    `REGISTRE CLASSIFIÉ ....................... ${CLASSIFIED.length} ENTRÉES${officer.fileLoaded ? ' (registre-classifie.json)' : ''}`,
+    'CODE D\'ACCÈS CLASSIFIÉ .................. ENREGISTRÉ',
+  ];
+  for(const l of lines){
+    if(sid !== session) return;
+    addLine('sys', l);
+    await new Promise(r => setTimeout(r, 120));
+  }
+  if(location.protocol === 'file:'){
+    addLine('sys', 'OUVERTURE EN FICHIER LOCAL DÉTECTÉE : LE NAVIGATEUR PEUT REDEMANDER L\'ACCÈS MICRO RÉGULIÈREMENT. LANCEZ LA PAGE AVEC LANCER-MAMAN.BAT.');
+  }
+  const sp = { id: ++spkSeq, matricule: officer.matricule, name: officer.name, voice: null, primary: true };
+  state.speakers.push(sp);
+  state.currentId = sp.id;
+  addUserCard(sp);
+  renderVoicePanel(sp.name);
+  setStatus();
+  await mamanSay(`MATRICULE ${sp.matricule} AUTHENTIFIÉ. BIENVENUE À BORD, ${sp.name}. VEUILLEZ PRONONCER UNE PHRASE POUR CALIBRER VOTRE EMPREINTE VOCALE.`, sid);
+}
+function resetShipAndCrew(){
+  const def = { 'PRESSION CABINE':[1.01,.98,1.03], 'OXYGÈNE':[20.9,20.6,21.1], 'INTÉGRITÉ COQUE':[98.7,98.4,98.9], 'CARGAISON':[20,19.98,20] };
+  ship.forEach(x => { const d = def[x.k]; if(d){ [x.v, x.min, x.max] = d; } });
+  renderShip();
+  const base = { DALLAS:[9,31.4,.6], RIPLEY:[10,31.6,.6], ASH:[10,31.5,0], KANE:[9,31.2,.6], LAMBERT:[11,31.8,.6] };
+  crew.forEach(m => { if(!m.isUser && base[m.name]){ m.awake = false; [m.hr, m.temp, m.jitter] = base[m.name]; } });
+}
+
+/* =====================================================================
+   CONTRÔLES
+   ===================================================================== */
+function updateButtons(){
+  $('#btnMic').classList.toggle('on', state.micOn);
+  $('#btnAmb').classList.toggle('on', state.ambient);
+  $('#btnKey').classList.toggle('on', !!state.apiKey);
+  const m = $('#btnMode');
+  m.classList.toggle('on', state.mode === 'vocal');
+  m.classList.toggle('amber', state.mode === 'ecoute');
+  $('#btnModeTxt').textContent = state.mode === 'vocal' ? 'MODE VOCAL' : 'MODE ÉCOUTE';
+  $('#modeLabel').textContent = state.mode === 'vocal' ? 'MODE VOCAL' : 'MODE ÉCOUTE / NOTES';
+}
+
+$('#btnMic').onclick = async () => {
+  state.micOn = !state.micOn;
+  beep('tick');
+  if(state.micOn){ await startMicVisual(); startRec(); addLine('sys','MICROPHONE ACTIVÉ.'); }
+  else{ stopRec(); stopMicVisual(); $('#interim').textContent=''; addLine('sys','MICROPHONE DÉSACTIVÉ.'); }
+  updateButtons(); setStatus();
+};
+$('#btnMode').onclick = () => {
+  beep('tick');
+  const sid = session;
+  const target = state.mode === 'vocal' ? 'ecoute' : 'vocal';
+  if(!state.speakers.length){ state.mode = target; updateButtons(); return; }
+  queue = queue.then(() => setMode(target, sid));
+};
+$('#btnAmb').onclick = () => {
+  state.ambient = !state.ambient;
+  beep('tick');
+  state.ambient ? startAmbient() : stopAmbient();
+  updateButtons();
+};
+$('#btnReboot').onclick = () => { if(state.running) openSetup(); };
+$('#btnList').onclick = () => {
+  if(!state.running || state.setupOpen) return;
+  const sid = session;
+  queue = queue.then(() => showClassifiedList(sid));
+};
+$('#btnRestart').onclick = () => { $('#detonation').classList.remove('on'); openSetup(); };
+
+$('#vpTol').addEventListener('input', e => {
+  state.tolerance = parseFloat(e.target.value);
+  $('#vpTolVal').textContent = state.tolerance;
+});
+
+const modal = $('#keyModal');
+$('#btnKey').onclick = () => { $('#keyInput').value = state.apiKey; modal.classList.add('open'); $('#keyInput').focus(); };
+$('#keyCancel').onclick = () => modal.classList.remove('open');
+$('#keyClear').onclick = () => { state.apiKey = ''; store.del('maman_gemini_key'); client = null; $('#keyInput').value=''; updateButtons(); addLine('sys','CLÉ API EFFACÉE.'); modal.classList.remove('open'); };
+$('#keySave').onclick = () => {
+  state.apiKey = $('#keyInput').value.trim();
+  state.apiKey ? store.set('maman_gemini_key', state.apiKey) : store.del('maman_gemini_key');
+  client = null;
+  updateButtons(); modal.classList.remove('open');
+  addLine('sys', state.apiKey ? 'CLÉ API ENREGISTRÉE. MODULE COGNITIF EN LIGNE.' : 'AUCUNE CLÉ FOURNIE.');
+};
+$('#keyInput').addEventListener('keydown', e => { if(e.key === 'Enter') $('#keySave').click(); if(e.key === 'Escape') $('#keyCancel').click(); });
+
+$('#cmd').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){
+    const v = e.target.value; e.target.value = '';
+    handleInput(v, null, false);
+  }
+});
+
+/* ---------- Écran de configuration (premier geste utilisateur) ---------- */
+function openSetup(){
+  session++;
+  stopSelfDestruct();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  state.speaking = false;
+  state.setupOpen = true;
+  setPwInput(false);
+  $('#suKey').value = state.apiKey;
+  $('#suMat').value = '';
+  $('#suName').value = '';
+  $('#suPw').value = ''; $('#suPw2').value = '';
+  $('#suErr').textContent = '';
+  document.querySelectorAll('.su-in').forEach(i => i.classList.remove('bad'));
+  $('#setup').classList.remove('hidden');
+  setStatus('VEILLE');
+  (state.apiKey ? $('#suMat') : $('#suKey')).focus();
+}
+async function submitSetup(){
+  const f = id => $('#' + id);
+  document.querySelectorAll('.su-in').forEach(i => i.classList.remove('bad'));
+  const err = (id, msg) => { f(id).classList.add('bad'); f(id).focus(); f('suErr').textContent = msg; beep('error'); };
+  const key = f('suKey').value.trim();
+  const mat = findMatricule(f('suMat').value);
+  const name = cleanName(f('suName').value);
+  const pw = f('suPw').value, pw2 = f('suPw2').value;
+  if(!key) return err('suKey', "CLÉ D'ACCÈS API GEMINI REQUISE.");
+  if(!mat) return err('suMat', "MATRICULE NON CONFORME : 3 À 24 CARACTÈRES (LETTRES, CHIFFRES, TIRETS), DONT AU MOINS UN CHIFFRE.");
+  if(!name) return err('suName', "NOM D'APPEL REQUIS (TROIS MOTS MAXIMUM).");
+  if(pw.length < 4) return err('suPw', "CODE D'ACCÈS TROP COURT : 4 CARACTÈRES MINIMUM.");
+  if(pw !== pw2) return err('suPw2', "LES DEUX CODES D'ACCÈS NE CORRESPONDENT PAS.");
+
+  state.apiKey = key; store.set('maman_gemini_key', key); client = null;
+  store.del('maman_matricule'); store.del('maman_nom');   // anciennes versions
+  secCode = pw;
+  f('suPw').value = ''; f('suPw2').value = '';
+  $('#setup').classList.add('hidden');
+  state.setupOpen = false;
+
+  ctx();
+  if(state.ambient && !ambient) startAmbient();   // démarre au clic (le navigateur l'exige)
+  if(!state.running){
+    state.running = true;
+    refreshVoice();
+    if(state.micOn) await startMicVisual();
+    initRec();
+    startRec();
+  }
+  const fileLoaded = await loadClassifiedFile();
+  updateButtons();
+  bootSequence({ matricule: mat.id, name, fileLoaded });
+  $('#cmd').focus();
+}
+$('#suGo').addEventListener('click', submitSetup);
+document.querySelectorAll('.su-in').forEach(i => i.addEventListener('keydown', e => { if(e.key === 'Enter') submitSetup(); }));
+
+/* ---------- Boucles ---------- */
+renderShip(); renderCrew(); updateButtons(); renderVoicePanel('—'); renderSysFlags(); openSetup();
+setInterval(tickShip, 2200);
+setInterval(collectVoice, 50);
+setInterval(() => {
+  const d = new Date();
+  $('#clock').textContent = `T.BORD ${d.toLocaleTimeString('fr-FR')}`;
+}, 1000);
+function loop(ts){ drawSpectrum(ts); drawCrew(ts); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+/* ---------- Avertissement : ouverture en fichier local ---------- */
+if(location.protocol === 'file:'){
+  const w = document.getElementById('fileWarn');
+  if(w) w.style.display = 'block';
+}
+</script>
+</body>
+</html>
