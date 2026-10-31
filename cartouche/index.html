@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cartouche : une image devient un jeu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#efeaff; --panel:#ffffff; --field:#f7f4ff; --ink:#1f1a3d; --muted:#5d5690; --line:#d6cdf6;
+  --yellow:#ffc928; --yellow-d:#c99400; --coral:#e8445b; --teal:#14a596; --teal-2:#19bdac; --teal-d:#0b7268;
+  --screen:#16122e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --bg:#1b1736; --panel:#252048; --field:#1e1a3e; --ink:#f4f1ff; --muted:#aaa3d8; --line:#3b3373;
+    --yellow:#ffcf3f; --yellow-d:#b98d00; --coral:#ff5d73; --teal:#3fd6c6; --teal-2:#2fbfb0; --teal-d:#1d8a7f;
+    --screen:#100d24;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+  font:400 17px/1.55 "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+a{color:var(--teal)}
+
+.keybar{
+  display:flex; flex-wrap:wrap; gap:.6rem 1.1rem; align-items:center; justify-content:center;
+  padding:calc(.7rem + env(safe-area-inset-top,0px)) 1rem .7rem; background:var(--panel);
+  border-bottom:2px solid var(--line); font-size:.92rem;
+}
+.keybar .field{display:flex;align-items:center;gap:.5rem;font-weight:700}
+.keybar #apiKey{width:min(17rem,58vw)}
+input[type=password],input[type=text],input:not([type]),select,textarea{
+  background:var(--field); border:2px solid var(--line); border-radius:10px; padding:.5rem .7rem; color:var(--ink);
+}
+select{max-width:min(18rem,70vw)}
+.check{display:flex;align-items:center;gap:.45rem;cursor:pointer}
+.check input{width:1.05rem;height:1.05rem;accent-color:var(--teal);flex:none}
+.mini{background:transparent;border:2px solid var(--line);border-radius:8px;padding:.35rem .6rem;cursor:pointer;font-size:.85rem}
+.hint{color:var(--muted);font-size:.88rem;margin:.3rem 0}
+#modelStatus{flex-basis:100%;text-align:center;margin:0}
+#modelStatus.ok{color:var(--teal)}
+#modelStatus.bad{color:var(--coral)}
+.framewarn{background:var(--coral);color:#fff;text-align:center;padding:.8rem 1rem;font-weight:700}
+
+main{max-width:640px;margin:0 auto;padding:2.6rem 1.25rem 3rem;text-align:center}
+h1{font-family:Bungee,"Arial Black",Impact,sans-serif;font-weight:400;font-size:clamp(2.6rem,10vw,4.2rem);line-height:1;margin:0;letter-spacing:.01em}
+.tagline{margin:.8rem auto 0;max-width:30rem;color:var(--muted)}
+
+.cart{
+  display:block; width:min(340px,86vw); margin:2.2rem auto .4rem; padding:22px 22px 0;
+  background:var(--coral); border:0; cursor:pointer; color:inherit; text-align:center;
+  clip-path:polygon(0 0,calc(100% - 38px) 0,100% 38px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px));
+  transition:transform .18s ease;
+}
+.cart:hover{transform:translateY(-3px)}
+.cart.drag{transform:translateY(-6px) rotate(-1.5deg)}
+.cart:focus-visible{outline:none;box-shadow:inset 0 0 0 4px var(--teal)}
+.cart-label{display:block;background:var(--yellow);border-radius:8px 8px 4px 4px;padding:12px 12px 10px}
+.screen{display:grid;place-items:center;aspect-ratio:4/3;background:var(--screen);border-radius:6px;overflow:hidden;color:#d9d3ff;box-shadow:inset 0 0 0 3px rgba(0,0,0,.35)}
+.screen img{width:100%;height:100%;object-fit:contain;display:block}
+.empty{display:flex;flex-direction:column;gap:.35rem;padding:1rem;font-size:.95rem}
+.empty b{font-size:1.1rem}
+.empty span{color:#a49cdc;font-size:.88rem}
+.cart-caption{display:block;margin-top:8px;color:#1f1a3d;font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swatches{display:flex;justify-content:center;gap:4px;margin-top:6px;min-height:12px}
+.swatches i{width:22px;height:12px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.grip{display:block;height:44px;margin:14px -22px 0;background:repeating-linear-gradient(90deg,transparent 0 16px,rgba(0,0,0,.2) 16px 22px)}
+
+.fields{text-align:left;margin:1.8rem 0 1.6rem;display:grid;gap:.4rem}
+.fields>label:not(.check){font-weight:700;margin-top:.7rem}
+.fields input:not([type=checkbox]),.fields textarea{width:100%}
+.fields textarea{resize:vertical;min-height:4.5rem}
+.fields select{width:100%;max-width:none}
+.hero{display:flex;align-items:center;gap:.9rem;justify-content:center;margin:1rem auto;max-width:30rem;text-align:left}
+.hero img{width:88px;height:88px;object-fit:contain;border-radius:12px;flex:none;
+  background:repeating-conic-gradient(var(--line) 0 25%,var(--field) 0 50%) 0 0/16px 16px}
+.fields .check{margin-top:1rem;align-items:flex-start}
+.fields .check span small{display:block;color:var(--muted);font-size:.86rem}
+.opt{font-weight:400;color:var(--muted);font-size:.88rem;margin-left:.3rem}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:700;font-size:1.02rem;line-height:1.1;
+  padding:.9rem 1.4rem;border-radius:12px;border:0;cursor:pointer;background:var(--yellow);color:#1f1a3d;
+  box-shadow:0 4px 0 var(--yellow-d);transition:transform .08s,box-shadow .08s;
+}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--yellow-d)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.big{font-size:1.15rem;padding:1.05rem 2rem}
+.btn.alt{background:var(--teal);box-shadow:0 4px 0 var(--teal-d)}
+.btn.alt:active:not(:disabled){box-shadow:0 1px 0 var(--teal-d)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.btn.ghost:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 0 0 2px var(--line)}
+
+.error{margin:1.4rem 0 0;padding:1rem 1.1rem;border-radius:12px;border:2px solid var(--coral);text-align:left;background:var(--panel)}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:1.4rem;margin-top:2rem;text-align:left}
+.bar{height:22px;border-radius:11px;background:var(--field);overflow:hidden;border:2px solid var(--line)}
+.bar>i{display:block;height:100%;width:0;transition:width .45s ease;background:repeating-linear-gradient(45deg,var(--teal) 0 12px,var(--teal-2) 12px 24px);background-size:34px 34px;animation:slide 1s linear infinite}
+.bar.done>i{animation:none;background:var(--teal)}
+@keyframes slide{to{background-position:34px 0}}
+.barline{display:flex;justify-content:space-between;margin:.45rem 0 .2rem;font-weight:700;font-variant-numeric:tabular-nums}
+.barline span:last-child{color:var(--muted);font-weight:400}
+.steps{list-style:none;padding:0;margin:1rem 0;display:grid;gap:.45rem;counter-reset:s}
+.steps li{counter-increment:s;display:flex;align-items:center;gap:.7rem;color:var(--muted)}
+.steps li::before{content:counter(s);flex:none;width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.85rem;border:2px solid var(--line)}
+.steps li[data-state=active]{color:var(--ink);font-weight:700}
+.steps li[data-state=active]::before{background:var(--yellow);border-color:var(--yellow);color:#1f1a3d}
+.steps li[data-state=done]{color:var(--ink)}
+.steps li[data-state=done]::before{content:"✓";background:var(--teal);border-color:var(--teal);color:#10302c}
+.steps li[data-state=skip]::before{content:"–"}
+.steps li[data-state=error]{color:var(--coral);font-weight:700}
+.steps li[data-state=error]::before{content:"!";background:var(--coral);border-color:var(--coral);color:#fff}
+.status{margin:.6rem 0 .1rem;font-weight:700}
+.testview{position:relative;width:100%;aspect-ratio:8/5;background:#000;border-radius:10px;overflow:hidden;margin:.8rem 0}
+.testview iframe{position:absolute;left:0;top:0;width:800px;height:500px;border:0;transform-origin:0 0;pointer-events:none}
+.row.left{justify-content:flex-start;margin-top:.8rem}
+
+.result{text-align:center}
+.genre{display:inline-block;margin:0;padding:.25rem .8rem;border-radius:999px;background:var(--teal);color:#10302c;font-weight:700;font-size:.9rem}
+.result h2{font-family:Bungee,"Arial Black",Impact,sans-serif;font-weight:400;font-size:clamp(1.7rem,6vw,2.4rem);line-height:1.1;margin:.8rem 0 .5rem}
+.result>p{max-width:34rem;margin-left:auto;margin-right:auto}
+.made{color:var(--muted);font-size:.88rem}
+.controls{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;text-align:left;max-width:30rem;margin:1rem auto;padding:.9rem 1rem;border-radius:12px;background:var(--field)}
+.controls dt{font-weight:700}
+.controls dd{margin:0}
+.warn{color:var(--coral);font-size:.92rem}
+.actions{display:flex;flex-wrap:wrap;gap:.8rem;justify-content:center;margin:1.4rem 0}
+.restyle{border-top:2px solid var(--line);padding-top:1.2rem;margin-top:.6rem}
+.restyle label{font-weight:700;display:block;margin-bottom:.6rem}
+.row{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;align-items:center}
+.versions{margin-top:1.3rem}
+.versions p{margin:0 0 .5rem;color:var(--muted);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.chip{border:2px solid var(--line);background:transparent;border-radius:999px;padding:.35rem .85rem;cursor:pointer;font-size:.9rem}
+.chip[aria-pressed=true]{background:var(--yellow);border-color:var(--yellow);color:#1f1a3d;font-weight:700}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 1.25rem 2.5rem;max-width:640px;margin:0 auto}
+[hidden]{display:none !important}
+@media (prefers-reduced-motion: reduce){.bar>i{animation:none}.cart,.btn{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="keybar" role="region" aria-label="Connexion à l’IA">
+  <label class="field" for="provider"><span>IA</span>
+    <select id="provider">
+      <option value="gemini">Google Gemini</option>
+      <option value="claude">Anthropic Claude</option>
+      <option value="openai">OpenAI ChatGPT</option>
+    </select>
+  </label>
+  <label class="field" for="apiKey"><span id="keyLabel">Clé API</span>
+    <input id="apiKey" type="password" autocomplete="off" spellcheck="false">
+  </label>
+  <button type="button" class="mini" id="toggleKey" aria-pressed="false">Afficher</button>
+  <a id="keyLink" href="#" target="_blank" rel="noopener">Obtenir une clé</a>
+  <label class="check"><input type="checkbox" id="remember"> Mémoriser les clés sur cet appareil</label>
+  <label class="field" for="model"><span>Modèle</span><select id="model"></select></label>
+  <p id="modelStatus" class="hint" aria-live="polite"></p>
+</div>
+<div id="frameWarn" class="framewarn" role="alert" hidden>
+  Cette page tourne dans un aperçu qui bloque les IA et les images. Télécharge le fichier <b>cartouche.html</b>, puis ouvre-le par un double-clic depuis ton ordinateur.
+</div>
+
+<main>
+  <header>
+    <h1>Cartouche</h1>
+    <p class="tagline">Glisse une image : l’IA en tire un mini-jeu complet, jouable au clavier, à la souris, à la manette ou au doigt.</p>
+  </header>
+
+  <button type="button" class="cart" id="cart" aria-describedby="cartHint">
+    <span class="cart-label">
+      <span class="screen">
+        <span class="empty" id="empty"><b>Dépose une image ici</b><span>ou clique pour en choisir une (JPG ou PNG)</span></span>
+        <img id="preview" alt="Aperçu de l’image choisie" hidden>
+      </span>
+      <span class="cart-caption" id="caption">Aucune image</span>
+      <span class="swatches" id="swatches" aria-hidden="true"></span>
+    </span>
+    <span class="grip" aria-hidden="true"></span>
+  </button>
+  <input type="file" id="file" accept="image/png,image/jpeg" hidden>
+  <p id="cartHint" class="hint">Tu peux aussi coller une image avec Ctrl+V.</p>
+
+  <div class="fields">
+    <label for="gName">Nom du jeu <span class="opt">facultatif</span></label>
+    <input id="gName" maxlength="60" placeholder="Ex. : La Revanche du chat roux">
+    <label for="gDesc">Description de l’image ou petite histoire en rapport <span class="opt">facultatif</span></label>
+    <textarea id="gDesc" rows="4" maxlength="1000" placeholder="Ex. : Moustache, le chat du 3e étage, rêve depuis toujours d’attraper le pigeon qui le nargue sur la rambarde. Ce matin, la fenêtre est restée ouverte…"></textarea>
+    <p class="hint">L’IA s’en sert pour les personnages, le but du jeu et l’ambiance, et en tire une courte intro affichée au lancement.</p>
+    <label for="startStyle">Style de jeu <span class="opt">facultatif</span></label>
+    <select id="startStyle"></select>
+    <label class="check"><input type="checkbox" id="polish" checked>
+      <span>Passe graphique supplémentaire<small>L’IA repeint le jeu une fois qu’il fonctionne : décors en couches, lumière, animations. Environ deux fois plus long.</small></span>
+    </label>
+  </div>
+
+  <button type="button" class="btn big" id="go" disabled>Fabriquer le jeu</button>
+  <div id="error" class="error" role="alert" hidden></div>
+
+  <section id="progress" class="panel" hidden aria-live="polite">
+    <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Avancement de la fabrication"><i id="barFill"></i></div>
+    <div class="barline"><span id="pct">0 %</span><span id="elapsed"></span></div>
+    <ol class="steps" id="steps"></ol>
+    <p id="status" class="status"></p>
+    <p id="meta" class="hint"></p>
+    <div id="testview" class="testview" hidden></div>
+    <div class="row left">
+      <button type="button" class="btn ghost" id="cancel">Mettre en pause</button>
+      <button type="button" class="btn" id="resume" hidden>Reprendre</button>
+      <button type="button" class="btn ghost" id="restart" hidden>Tout recommencer</button>
+    </div>
+  </section>
+
+  <section id="result" class="panel result" hidden>
+    <p class="genre" id="gGenre"></p>
+    <h2 id="gTitle"></h2>
+    <p id="gPitch"></p>
+    <p id="gMade" class="made"></p>
+    <div id="gHero" class="hero" hidden><img id="gHeroImg" alt="Personnage principal détouré"><span id="gHeroTxt"></span></div>
+    <dl class="controls">
+      <dt>Clavier</dt><dd id="gKeys"></dd>
+      <dt>Manette</dt><dd id="gPad"></dd>
+      <dt>Tactile</dt><dd id="gTouch"></dd>
+    </dl>
+    <p id="gWarn" class="warn" hidden></p>
+    <div class="actions">
+      <button type="button" class="btn" id="play">Jouer dans un nouvel onglet</button>
+      <button type="button" class="btn alt" id="zip">Télécharger le .zip</button>
+    </div>
+    <div class="restyle">
+      <label for="styleSel">Recommencer dans un autre style</label>
+      <div class="row">
+        <select id="styleSel"></select>
+        <button type="button" class="btn ghost" id="again">Générer cette version</button>
+      </div>
+    </div>
+    <div id="versions" class="versions" hidden>
+      <p>Versions fabriquées</p>
+      <div id="vlist" class="chips"></div>
+    </div>
+  </section>
+</main>
+
+<footer>Ta clé et ton image partent uniquement vers l’IA choisie, directement depuis ton navigateur. Rien n’est stocké ailleurs.</footer>
+
+<script>
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+
+const GENRES = [
+  { id: 'auto', fr: 'Laisser l’IA choisir', en: '' },
+  { id: 'platformer', fr: 'Plateforme', en: 'side-view platformer with gravity, jumps, platforms, enemies and collectibles, short levels with an exit' },
+  { id: 'shmup', fr: 'Shoot’em up', en: 'scrolling shooter with enemy waves, power-ups and a boss every 3 levels' },
+  { id: 'breakout', fr: 'Casse-briques', en: 'breakout: paddle, ball, bricks colored from the image (or revealing the image), power-ups' },
+  { id: 'runner', fr: 'Course infinie', en: 'endless runner: auto-scrolling, jump/slide over obstacles, speed increases over time' },
+  { id: 'snake', fr: 'Snake', en: 'grid snake eating items, growing, new obstacles each level' },
+  { id: 'dodge', fr: 'Arcade d’esquive', en: 'top-down survival arcade: move freely, dodge hazards and projectiles, collect items' },
+  { id: 'slide', fr: 'Taquin de l’image', en: 'sliding tile puzzle made by cutting the source image into tiles, timer, move counter, grid grows per level, lives lost when the timer runs out' },
+  { id: 'memory', fr: 'Memory', en: 'memory card matching game whose faces are crops of the source image, timer, limited mistakes as lives' },
+  { id: 'match3', fr: 'Match-3', en: 'match-3 grid with gems tinted from the image palette, combos and cascades, limited moves per level' },
+  { id: 'topdown', fr: 'Aventure vue de dessus', en: 'top-down action adventure in small rooms: move, attack, enemies, key and exit door' },
+  { id: 'racing', fr: 'Course vue de dessus', en: 'vertical top-down road racing: steer, avoid traffic, collect fuel and boosts' },
+  { id: 'defense', fr: 'Défense de base', en: 'simple tower defense along a path: place towers with mouse or touch, waves, money, base lives' },
+  { id: 'flappy', fr: 'Vol à un bouton', en: 'one-button flying game through gaps with collectibles and varied obstacles' },
+  { id: 'catcher', fr: 'Attrape-objets', en: 'catcher: move left/right to catch good falling items and avoid bad ones' },
+  { id: 'asteroids', fr: 'Astéroïdes', en: 'asteroids-like: rotate, thrust, shoot, rocks split, screen wrap-around' },
+  { id: 'rhythm', fr: 'Rythme', en: '4-lane rhythm game, notes fall in sync with a WebAudio-synthesized beat, combo and accuracy' }
+];
+const HERO_TYPES = {
+  humanoid: 'humain ou humanoïde', quadruped: 'animal à quatre pattes', bird: 'oiseau', fish: 'poisson ou animal marin',
+  cephalopod: 'pieuvre ou céphalopode', insect: 'insecte ou araignée', serpent: 'serpent ou ver', plant: 'végétal',
+  blob: 'créature molle', vehicle: 'véhicule', robot: 'robot ou machine', object: 'objet', other: 'autre'
+};
+const heroTypeLabel = t => HERO_TYPES[t] || HERO_TYPES.other;
+const genreLabel = id => (GENRES.find(g => g.id === id) || {}).fr || id || 'Jeu';
+
+const STEPS = [
+  ['prep', 'Préparer l’image'], ['concept', 'Imaginer le concept'], ['hero', 'Détourer le personnage'], ['code', 'Écrire le code du jeu'],
+  ['test', 'Tester le jeu'], ['fix', 'Corriger si besoin'], ['polish', 'Embellir les graphismes'], ['pack', 'Assembler le jeu']
+];
+
+const state = {
+  file: null, apiB64: '', asset: null, palette: [], versions: [], current: -1,
+  busy: false, ctrl: null, progress: 0, keys: { gemini: '', claude: '', openai: '' }, models: {}
+};
+const IN_FRAME = (() => { try { return window.self !== window.top; } catch (_) { return true; } })();
+
+/* ---------- Outils ---------- */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (_) {} }
+};
+function slug(s) {
+  return (s || 'jeu').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'jeu';
+}
+function showError(msg) { const e = $('#error'); e.textContent = msg; e.hidden = !msg; }
+const prov = () => $('#provider').value;
+const apiKey = () => $('#apiKey').value.trim();
+const currentModel = () => $('#model').value;
+const abortErr = () => new DOMException('Annulé', 'AbortError');
+
+/* ---------- Réseau commun ---------- */
+function netMsg(name) {
+  return IN_FRAME
+    ? `${name} est injoignable depuis cet aperçu. Télécharge le fichier et ouvre-le depuis ton ordinateur.`
+    : `${name} est injoignable : vérifie ta connexion, puis désactive un éventuel bloqueur de publicité ou VPN pour cette page.`;
+}
+async function net(name, doFetch) {
+  try { return await doFetch(); }
+  catch (err) {
+    if (err.name === 'AbortError') throw err;
+    const e = new Error(netMsg(name)); e.retryable = !IN_FRAME; throw e;
+  }
+}
+async function apiError(res, name) {
+  let msg = '';
+  try {
+    const j = await res.json();
+    const er = Array.isArray(j) ? j[0] && j[0].error : j.error;
+    msg = (er && (er.message || er.type)) || j.message || '';
+  } catch (_) {}
+  const s = res.status;
+  let e;
+  if (s === 400 && /max_tokens|max_completion_tokens|maxOutputTokens|max_output_tokens|output tokens/i.test(msg)) {
+    e = new Error(`Limite de longueur refusée par ${name}.`); e.tooManyTokens = true;
+    const m = msg.match(/(?:at most|maximum[^0-9]{0,40}|<=|≤|up to|limit of)\s*(\d{3,6})/i);
+    if (m) e.suggested = parseInt(m[1], 10);
+  } else if (/credit balance|insufficient_quota|exceeded your current quota|billing/i.test(msg)) {
+    e = new Error(`Ton compte ${name} n’a plus de crédit. Recharge-le sur la console du fournisseur, ou choisis une autre IA.`);
+  } else if (s === 401 || (s === 400 && /api key|api_key/i.test(msg))) {
+    e = new Error(`${name} refuse cette clé API. Vérifie-la, ou recrée-la sur la console du fournisseur.`);
+  } else if (s === 403) {
+    e = new Error(`Accès refusé par ${name} : cette clé n’a pas les droits pour ce modèle.${msg ? ' (' + msg + ')' : ''}`);
+  } else if (s === 404) {
+    e = new Error(`Modèle introuvable chez ${name}. Choisis un autre modèle dans la liste en haut.`);
+  } else if (s === 429) {
+    e = new Error(`Trop de demandes chez ${name}. Attends une minute ou choisis un modèle plus léger.`); e.retryable = true;
+  } else if (s >= 500 || BUSY_RE.test(msg)) {
+    e = new Error(`${name} est surchargé en ce moment (erreur ${s}).`); e.retryable = true;
+  } else {
+    e = new Error(`Erreur ${s} chez ${name} : ${msg || res.statusText}`);
+  }
+  return e;
+}
+async function readSSE(res, onData) {
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf = '';
+  const handle = ev => {
+    let name = '';
+    const data = ev.split(/\r?\n/).map(l => {
+      if (l.startsWith('event:')) name = l.slice(6).trim();
+      return l.startsWith('data:') ? l.slice(5).trim() : null;
+    }).filter(x => x !== null).join('');
+    if (data) onData(data, name);
+  };
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let m;
+      while ((m = buf.match(/\r?\n\r?\n/))) { handle(buf.slice(0, m.index)); buf = buf.slice(m.index + m[0].length); }
+    }
+    if (buf.trim()) handle(buf);
+  } catch (err) {
+    if (err.name === 'AbortError') throw err;
+    if (err instanceof TypeError) { const e = new Error('La connexion a été coupée pendant la réponse.'); e.retryable = true; throw e; }
+    throw err;
+  }
+}
+const jparse = d => { try { return JSON.parse(d); } catch (_) { return null; } };
+const BUSY_RE = /high demand|overload|unavailable|try again|capacity|rate limit|resource.?exhausted|internal error|server error|temporar/i;
+function streamError(msg, name) {
+  const busy = BUSY_RE.test(msg || '');
+  const e = new Error(busy ? `${name} est surchargé en ce moment.` : (msg || `Erreur renvoyée par ${name}.`));
+  e.retryable = busy; return e;
+}
+
+/* ---------- Fournisseurs d'IA ---------- */
+const PROVIDERS = {
+  gemini: {
+    name: 'Google Gemini', keyLabel: 'Clé Google AI', placeholder: 'AIza…', link: 'https://aistudio.google.com/apikey',
+    fallback: ['gemini-2.5-flash', 'gemini-2.5-pro'],
+    async list(key) {
+      let all = [], token = '';
+      do {
+        const r = await net(this.name, () => fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=100${token ? '&pageToken=' + encodeURIComponent(token) : ''}`, { headers: { 'x-goog-api-key': key } }));
+        if (!r.ok) throw await apiError(r, this.name);
+        const j = await r.json();
+        all = all.concat(j.models || []); token = j.nextPageToken || '';
+      } while (token && all.length < 600);
+      const rank = id => {
+        const v = parseFloat((id.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1] || '0');
+        return v * 10 + (/pro/.test(id) ? 2 : /lite/.test(id) ? 0 : /flash/.test(id) ? 1 : 0.5) - (/preview|exp/.test(id) ? 0.05 : 0);
+      };
+      const out = all.map(m => ({ id: (m.name || '').replace(/^models\//, ''), label: m.displayName, limit: m.outputTokenLimit, methods: m.supportedGenerationMethods || [] }))
+        .filter(m => m.methods.includes('generateContent') && /gemini/i.test(m.id) && !/(embedding|tts|image|live|audio|aqa|vision|learnlm|robotics|computer-use|native|veo|imagen)/i.test(m.id))
+        .sort((a, b) => rank(b.id) - rank(a.id));
+      const pref = out.find(m => /flash/.test(m.id) && !/lite|preview|exp/.test(m.id));
+      return { models: out, preferred: (pref || out[0] || {}).id };
+    },
+    async stream(msgs, { json, maxTokens, signal, onChunk }, model, key) {
+      const contents = msgs.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [...(m.image ? [{ inlineData: { mimeType: 'image/jpeg', data: state.apiB64 } }] : []), { text: m.text }]
+      }));
+      const generationConfig = { temperature: json ? 1 : 0.7, maxOutputTokens: maxTokens };
+      if (json) generationConfig.responseMimeType = 'application/json';
+      const res = await net(this.name, () => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`, {
+        method: 'POST', signal, headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({ contents, generationConfig })
+      }));
+      if (!res.ok) throw await apiError(res, this.name);
+      let text = '', finish = '', block = '';
+      await readSSE(res, d => {
+        const j = jparse(d); if (!j) return;
+        if (j.error) throw streamError(j.error.message, 'Gemini');
+        if (j.promptFeedback && j.promptFeedback.blockReason) block = j.promptFeedback.blockReason;
+        const c = j.candidates && j.candidates[0]; if (!c) return;
+        if (c.finishReason) finish = c.finishReason;
+        for (const p of ((c.content && c.content.parts) || [])) if (p.text && !p.thought) { text += p.text; onChunk && onChunk(text); }
+      });
+      if (block || /SAFETY|PROHIBITED|BLOCKLIST/.test(finish)) throw new Error('Gemini a bloqué la demande pour raison de sécurité. Essaie une autre image ou une autre IA.');
+      return { text, truncated: finish === 'MAX_TOKENS' };
+    }
+  },
+
+  claude: {
+    name: 'Claude', keyLabel: 'Clé Anthropic', placeholder: 'sk-ant-…', link: 'https://console.anthropic.com/settings/keys',
+    fallback: ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-5-5'],
+    headers(key) {
+      return { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+    },
+    async list(key) {
+      const r = await net(this.name, () => fetch('https://api.anthropic.com/v1/models?limit=100', { headers: this.headers(key) }));
+      if (!r.ok) throw await apiError(r, this.name);
+      const j = await r.json();
+      const out = (j.data || []).filter(m => /claude/i.test(m.id))
+        .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+        .map(m => ({ id: m.id, label: m.display_name }));
+      const pref = out.find(m => /sonnet/i.test(m.id));
+      return { models: out, preferred: (pref || out[0] || {}).id };
+    },
+    async stream(msgs, { json, maxTokens, signal, onChunk }, model, key) {
+      const body = {
+        model, max_tokens: maxTokens, stream: true,
+        messages: msgs.map(m => ({
+          role: m.role,
+          content: [...(m.image ? [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: state.apiB64 } }] : []), { type: 'text', text: m.text }]
+        }))
+      };
+      if (json) body.system = 'Reply with a single valid JSON object only, no prose, no markdown.';
+      const res = await net(this.name, () => fetch('https://api.anthropic.com/v1/messages', { method: 'POST', signal, headers: this.headers(key), body: JSON.stringify(body) }));
+      if (!res.ok) throw await apiError(res, this.name);
+      let text = '', stop = '';
+      await readSSE(res, d => {
+        const j = jparse(d); if (!j) return;
+        if (j.type === 'error') {
+          const e = streamError((j.error && j.error.message) || '', 'Claude');
+          if (/overloaded|api_error/i.test((j.error && j.error.type) || '')) e.retryable = true;
+          throw e;
+        }
+        if (j.type === 'content_block_delta' && j.delta && j.delta.type === 'text_delta') { text += j.delta.text; onChunk && onChunk(text); }
+        if (j.type === 'message_delta' && j.delta && j.delta.stop_reason) stop = j.delta.stop_reason;
+      });
+      if (stop === 'refusal') throw new Error('Claude a refusé cette demande. Essaie une autre image ou une autre description.');
+      return { text, truncated: stop === 'max_tokens' };
+    }
+  },
+
+  openai: {
+    name: 'ChatGPT', keyLabel: 'Clé OpenAI', placeholder: 'sk-…', link: 'https://platform.openai.com/api-keys',
+    fallback: ['gpt-5', 'gpt-4.1'],
+    async list(key) {
+      const r = await net(this.name, () => fetch('https://api.openai.com/v1/models', { headers: { Authorization: 'Bearer ' + key } }));
+      if (!r.ok) throw await apiError(r, this.name);
+      const j = await r.json();
+      const out = (j.data || [])
+        .filter(m => /^(gpt-|o\d|chatgpt)/i.test(m.id) && !/(audio|realtime|tts|transcribe|whisper|dall-e|image|embedding|moderation|search|instruct|davinci|babbage|computer-use|diarize)/i.test(m.id))
+        .sort((a, b) => (b.created || 0) - (a.created || 0))
+        .map(m => ({ id: m.id, label: m.id }));
+      const pref = out.find(m => /^gpt-\d/.test(m.id) && !/mini|nano|\d{4}-\d{2}-\d{2}/.test(m.id));
+      return { models: out, preferred: (pref || out[0] || {}).id };
+    },
+    async stream(msgs, { json, maxTokens, signal, onChunk }, model, key) {
+      const body = {
+        model, stream: true, max_completion_tokens: maxTokens,
+        messages: msgs.map(m => ({
+          role: m.role,
+          content: m.image && m.role === 'user'
+            ? [{ type: 'text', text: m.text }, { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + state.apiB64 } }]
+            : m.text
+        }))
+      };
+      if (json) body.response_format = { type: 'json_object' };
+      const res = await net(this.name, () => fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST', signal, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key }, body: JSON.stringify(body)
+      }));
+      if (!res.ok) throw await apiError(res, this.name);
+      let text = '', finish = '';
+      await readSSE(res, d => {
+        if (d === '[DONE]') return;
+        const j = jparse(d); if (!j) return;
+        if (j.error) throw streamError(j.error.message, 'ChatGPT');
+        const c = j.choices && j.choices[0]; if (!c) return;
+        if (c.finish_reason) finish = c.finish_reason;
+        const t = c.delta && c.delta.content;
+        if (t) { text += t; onChunk && onChunk(text); }
+      });
+      if (finish === 'content_filter') throw new Error('OpenAI a filtré la réponse. Essaie une autre image ou une autre IA.');
+      return { text, truncated: finish === 'length' };
+    }
+  }
+};
+
+async function withRetry(fn, tries = 4) {
+  for (let i = 0; ; i++) {
+    try { return await fn(); }
+    catch (e) {
+      if (e.name === 'AbortError' || !e.retryable || i >= tries - 1) throw e;
+      setStatus(`${e.message} Nouvel essai dans ${4 * (i + 1)} s…`);
+      await sleep(4000 * (i + 1));
+      if (state.ctrl && state.ctrl.signal.aborted) throw abortErr();
+    }
+  }
+}
+async function callAI(msgs, opts) {
+  const p = PROVIDERS[prov()], model = currentModel();
+  const info = (state.models[prov()] || {}).info || {};
+  let max = Math.min(opts.maxTokens || 64000, (info[model] && info[model].limit) || 64000);
+  for (;;) {
+    try {
+      const run = () => p.stream(msgs, { ...opts, maxTokens: max }, model, apiKey());
+      return await (opts.noRetry ? run() : withRetry(run));
+    }
+    catch (e) {
+      if (e.tooManyTokens && max > 4096) { max = e.suggested && e.suggested < max ? e.suggested : Math.floor(max / 2); continue; }
+      throw e;
+    }
+  }
+}
+
+/* ---------- Clés et modèles ---------- */
+function fillModels(list, preferred) {
+  const sel = $('#model');
+  sel.replaceChildren(...list.map(m => {
+    const o = document.createElement('option');
+    o.value = m.id; o.textContent = m.label && m.label !== m.id ? `${m.label} (${m.id})` : m.id; return o;
+  }));
+  const ids = list.map(m => m.id), saved = store.get('cartouche.model.' + prov());
+  sel.value = ids.includes(saved) ? saved : (ids.includes(preferred) ? preferred : ids[0]);
+}
+function applyProvider() {
+  const id = prov(), p = PROVIDERS[id];
+  $('#keyLabel').textContent = p.keyLabel;
+  $('#apiKey').placeholder = p.placeholder;
+  $('#apiKey').value = state.keys[id] || '';
+  $('#keyLink').href = p.link;
+  const cache = state.models[id];
+  if (cache) { fillModels(cache.list, cache.preferred); setModelStatus(`Clé valide, ${cache.list.length} modèles`, 'ok'); }
+  else {
+    fillModels(p.fallback.map(x => ({ id: x })), p.fallback[0]); setModelStatus('', '');
+    if (state.keys[id]) refreshModels();
+  }
+}
+function setModelStatus(t, cls) { const s = $('#modelStatus'); s.textContent = t; s.className = 'hint' + (cls ? ' ' + cls : ''); }
+let modelTimer = 0, modelReq = 0;
+async function refreshModels() {
+  const id = prov(), key = apiKey(), req = ++modelReq;
+  if (!key) { setModelStatus('', ''); return; }
+  setModelStatus('Vérification de la clé…', '');
+  try {
+    const { models, preferred } = await PROVIDERS[id].list(key);
+    if (req !== modelReq || id !== prov()) return;
+    if (!models.length) throw new Error('Aucun modèle utilisable avec cette clé.');
+    const info = {};
+    models.forEach(m => { info[m.id] = m; });
+    state.models[id] = { list: models, preferred, info };
+    fillModels(models, preferred);
+    setModelStatus(`Clé valide, ${models.length} modèles`, 'ok');
+  } catch (e) {
+    if (req === modelReq) setModelStatus(e.message, 'bad');
+  }
+}
+function saveKeys() {
+  if ($('#remember').checked) {
+    store.set('cartouche.remember', '1');
+    Object.keys(state.keys).forEach(k => state.keys[k] ? store.set('cartouche.key.' + k, state.keys[k]) : store.del('cartouche.key.' + k));
+  }
+}
+
+/* ---------- Image ---------- */
+const BAD_IMG = 'Impossible de lire cette image. Essaie un autre fichier JPG ou PNG.';
+function readAsDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result)); r.onerror = () => rej(new Error(BAD_IMG)); r.readAsDataURL(file);
+  });
+}
+function loadImg(src) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error(BAD_IMG)); i.src = src; });
+}
+const dimW = img => img.naturalWidth || img.width;
+const dimH = img => img.naturalHeight || img.height;
+function resize(img, max, type, q) {
+  const s = Math.min(1, max / Math.max(dimW(img), dimH(img)));
+  const w = Math.max(1, Math.round(dimW(img) * s)), h = Math.max(1, Math.round(dimH(img) * s));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  if (type === 'image/jpeg') { x.fillStyle = '#ffffff'; x.fillRect(0, 0, w, h); }
+  x.drawImage(img, 0, 0, w, h);
+  return { dataURL: c.toDataURL(type, q), w, h };
+}
+function pixels(img, n) {
+  const c = document.createElement('canvas'); c.width = n; c.height = n;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0, n, n);
+  return x.getImageData(0, 0, n, n).data;
+}
+function hasAlpha(img) { const d = pixels(img, 64); for (let i = 3; i < d.length; i += 4) if (d[i] < 250) return true; return false; }
+function extractPalette(img) {
+  const d = pixels(img, 64), buckets = new Map();
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < 128) continue;
+    const k = (d[i] >> 4) << 8 | (d[i + 1] >> 4) << 4 | (d[i + 2] >> 4);
+    const b = buckets.get(k) || { r: 0, g: 0, b: 0, n: 0 };
+    b.r += d[i]; b.g += d[i + 1]; b.b += d[i + 2]; b.n++; buckets.set(k, b);
+  }
+  const sorted = [...buckets.values()].sort((a, b) => b.n - a.n).map(b => [b.r / b.n, b.g / b.n, b.b / b.n]);
+  const picked = [];
+  for (const c of sorted) {
+    if (picked.every(p => Math.hypot(p[0] - c[0], p[1] - c[1], p[2] - c[2]) > 60)) picked.push(c);
+    if (picked.length >= 6) break;
+  }
+  return picked.map(c => '#' + c.map(v => Math.round(v).toString(16).padStart(2, '0')).join(''));
+}
+function normBox(b) {
+  if (!b) return null;
+  let v = Array.isArray(b) ? b : [b.x0, b.y0, b.x1, b.y1];
+  v = v.map(Number);
+  if (v.length < 4 || v.some(n => !isFinite(n))) return null;
+  if (v.every(n => n <= 1.5)) v = v.map(n => n * 1000);
+  let [x0, y0, x1, y1] = v.map(n => Math.max(0, Math.min(1000, n)));
+  if (x1 < x0) [x0, x1] = [x1, x0];
+  if (y1 < y0) [y0, y1] = [y1, y0];
+  if (x1 - x0 < 20 || y1 - y0 < 20) return null;
+  return { x0, y0, x1, y1 };
+}
+function removeBackground(d, w, h) {
+  const px = (i) => [d[i], d[i + 1], d[i + 2]];
+  const border = [];
+  for (let x = 0; x < w; x++) { border.push(x, x + (h - 1) * w); }
+  for (let y = 1; y < h - 1; y++) { border.push(y * w, y * w + w - 1); }
+  const buckets = new Map();
+  for (const p of border) {
+    const i = p * 4, k = (d[i] >> 5) << 6 | (d[i + 1] >> 5) << 3 | (d[i + 2] >> 5);
+    const b = buckets.get(k) || { r: 0, g: 0, b: 0, n: 0 };
+    b.r += d[i]; b.g += d[i + 1]; b.b += d[i + 2]; b.n++; buckets.set(k, b);
+  }
+  const colors = [...buckets.values()].filter(b => b.n > border.length * 0.03).sort((a, b) => b.n - a.n).slice(0, 6)
+    .map(b => [b.r / b.n, b.g / b.n, b.b / b.n]);
+  if (!colors.length) return false;
+  const tol = 52;
+  const isBg = p => {
+    const i = p * 4; if (d[i + 3] < 24) return true;
+    const c = px(i);
+    return colors.some(k => Math.hypot(k[0] - c[0], k[1] - c[1], k[2] - c[2]) < tol);
+  };
+  const bg = new Uint8Array(w * h), queue = new Int32Array(w * h);
+  let head = 0, tail = 0;
+  for (const p of border) if (!bg[p] && isBg(p)) { bg[p] = 1; queue[tail++] = p; }
+  while (head < tail) {
+    const p = queue[head++], x = p % w, y = (p / w) | 0;
+    const nb = [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, y > 0 ? p - w : -1, y < h - 1 ? p + w : -1];
+    for (const q of nb) if (q >= 0 && !bg[q] && isBg(q)) { bg[q] = 1; queue[tail++] = q; }
+  }
+  const ratio = tail / (w * h);
+  if (ratio < 0.04 || ratio > 0.88) return false;
+  for (let p = 0; p < w * h; p++) {
+    if (bg[p]) { d[p * 4 + 3] = 0; continue; }
+    const x = p % w, y = (p / w) | 0;
+    const edge = (x > 0 && bg[p - 1]) || (x < w - 1 && bg[p + 1]) || (y > 0 && bg[p - w]) || (y < h - 1 && bg[p + w]);
+    if (edge) d[p * 4 + 3] = Math.min(d[p * 4 + 3], 150);
+  }
+  return true;
+}
+function ellipseMask(d, w, h) {
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const nx = (x + 0.5 - w / 2) / (w / 2), ny = (y + 0.5 - h / 2) / (h / 2);
+    const a = Math.max(0, Math.min(1, (1 - Math.hypot(nx, ny)) / 0.14));
+    const i = (y * w + x) * 4; d[i + 3] = Math.round(d[i + 3] * a);
+  }
+}
+function cutHero(hero) {
+  const img = state.img, box = normBox(hero.box || hero.bbox);
+  if (!img || !box) return null;
+  const W = dimW(img), H = dimH(img);
+  const bx0 = box.x0 / 1000 * W, by0 = box.y0 / 1000 * H, bw = (box.x1 - box.x0) / 1000 * W, bh = (box.y1 - box.y0) / 1000 * H;
+  const padX = bw * 0.06, padY = bh * 0.06;
+  const x0 = Math.max(0, bx0 - padX), y0 = Math.max(0, by0 - padY);
+  const x1 = Math.min(W, bx0 + bw + padX), y1 = Math.min(H, by0 + bh + padY);
+  const cw = x1 - x0, ch = y1 - y0;
+  if (cw < 8 || ch < 8) return null;
+  const sc = Math.min(1, 384 / Math.max(cw, ch));
+  const w = Math.max(1, Math.round(cw * sc)), h = Math.max(1, Math.round(ch * sc));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.drawImage(img, x0, y0, cw, ch, 0, 0, w, h);
+  const data = x.getImageData(0, 0, w, h);
+  let cutout = 'transparent';
+  if (!state.alpha && !removeBackground(data.data, w, h)) { ellipseMask(data.data, w, h); cutout = 'ellipse'; }
+  x.putImageData(data, 0, 0);
+  const offX = (bx0 - x0) * sc, offY = (by0 - y0) * sc, sw = bw * sc, sh = bh * sc;
+  const parts = (Array.isArray(hero.parts) ? hero.parts : []).map(pt => {
+    const b = normBox(pt.box || pt.bbox);
+    if (!b) return null;
+    const pv = pt.pivot || {};
+    const r = n => Math.round(n);
+    return {
+      name: String(pt.name || 'part').slice(0, 30),
+      x: r(offX + b.x0 / 1000 * sw), y: r(offY + b.y0 / 1000 * sh),
+      w: r((b.x1 - b.x0) / 1000 * sw), h: r((b.y1 - b.y0) / 1000 * sh),
+      pivotX: r(offX + (isFinite(pv.x) ? pv.x : (b.x0 + b.x1) / 2) / 1000 * sw),
+      pivotY: r(offY + (isFinite(pv.y) ? pv.y : b.y0) / 1000 * sh)
+    };
+  }).filter(Boolean).slice(0, 16);
+  return {
+    image: c.toDataURL('image/png'), width: w, height: h, cutout,
+    type: HERO_TYPES[hero.type] ? hero.type : 'other', facing: hero.facing || 'right',
+    name: String(hero.name || '').slice(0, 40), parts
+  };
+}
+async function takeFile(file) {
+  showError('');
+  if (!file) return;
+  if (!/^image\/(png|jpeg)$/.test(file.type)) { showError('Ce fichier n’est pas une image JPG ou PNG.'); return; }
+  if (file.size > 25 * 1024 * 1024) { showError('Image trop lourde (25 Mo maximum).'); return; }
+  try {
+    const url = await readAsDataURL(file);
+    let img;
+    try { img = await loadImg(url); }
+    catch (err) {
+      if (!window.createImageBitmap) throw err;
+      try { img = await createImageBitmap(file); } catch (_) { throw err; }
+    }
+    state.file = file; state.img = img;
+    state.apiB64 = resize(img, 1024, 'image/jpeg', 0.88).dataURL.split(',')[1];
+    const alpha = file.type === 'image/png' && hasAlpha(img);
+    state.alpha = alpha;
+    state.asset = resize(img, 512, alpha ? 'image/png' : 'image/jpeg', 0.86);
+    state.palette = extractPalette(img);
+    const p = $('#preview'); p.src = url; p.hidden = false; $('#empty').hidden = true;
+    $('#caption').textContent = `${file.name} (${dimW(img)} × ${dimH(img)})`;
+    $('#swatches').replaceChildren(...state.palette.map(c => { const i = document.createElement('i'); i.style.background = c; return i; }));
+    $('#go').disabled = state.busy;
+    updateGo();
+  } catch (e) { showError(e.message); }
+}
+
+/* ---------- Consignes pour l'IA ---------- */
+const ANIM_RULES = `CHARACTER ANIMATION, no character may ever slide around as a frozen picture:
+- At startup, build sprite sheets in offscreen canvases for the hero and for every NPC or enemy: idle (at least 4 frames), move (at least 8 frames: walk, run, swim, fly, crawl or roll cycle), action (3-4 frames: jump, attack, shoot...), hurt (2 frames), plus death or celebration when relevant. Play them at 8-14 fps depending on state and speed, flip horizontally to face the movement direction, and add squash and stretch on top.
+- Hero from the image (window.GAME_ASSETS.hero when present): build its frames from the cutout itself so it stays recognizable, combining:
+  * Part puppet: when parts are given and look plausible, draw each part as its own crop (drawImage source rectangle), rotated around its pivot (limbs swing, head bobs, tail wags), over the body drawn without those regions if needed.
+  * Strip deformation: slice the cutout into thin strips (2 to 4 px) and offset or scale each strip with phase-shifted sine waves to bend tentacles, tails, fins, bodies, leaves, hair, ears, flags.
+  * Procedural limbs: when the limbs in the picture cannot be separated, draw animated limbs (capsules or bezier curves, colors sampled from the cutout with getImageData) behind or in front of the body: walking legs, flapping wings, swinging arms, rotating wheels.
+  Movement per type: humanoid = alternating leg and arm swing, head bob, forward lean when running, crouch before jumping, arms up in the air; quadruped = 4-leg gait by diagonal pairs, body bob, tail wag, ear flick; bird = wing flaps, body tilt, glide; fish = S-shaped body wave growing toward the tail, tail fin flap; cephalopod = every tentacle waving with a phase shift, mantle pulsing (squash and stretch), tentacles trailing behind during propulsion bursts; insect or spider = 6 or 8 alternating legs, fast wing buzz; serpent or worm = traveling sine wave along the body; plant = sway from the base, fluttering leaves; blob = jelly squash and stretch with wobble; vehicle = wheels spinning with speed, suspension bounce, tilt in turns, exhaust or dust particles; robot or machine = hinged joints, blinking lights, hover bob; object = hops, rotation and squash, with small drawn eyes, arms and legs if it is the hero.
+  If the cutout fails to load, draw the hero procedurally with the same animation rig.
+- NPCs and enemies: drawn procedurally in the same art style, each with its own idle, move, attack and hurt cycles following the same per-type rules (they may also be recolored or modified versions of the hero cutout when it fits the story).
+- Decor props listed in "animated_props": looping ambient animations (sway, flicker, bob, spin, blink, ripple), slightly desynchronized from each other.`;
+
+const ART_RULES = `ART DIRECTION, the game must look like a polished commercial indie game, never like a prototype:
+- Backgrounds: never a flat color. At least 3 parallax layers built from gradients and procedural shapes (sky, distant silhouettes, mid details, foreground), plus ambient animated details (drifting particles, stars, dust, bokeh, light rays). The source image may appear as a soft, darkened or blurred backdrop layer (blur by drawing it tiny then scaling it up with imageSmoothingQuality = 'high').
+- Sprites: pre-render every sprite once into offscreen canvases at startup (sprite cache). Give them volume: gradient shading, highlight on top, darker outline (2 px), soft ground shadow (ellipse), small details (eyes, stripes, rivets, leaves). Crops of the source image used as sprites get a rounded or circular mask, an outline and a subtle shadow.
+- Animation everywhere: squash and stretch on jumps and landings, idle bobbing, rotation and wobble, eased tweens (easeOutBack, easeOutCubic), white hit flash, motion trails for fast objects, collectibles that spin or pulse.
+- Light and atmosphere: radial vignette, additive glow ('lighter' composite with pre-rendered radial-gradient glow sprites, never shadowBlur inside the game loop), a slow color-graded overlay matching the mood, occasional light sweep.
+- Juice: particle bursts (sparks, confetti, smoke, debris) on every important event, screen shake with decay, brief hit-stop (40 ms) on impacts, floating score text that rises and fades, combo counter.
+- UI: HUD on translucent rounded panels; heavy system font stack ("Trebuchet MS", "Segoe UI", system-ui, sans-serif) with text outline and drop shadow; animated title logo (letters waving or bouncing); the source image framed on the title screen with a slow Ken Burns zoom; animated fade or wipe transitions between states; a polished game-over panel.
+- Performance: cache gradients and sprites, cap particles at about 300, keep a steady 60 fps.`;
+
+function conceptPrompt(name, desc, genre) {
+  const list = GENRES.filter(g => g.id !== 'auto').map(g => `- ${g.id}: ${g.en}`).join('\n');
+  return `You are a senior game designer and art director. Look carefully at the attached image and design ONE small but complete browser arcade game that this image inspires.
+User-provided game title: ${name ? JSON.stringify(name) + ' (use it exactly as the title)' : '(none: invent a short, catchy French title)'}
+User-provided text (a description of the image and/or a short story related to it): ${desc ? JSON.stringify(desc) : '(none)'}
+${desc ? 'Use this text as the narrative foundation of the game: characters and their names, the goal, the enemies or obstacles, the setting, the mood and the tone must come from it whenever possible, combined with what the image shows.' : 'Invent a light story that fits the image.'}
+Dominant colors measured in the image: ${state.palette.join(', ') || 'unknown'}
+${genre ? `The genre is imposed: "${genre.id}" (${genre.en}). Adapt the image to this genre creatively.` : `Choose the genre that best fits what the image evokes (subject, mood, composition, colors). Possible genres:\n${list}`}
+The game must be understandable in 5 seconds, fun from the first second, playable in 1 to 5 minute sessions, visually rich, and must reuse the image itself visually.
+MAIN CHARACTER: if the image shows a clear subject (person, animal, creature, plant, object, vehicle...), especially one that is prominent or roughly centered, it IS the hero of the game, unless the user's text clearly says otherwise. Identify precisely what kind of being or thing it is, give its tight bounding box so it can be cut out of the image, and the boxes of its movable parts (head, arms, legs, tail, wings, fins, tentacles, wheels...) with their rotation pivot. If there is no clear subject (landscape, pattern, abstract art), set hero.from_image to false and invent a hero that fits the image.
+Reply with JSON only, exactly this shape, all text values in French except "genre", "type" and "facing":
+{"title":"","genre":"one id from the list","pitch":"one or two sentences","story_intro":"2 or 3 short sentences telling the story that sets up the game, shown on the title screen","image_reading":"what you see in the image","player":"look and abilities","enemies":"look and behaviour","collectibles":"","goal":"","core_mechanic":"","progression":"how difficulty and levels evolve","image_usage":"precisely how the source image is drawn in the game","art_direction":"a precise visual style (rendering, shapes, lighting, mood) inspired by the image","background_layers":"description of 3 to 4 parallax layers","palette":["#rrggbb","#rrggbb","#rrggbb","#rrggbb","#rrggbb","#rrggbb"],"orientation":"landscape or portrait","controls_keyboard":"short French sentence","controls_touch":"short French sentence","controls_gamepad":"short French sentence (stick/d-pad, A, B, Start)","sound_mood":"",
+"hero":{"from_image":true,"type":"humanoid|quadruped|bird|fish|cephalopod|insect|serpent|plant|blob|vehicle|robot|object|other","name":"","look":"precise visual description","box":{"x0":0,"y0":0,"x1":1000,"y1":1000},"facing":"left|right|front","parts":[{"name":"","box":{"x0":0,"y0":0,"x1":0,"y1":0},"pivot":{"x":0,"y":0}}],"animations":{"idle":"","move":"","action":"","hurt":""}},
+"npcs":[{"name":"","type":"same type list","look":"","behaviour":"","animations":"how it moves naturally"}],
+"animated_props":[{"name":"","animation":""}]}
+Coordinates: hero.box is normalized 0-1000 on the whole image (x0,y0 = top-left corner, x1,y1 = bottom-right corner), tight around the subject. parts[].box and parts[].pivot are normalized 0-1000 relative to the hero box. List 2 to 10 parts, only those really visible.`;
+}
+function codePrompt(c, asset, hero) {
+  const portrait = /portrait/i.test(c.orientation || '');
+  return `You are an expert HTML5 game developer and technical artist. Write the complete game described by this design document:
+${JSON.stringify(c, null, 2)}
+
+The attached picture is the source image. HARD REQUIREMENTS, follow every one:
+1. Output ONLY one complete HTML document, starting with <!DOCTYPE html> and ending with </html>. No markdown, no code fences, no explanations.
+2. Fully self-contained: one <style> and one classic <script> (no modules, no imports). NO external resources at all: no CDN, no web fonts, no image or audio files, no fetch or XHR. Draw everything with the Canvas 2D API.
+3. The host injects BEFORE your code a global object: window.GAME_ASSETS = { image: "<data URL of the source image>", width: ${asset.w}, height: ${asset.h} }. Load it with new Image() and use it as described in "image_usage". If it is missing or fails to load within 2 seconds, the game must still work with drawn shapes. Never block forever.
+3b. ${hero ? `window.GAME_ASSETS.hero = { image: "<PNG data URL of the main character cut out of the source image, ${hero.cutout === 'ellipse' ? 'with a soft oval mask because the background could not be fully removed' : 'with a transparent background'}>", width: ${hero.width}, height: ${hero.height}, type: "${hero.type}", facing: "${hero.facing}", name: ${JSON.stringify(hero.name)}, parts: ${JSON.stringify(hero.parts)} }. Parts are in pixels inside the cutout, pivot = rotation point. This is the hero: animate it as required in CHARACTER ANIMATION. Load it with new Image(), same fallback rule as above.` : 'There is no cutout of the hero: draw it procedurally from the "hero" description, animated as required in CHARACTER ANIMATION.'}
+4. Every on-screen text in French. <title> = the game title. Add <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">.
+5. States: TITLE screen (animated title, framed image art, the "story_intro" text displayed nicely (typewriter effect or fade-in, readable, wrapped), 2-3 lines of instructions, controls, best score, blinking "Appuie sur Espace ou touche l'écran pour jouer"), PLAYING, PAUSED, a LEVEL-UP banner, GAME OVER (score, best score, "Nouveau record !" when relevant, "Espace ou touche l'écran pour rejouer"). Clean state machine; restarting fully resets the game.
+6. HUD always visible while playing: game title (small), score, lives as heart icons, level, best score, plus small pause and mute buttons that work with mouse and touch.
+7. 3 lives, short blinking invincibility after a hit, difficulty that clearly increases with level or time, the first 20 seconds gentle, fair and slightly forgiving hitboxes.
+8. Best score saved in localStorage under a unique key; wrap every storage access in try/catch.
+9. Keyboard listeners on window. Use event.code for movement: ArrowUp/ArrowDown/ArrowLeft/ArrowRight AND KeyW/KeyA/KeyS/KeyD (layout independent, so ZQSD also works on French AZERTY keyboards). Space and Enter = action/start, KeyP or Escape = pause, KeyM = mute. preventDefault on arrows and Space. Keep a pressed-keys map, cleared on window blur.
+10. Touch and mouse with Pointer Events. On touch devices (matchMedia('(pointer: coarse)').matches or 'ontouchstart' in window) draw large semi-transparent on-screen controls fitted to the genre (d-pad or left/right zones plus action button, multi-touch), or direct tap/drag control when more natural. Canvas CSS touch-action:none. Mouse must work wherever relevant. A tap or click on the title or game-over screen starts the game.
+10b. Gamepad (Gamepad API, standard mapping) must be fully supported, natively: set window.__GAMEPAD_NATIVE = true at startup; poll navigator.getGamepads() every frame (inside try/catch, it may be unavailable); left stick (dead zone 0.3) AND d-pad (buttons 12-15) move; A (button 0) = main action / jump / shoot / confirm; B (button 1) = secondary action or back; Start (button 9) = start the game from the title and game-over screens, pause and resume while playing; Select (button 8) = mute. Detect new presses with a previous-state map (no auto-repeat on menus). Every menu and screen must be usable with the gamepad only. When a gamepad is connected, show "Manette connectée" briefly and display the gamepad controls on the title screen. Vibrate on hits with gamepad.vibrationActuator.playEffect('dual-rumble', {duration: 120, strongMagnitude: 0.6, weakMagnitude: 0.3}) inside try/catch. Keyboard, mouse, touch and gamepad must all work, and can be mixed at any time.
+11. Canvas with a fixed logical resolution of ${portrait ? '540x960' : '960x540'}, scaled to fit the window while keeping aspect ratio, centered, sharp on HiDPI screens (devicePixelRatio), updated on resize. html, body: margin 0, overflow hidden, background from the palette. Convert pointer coordinates into logical coordinates correctly.
+12. Main loop with requestAnimationFrame, delta time in seconds clamped to 0.05. Auto-pause when document.hidden.
+13. Sound: synthesize every effect with the Web Audio API (start, jump/shoot, collect, hit, level up, game over) plus a light looping chiptune melody matching "${String(c.sound_mood || '').replace(/"/g, "'")}". Create or resume the AudioContext only on the first user gesture. Wrap all audio code in try/catch. Mute toggle.
+14. Zero runtime errors: 'use strict', guard every array and object access, no alert/confirm/prompt, no console output. Walk through the full flow mentally: title, play, lose every life, game over, replay.
+15. Clean, well-organized code (roughly 700 to 1500 lines).
+
+${ART_RULES}
+
+${ANIM_RULES}
+Visual style to follow: ${c.art_direction || ''}. Parallax layers: ${c.background_layers || ''}. Palette: ${(Array.isArray(c.palette) ? c.palette : []).join(', ')}.`;
+}
+function fixPrompt(html, errors) {
+  return `This HTML5 game produced the following runtime errors during an automated test (the test pressed Space and Enter, clicked the canvas, pressed arrow keys and P):
+${errors.map(e => '- ' + e).join('\n')}
+
+Fix every error and any related bug while keeping the game design and visuals identical. Keep respecting: a single self-contained HTML file, window.GAME_ASSETS provided by the host before your script, French texts. Output ONLY the complete corrected HTML document from <!DOCTYPE html> to </html>, without markdown.
+
+${html}`;
+}
+function polishPrompt(html, c) {
+  return `You are a senior technical artist for HTML5 canvas games. Below is a WORKING game. Rewrite it with dramatically better visuals.
+Keep EXACTLY the same gameplay, rules, controls (keyboard, mouse, touch and gamepad, including window.__GAMEPAD_NATIVE), states, HUD information, sounds, localStorage usage, window.GAME_ASSETS usage, French texts and every technical constraint (single self-contained HTML, no external resources, no runtime errors). Do not remove any feature. Keep the character animation system and make every animation even smoother, more natural and more expressive.
+Visual style: ${c.art_direction || ''}. Parallax layers: ${c.background_layers || ''}. Palette: ${(Array.isArray(c.palette) ? c.palette : []).join(', ')}.
+
+${ART_RULES}
+
+${ANIM_RULES}
+
+Output ONLY the complete improved HTML document from <!DOCTYPE html> to </html>, without markdown.
+
+${html}`;
+}
+
+/* ---------- Traitement des réponses ---------- */
+function parseJSON(t) {
+  const clean = (t || '').replace(/```(?:json)?/gi, '').trim();
+  try { return JSON.parse(clean); } catch (_) {}
+  const a = clean.indexOf('{'), b = clean.lastIndexOf('}');
+  if (a >= 0 && b > a) { try { return JSON.parse(clean.slice(a, b + 1)); } catch (_) {} }
+  throw new Error('Le concept renvoyé par l’IA est illisible. Relance la fabrication.');
+}
+function extractHTML(t) {
+  if (!t) return '';
+  t = t.replace(/^\s*```(?:html)?\s*/i, '').replace(/```\s*$/, '');
+  let s = t.search(/<!doctype html/i);
+  if (s < 0) s = t.search(/<html[\s>]/i);
+  if (s < 0) return '';
+  const e = t.toLowerCase().lastIndexOf('</html>');
+  if (e >= 0) return t.slice(s, e + 7);
+  let out = t.slice(s);
+  const lo = out.toLowerCase();
+  if (lo.lastIndexOf('<script') > lo.lastIndexOf('<\/script>')) out += '\n<\/script>';
+  return out + '\n</body>\n</html>';
+}
+function injectHead(code, extra) {
+  const m = code.match(/<head[^>]*>/i);
+  if (m) return code.slice(0, m.index + m[0].length) + extra + code.slice(m.index + m[0].length);
+  const h = code.match(/<html[^>]*>/i);
+  if (h) return code.slice(0, h.index + h[0].length) + '<head>' + extra + '</head>' + code.slice(h.index + h[0].length);
+  return extra + code;
+}
+function gamepadBridge() {
+  var held = {}, toastEl = null, iv = 0;
+  var KEYS = { ArrowLeft: 'ArrowLeft', ArrowRight: 'ArrowRight', ArrowUp: 'ArrowUp', ArrowDown: 'ArrowDown', Space: ' ', Enter: 'Enter', KeyP: 'p' };
+  function send(type, code) {
+    try { (document.activeElement || document.body || document).dispatchEvent(new KeyboardEvent(type, { code: code, key: KEYS[code], bubbles: true, cancelable: true })); } catch (_) {}
+  }
+  function set(code, on) { if (!!held[code] === on) return; held[code] = on; send(on ? 'keydown' : 'keyup', code); }
+  function releaseAll() { for (var c in held) if (held[c]) set(c, false); }
+  function toast(msg) {
+    try {
+      if (!document.body) return;
+      if (!toastEl) {
+        toastEl = document.createElement('div');
+        toastEl.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;padding:8px 16px;border-radius:999px;background:rgba(0,0,0,.75);color:#fff;font:600 15px system-ui,sans-serif;pointer-events:none;transition:opacity .4s;opacity:0';
+        document.body.appendChild(toastEl);
+      }
+      toastEl.textContent = msg; toastEl.style.opacity = '1';
+      clearTimeout(toastEl._t); toastEl._t = setTimeout(function () { toastEl.style.opacity = '0'; }, 2500);
+    } catch (_) {}
+  }
+  function poll() {
+    var pads = [], p = null;
+    try { pads = navigator.getGamepads ? navigator.getGamepads() : []; } catch (_) {}
+    for (var i = 0; i < pads.length; i++) if (pads[i] && pads[i].connected) { p = pads[i]; break; }
+    if (!p || window.__GAMEPAD_NATIVE) { releaseAll(); return; }
+    var b = p.buttons || [], ax = p.axes || [];
+    function pr(n) { return !!(b[n] && (b[n].pressed || b[n].value > 0.5)); }
+    var x = ax[0] || 0, y = ax[1] || 0;
+    set('ArrowLeft', pr(14) || x < -0.45); set('ArrowRight', pr(15) || x > 0.45);
+    set('ArrowUp', pr(12) || y < -0.45); set('ArrowDown', pr(13) || y > 0.45);
+    set('Space', pr(0)); set('Enter', pr(1) || pr(9)); set('KeyP', pr(8));
+  }
+  window.addEventListener('gamepadconnected', function () { toast('🎮 Manette connectée'); if (!iv) iv = setInterval(poll, 16); });
+  window.addEventListener('gamepaddisconnected', function () { toast('Manette déconnectée'); poll(); });
+}
+function assetScript(hero) {
+  const a = state.asset || { dataURL: '', w: 0, h: 0 };
+  return '<script>window.GAME_ASSETS=' + JSON.stringify({ image: a.dataURL, width: a.w, height: a.h, hero: hero || null }) + ';<\/script>'
+    + '<script>(' + gamepadBridge.toString() + ')();<\/script>';
+}
+const CONTINUE = 'Your previous answer was cut off. Continue the HTML document exactly where it stopped: do not repeat anything already written, do not restart, no markdown, no explanations. Go on until </html>.';
+function joinCont(prior, add) {
+  if (!prior) return add;
+  const clean = add.replace(/^\s*```(?:html)?\s*/i, '');
+  if (/^\s*<!doctype html/i.test(clean)) return clean;
+  return prior + clean.replace(/```\s*$/, '');
+}
+async function generateHTML(msgs, signal, onChunk, job, field) {
+  let acc = job[field] || '', failures = 0, rounds = 0;
+  while (!/<\/html>/i.test(acc)) {
+    const base = acc;
+    const m = base ? [...msgs, { role: 'assistant', text: base }, { role: 'user', text: CONTINUE }] : msgs;
+    if (base) setStatus(`Reprise du code à partir de ${fmt(base.length)} caractères, sans repartir de zéro…`);
+    try {
+      const r = await callAI(m, { signal, noRetry: true, onChunk: t => { job[field] = joinCont(base, t); onChunk(job[field].length); } });
+      acc = joinCont(base, r.text); job[field] = acc;
+      if (!r.truncated || ++rounds > 4) break;
+    } catch (e) {
+      acc = job[field] || acc;
+      if (e.name === 'AbortError' || !e.retryable || ++failures > 3) throw e;
+      const wait = 6 * failures;
+      setStatus(`${e.message} Reprise automatique dans ${wait} s, le code déjà reçu est conservé…`);
+      await sleep(wait * 1000);
+      if (signal.aborted) throw abortErr();
+    }
+  }
+  return extractHTML(acc);
+}
+
+/* ---------- Test automatique dans un cadre isolé ---------- */
+function harness(T) {
+  var frames = 0;
+  function send(type, msg, extra) {
+    try {
+      var o = { __cartouche: T, type: type, msg: String(msg || '').slice(0, 400) };
+      if (extra) for (var k in extra) o[k] = extra[k];
+      parent.postMessage(o, '*');
+    } catch (_) {}
+  }
+  window.addEventListener('error', function (e) {
+    if (e && e.message) send('error', e.message + (e.lineno ? ' (ligne ' + e.lineno + ')' : ''));
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e.reason; send('error', 'Promesse rejetée : ' + (r && r.message ? r.message : r));
+  });
+  var raf = window.requestAnimationFrame;
+  window.requestAnimationFrame = function (cb) { frames++; return raf.call(window, cb); };
+  function key(type, code, k) {
+    try { (document.activeElement || document.body || document).dispatchEvent(new KeyboardEvent(type, { code: code, key: k, bubbles: true, cancelable: true })); } catch (_) {}
+  }
+  function press(code, k) { key('keydown', code, k); setTimeout(function () { key('keyup', code, k); }, 90); }
+  function tap() {
+    var el = document.querySelector('canvas') || document.body;
+    if (!el) return;
+    var r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(function (n) {
+      try {
+        var Ev = n.indexOf('pointer') === 0 && window.PointerEvent ? PointerEvent : MouseEvent;
+        el.dispatchEvent(new Ev(n, { bubbles: true, cancelable: true, clientX: x, clientY: y, pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0, buttons: n.indexOf('down') > 0 ? 1 : 0 }));
+      } catch (_) {}
+    });
+  }
+  window.addEventListener('load', function () {
+    setTimeout(function () { press('Space', ' '); press('Enter', 'Enter'); tap(); }, 700);
+    var codes = [['ArrowLeft', 'ArrowLeft'], ['ArrowRight', 'ArrowRight'], ['ArrowUp', 'ArrowUp'], ['ArrowDown', 'ArrowDown'], ['Space', ' ']];
+    var n = 0;
+    var iv = setInterval(function () { var c = codes[n % codes.length]; press(c[0], c[1]); if (n % 7 === 3) tap(); n++; }, 140);
+    setTimeout(function () {
+      clearInterval(iv); press('KeyP', 'p');
+      setTimeout(function () { press('KeyP', 'p'); send('done', '', { frames: frames, canvas: !!document.querySelector('canvas') }); }, 300);
+    }, 4200);
+  });
+}
+function waitVisible(signal) {
+  if (!document.hidden) return Promise.resolve();
+  const prev = $('#status').textContent;
+  setStatus('En attente : reviens sur cet onglet pour que le jeu puisse être testé (le navigateur met les animations en pause en arrière-plan).');
+  try { document.title = '⏸ Cartouche : test en attente'; } catch (_) {}
+  return new Promise(res => {
+    const done = () => {
+      if (document.hidden && !(signal && signal.aborted)) return;
+      document.removeEventListener('visibilitychange', done);
+      try { document.title = 'Cartouche : une image devient un jeu'; } catch (_) {}
+      setStatus(prev); res();
+    };
+    document.addEventListener('visibilitychange', done);
+    if (signal) signal.addEventListener('abort', done, { once: true });
+  });
+}
+async function testGame(code, signal, hero) {
+  await waitVisible(signal);
+  let wasHidden = false;
+  const onVis = () => { if (document.hidden) wasHidden = true; };
+  document.addEventListener('visibilitychange', onVis);
+  const errs = await runGameTest(code, signal, hero, () => wasHidden);
+  document.removeEventListener('visibilitychange', onVis);
+  return errs;
+}
+function runGameTest(code, signal, hero, hiddenDuringTest) {
+  return new Promise(resolve => {
+    const token = Math.random().toString(36).slice(2);
+    const errs = new Set();
+    let done = false;
+    const html = injectHead(code, '<script>(' + harness.toString() + ')(' + JSON.stringify(token) + ');<\/script>' + assetScript(hero));
+    const wrap = $('#testview');
+    wrap.hidden = false;
+    const f = document.createElement('iframe');
+    f.setAttribute('sandbox', 'allow-scripts');
+    f.title = 'Test automatique du jeu';
+    wrap.replaceChildren(f);
+    f.style.transform = `scale(${(wrap.clientWidth || 400) / 800})`;
+    const onMsg = e => {
+      const d = e.data;
+      if (!d || d.__cartouche !== token) return;
+      if (d.type === 'error') errs.add(d.msg);
+      if (d.type === 'done') {
+        if (!d.canvas) errs.add('Aucun élément canvas n’a été créé.');
+        if (d.frames < 5 && !hiddenDuringTest()) errs.add('La boucle de jeu ne tourne pas (requestAnimationFrame quasiment jamais appelé).');
+        finish();
+      }
+    };
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(to);
+      window.removeEventListener('message', onMsg);
+      setTimeout(() => { wrap.hidden = true; wrap.replaceChildren(); }, 300);
+      resolve([...errs].slice(0, 8));
+    };
+    window.addEventListener('message', onMsg);
+    const to = setTimeout(() => { if (!hiddenDuringTest()) errs.add('Le jeu ne répond pas au test (blocage au chargement).'); finish(); }, 10000);
+    if (signal) signal.addEventListener('abort', finish, { once: true });
+    f.srcdoc = html;
+  });
+}
+
+/* ---------- Progression ---------- */
+function resetSteps(withPolish) {
+  $('#steps').replaceChildren(...STEPS.filter(([id]) => withPolish || id !== 'polish').map(([id, label]) => {
+    const li = document.createElement('li'); li.dataset.step = id; li.dataset.state = 'todo'; li.textContent = label; return li;
+  }));
+}
+function step(id, st, label) {
+  const li = $(`#steps [data-step="${id}"]`);
+  if (li) { li.dataset.state = st; if (label) li.textContent = label; }
+}
+function setProgress(p) {
+  p = Math.max(state.progress, Math.min(100, p));
+  state.progress = p;
+  $('#barFill').style.width = p + '%';
+  $('#bar').setAttribute('aria-valuenow', Math.round(p));
+  $('#pct').textContent = Math.round(p) + ' %';
+}
+const ease = (n, k) => 1 - Math.exp(-n / k);
+function setStatus(t) { $('#status').textContent = t; }
+function setMeta(t) { $('#meta').textContent = t; }
+const fmt = n => n.toLocaleString('fr-FR');
+
+/* ---------- Fabrication (reprenable) ---------- */
+const jobSig = () => [state.apiB64.length, state.apiB64.slice(-64), $('#gName').value.trim(), $('#gDesc').value.trim()].join('|');
+const resumable = () => !!(state.job && !state.job.done && state.job.sig === jobSig() && state.job.started);
+const canResumeGo = () => resumable() && state.job.genreId === $('#startStyle').value;
+function updateGo() {
+  const r = resumable();
+  $('#go').textContent = canResumeGo() ? 'Reprendre la fabrication' : 'Fabriquer le jeu';
+  $('#restart').hidden = !r || state.busy;
+  $('#resume').hidden = !r || state.busy;
+}
+async function generate(genreId, resume) {
+  if (state.busy) return;
+  showError('');
+  const P = PROVIDERS[prov()];
+  if (!apiKey()) { showError(`Renseigne ta ${P.keyLabel.toLowerCase()} en haut de la page.`); $('#apiKey').focus(); return; }
+  if (!currentModel()) { showError('Choisis un modèle en haut de la page.'); return; }
+  if (!state.apiB64) { showError('Choisis d’abord une image.'); return; }
+  if (!resume || !resumable()) {
+    state.job = { sig: jobSig(), genreId, started: false, concept: null, raw: '', code: '', needsTest: true, errors: [], fixTries: 0, fixRaw: '', hero: null, heroDone: false,
+      polishDone: false, polishRaw: '', polishFixRaw: '', pretty: '', done: false };
+  }
+  const job = state.job;
+  const genre = GENRES.find(g => g.id === job.genreId && g.id !== 'auto') || null;
+  const name = $('#gName').value.trim(), desc = $('#gDesc').value.trim();
+  const withPolish = $('#polish').checked;
+  const model = currentModel();
+
+  state.busy = true; state.progress = 0; state.ctrl = new AbortController();
+  const signal = state.ctrl.signal;
+  ['#go', '#again', '#cart', '#provider', '#model'].forEach(s => $(s).disabled = true);
+  $('#resume').hidden = true; $('#restart').hidden = true;
+  resetSteps(withPolish); setProgress(0); $('#bar').classList.remove('done');
+  $('#progress').hidden = false; $('#cancel').hidden = false; setMeta('');
+  const smooth = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  $('#progress').scrollIntoView({ behavior: smooth, block: 'start' });
+  const t0 = Date.now();
+  const tick = setInterval(() => {
+    const s = Math.round((Date.now() - t0) / 1000);
+    $('#elapsed').textContent = s >= 60 ? `${Math.floor(s / 60)} min ${s % 60} s` : `${s} s`;
+  }, 500);
+  let cur = 'prep';
+  const go = id => { cur = id; step(id, 'active'); };
+  const span = withPolish ? { code: [21, 58], test: 60, fix: [62, 68], polish: [70, 92] } : { code: [21, 78], test: 80, fix: [84, 94] };
+  const onCode = (a, b, label) => n => { setProgress(a + (b - a) * ease(n, 30000)); setMeta(`${fmt(n)} caractères ${label}`); };
+  const runTest = async () => { const e = await testGame(job.code, signal, job.hero); if (signal.aborted) throw abortErr(); return e; };
+
+  try {
+    job.started = true;
+    go('prep'); setProgress(5); step('prep', 'done');
+
+    if (job.concept) step('concept', 'done', `Concept : ${genreLabel(job.concept.genre)}`);
+    else {
+      go('concept'); setStatus(genre ? `${P.name} adapte ton image au style ${genre.fr}…` : `${P.name} observe l’image et choisit le meilleur type de jeu…`);
+      const r1 = await callAI([{ role: 'user', image: true, text: conceptPrompt(name, desc, genre) }],
+        { json: true, signal, maxTokens: 12000, onChunk: t => setProgress(5 + 13 * ease(t.length, 1800)) });
+      const concept = parseJSON(r1.text);
+      if (!concept || Array.isArray(concept) || typeof concept !== 'object') throw new Error('Le concept renvoyé par l’IA est illisible. Relance la fabrication.');
+      if (name) concept.title = name;
+      if (!concept.title) concept.title = 'Jeu sans titre';
+      if (genre) concept.genre = genre.id;
+      job.concept = concept;
+      step('concept', 'done', `Concept : ${genreLabel(concept.genre)}`);
+    }
+    const concept = job.concept;
+    setProgress(18);
+
+    if (!job.heroDone) {
+      go('hero'); setStatus('Repérage et détourage du personnage principal…');
+      const h = concept.hero;
+      try { job.hero = h && h.from_image !== false ? cutHero(h) : null; } catch (_) { job.hero = null; }
+      job.heroDone = true;
+    }
+    if (job.hero) {
+      const nm = job.hero.name || (concept.hero && concept.hero.name) || 'Héros';
+      step('hero', 'done', `Personnage : ${nm} (${heroTypeLabel(job.hero.type)})${job.hero.cutout === 'ellipse' ? ', détourage approximatif' : ''}`);
+    } else step('hero', 'skip', concept.hero && concept.hero.type ? `Héros dessiné : ${heroTypeLabel(concept.hero.type)}` : 'Aucun personnage à détourer : héros dessiné');
+    setProgress(21);
+
+    if (job.code) step('code', 'done');
+    else {
+      go('code'); setStatus(job.raw ? `Reprise de « ${concept.title} »…` : `Écriture de « ${concept.title} »…`);
+      const code = await generateHTML([{ role: 'user', image: true, text: codePrompt(concept, state.asset, job.hero) }], signal, onCode(span.code[0], span.code[1], 'de code reçus'), job, 'raw');
+      if (!code) { job.raw = ''; throw new Error('La réponse de l’IA ne contient pas de page HTML exploitable. Relance la fabrication.'); }
+      job.code = code; job.raw = ''; job.needsTest = true;
+      step('code', 'done'); setMeta('');
+    }
+    setProgress(span.code[1]);
+
+    if (job.needsTest) {
+      go('test'); setStatus('Test du jeu : démarrage, touches, clics…'); setProgress(span.test);
+      job.errors = await runTest(); job.needsTest = false;
+    }
+    if (!job.errors.length) { step('test', 'done'); if (!job.fixTries) step('fix', 'skip', 'Aucune correction nécessaire'); else step('fix', 'done', `Corrigé (${job.fixTries} passe${job.fixTries > 1 ? 's' : ''})`); }
+    while (job.errors.length && job.fixTries < 2) {
+      step('test', 'error', 'Tester le jeu (erreur trouvée)');
+      go('fix'); setStatus(`Correction automatique ${job.fixTries + 1}/2 : ${job.errors[0]}`);
+      const fixed = await generateHTML([{ role: 'user', text: fixPrompt(job.code, job.errors) }], signal, onCode(span.fix[0], span.fix[1], 'corrigés reçus'), job, 'fixRaw');
+      job.fixRaw = ''; job.fixTries++;
+      if (fixed) job.code = fixed;
+      job.needsTest = true;
+      setMeta(''); step('fix', 'done', `Corrigé (${job.fixTries} passe${job.fixTries > 1 ? 's' : ''})`);
+      go('test'); setStatus('Nouveau test du jeu…');
+      job.errors = await runTest(); job.needsTest = false;
+      if (!job.errors.length) step('test', 'done', 'Tester le jeu');
+    }
+    if (job.errors.length) step('test', 'error', 'Tester le jeu (erreur restante)');
+
+    if (withPolish && !job.polishDone) {
+      if (job.errors.length) step('polish', 'skip', 'Embellissement sauté (jeu instable)');
+      else {
+        go('polish'); setStatus('L’IA repeint le jeu : décors, lumière, animations…');
+        let pretty = job.pretty || await generateHTML([{ role: 'user', text: polishPrompt(job.code, concept) }], signal, onCode(span.polish[0], span.polish[1], 'embellis reçus'), job, 'polishRaw');
+        job.polishRaw = ''; job.pretty = pretty; setMeta('');
+        let ok = false;
+        if (pretty) {
+          setStatus('Test de la version embellie…');
+          let pe = await testGame(pretty, signal, job.hero); if (signal.aborted) throw abortErr();
+          if (pe.length) {
+            setStatus(`Correction de la version embellie : ${pe[0]}`);
+            const f2 = await generateHTML([{ role: 'user', text: fixPrompt(pretty, pe) }], signal, onCode(92, 95, 'corrigés reçus'), job, 'polishFixRaw');
+            job.polishFixRaw = ''; setMeta('');
+            if (f2) { pretty = f2; job.pretty = f2; pe = await testGame(pretty, signal, job.hero); if (signal.aborted) throw abortErr(); }
+          }
+          if (!pe.length) { job.code = pretty; ok = true; }
+        }
+        step('polish', ok ? 'done' : 'skip', ok ? 'Graphismes embellis' : 'Embellissement instable, version d’origine gardée');
+      }
+      job.polishDone = true; job.pretty = '';
+    } else if (withPolish) step('polish', 'done', 'Graphismes embellis');
+
+    go('pack'); setStatus('Assemblage du jeu…');
+    const v = {
+      concept, code: job.code, html: injectHead(job.code, assetScript(job.hero)), url: '', provider: P.name, model, hero: job.hero,
+      warning: job.errors.length ? `Le test signale encore un problème : ${job.errors[0]} Le jeu peut fonctionner quand même ; sinon, relance une version.` : ''
+    };
+    job.done = true;
+    state.versions.push(v); state.current = state.versions.length - 1;
+    step('pack', 'done'); setProgress(100); $('#bar').classList.add('done');
+    setStatus(`« ${concept.title} » est prêt.`);
+    renderResult();
+    $('#result').scrollIntoView({ behavior: smooth, block: 'start' });
+  } catch (e) {
+    step(cur, 'error');
+    const kept = job.raw || job.fixRaw || job.polishRaw ? ` (${fmt((job.raw || job.fixRaw || job.polishRaw).length)} caractères gardés)` : '';
+    if (e.name === 'AbortError') setStatus(`Fabrication mise en pause. Le travail déjà fait est conservé${kept}.`);
+    else {
+      setStatus(`La fabrication s’est arrêtée. Le travail déjà fait est conservé${kept} : clique sur « Reprendre ».`);
+      showError(e.message + (e.retryable ? ' Attends un peu ou choisis un autre modèle, puis reprends : rien ne sera perdu.' : ''));
+    }
+  } finally {
+    clearInterval(tick);
+    state.busy = false; state.ctrl = null;
+    $('#cancel').hidden = true; $('#testview').hidden = true; $('#testview').replaceChildren();
+    $('#go').disabled = !state.apiB64;
+    ['#again', '#cart', '#provider', '#model'].forEach(s => $(s).disabled = false);
+    updateGo();
+  }
+}
+
+/* ---------- Résultat ---------- */
+function renderResult() {
+  const v = state.versions[state.current];
+  if (!v) return;
+  const c = v.concept;
+  $('#result').hidden = false;
+  $('#gGenre').textContent = genreLabel(c.genre);
+  $('#gTitle').textContent = c.title;
+  $('#gPitch').textContent = c.pitch || '';
+  $('#gMade').textContent = `Fabriqué avec ${v.provider} (${v.model})`;
+  $('#gKeys').textContent = c.controls_keyboard || 'Flèches ou ZQSD, Espace pour l’action, P pour la pause, M pour le son.';
+  $('#gTouch').textContent = c.controls_touch || 'Boutons à l’écran.';
+  $('#gPad').textContent = c.controls_gamepad || 'Stick ou croix pour bouger, A pour l’action, Start pour lancer ou mettre en pause.';
+  const hero = v.hero, ch = c.hero || {};
+  $('#gHero').hidden = !hero && !ch.type;
+  $('#gHeroImg').hidden = !hero;
+  if (hero) $('#gHeroImg').src = hero.image;
+  $('#gHeroTxt').textContent = hero
+    ? `Héros : ${hero.name || ch.name || 'personnage'} (${heroTypeLabel(hero.type)}), détouré depuis ton image et animé.`
+    : ch.type ? `Héros : ${ch.name || 'personnage'} (${heroTypeLabel(ch.type)}), dessiné et animé par l’IA.` : '';
+  $('#gWarn').textContent = v.warning; $('#gWarn').hidden = !v.warning;
+  const sel = $('#styleSel');
+  const other = GENRES.find(g => g.id !== 'auto' && g.id !== c.genre);
+  if (other && (!sel.value || sel.value === c.genre)) sel.value = other.id;
+  $('#vlist').replaceChildren(...state.versions.map((x, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip';
+    b.textContent = `${i + 1}. ${genreLabel(x.concept.genre)}`;
+    b.title = `${x.concept.title}, ${x.provider}`;
+    b.setAttribute('aria-pressed', String(i === state.current));
+    b.addEventListener('click', () => { state.current = i; renderResult(); });
+    return b;
+  }));
+  $('#versions').hidden = state.versions.length < 2;
+}
+function playCurrent() {
+  const v = state.versions[state.current];
+  if (!v) return;
+  if (!v.url) v.url = URL.createObjectURL(new Blob([v.html], { type: 'text/html;charset=utf-8' }));
+  const w = window.open(v.url, '_blank');
+  if (!w) showError('Le navigateur a bloqué le nouvel onglet. Autorise les fenêtres pop-up pour cette page, puis réessaie.');
+}
+
+/* ---------- ZIP sans dépendance ---------- */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function makeZip(files) {
+  const enc = new TextEncoder(), now = new Date();
+  const time = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  const date = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const chunks = [], central = [];
+  let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = f.data, crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, time, true); h.setUint16(12, date, true); h.setUint32(14, crc, true);
+    h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(h.buffer), name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, time, true); c.setUint16(14, date, true); c.setUint32(16, crc, true);
+    c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true);
+    c.setUint16(30, 0, true); c.setUint16(32, 0, true); c.setUint16(34, 0, true); c.setUint16(36, 0, true); c.setUint32(38, 0, true);
+    c.setUint32(42, offset, true);
+    central.push(new Uint8Array(c.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  const cdSize = central.reduce((s, a) => s + a.length, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(4, 0, true); e.setUint16(6, 0, true);
+  e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+  e.setUint32(12, cdSize, true); e.setUint32(16, offset, true); e.setUint16(20, 0, true);
+  return new Blob([...chunks, ...central, new Uint8Array(e.buffer)], { type: 'application/zip' });
+}
+async function downloadZip() {
+  const v = state.versions[state.current];
+  if (!v) return;
+  const c = v.concept, s = slug(c.title), enc = new TextEncoder();
+  const readme = [
+    c.title, '',
+    `Type de jeu : ${genreLabel(c.genre)}`,
+    c.pitch || '', '',
+    `Clavier : ${c.controls_keyboard || ''}`,
+    `Manette : ${c.controls_gamepad || 'stick ou croix pour bouger, A pour l’action, Start pour lancer ou mettre en pause'}`,
+    `Tactile : ${c.controls_touch || ''}`, '',
+    'Pour jouer : ouvre index.html dans ton navigateur (double-clic).',
+    'Aucune installation ni connexion internet n’est nécessaire.', '',
+    `Fabriqué avec Cartouche et ${v.provider} (${v.model}).`
+  ].join('\r\n');
+  const files = [
+    { name: `${s}/index.html`, data: enc.encode(v.html) },
+    { name: `${s}/LISEZMOI.txt`, data: enc.encode(readme) }
+  ];
+  if (state.file) {
+    const ext = state.file.type === 'image/png' ? 'png' : 'jpg';
+    files.push({ name: `${s}/image-source.${ext}`, data: new Uint8Array(await state.file.arrayBuffer()) });
+  }
+  const url = URL.createObjectURL(makeZip(files));
+  const a = document.createElement('a');
+  a.href = url; a.download = `${s}.zip`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+/* ---------- Branchements ---------- */
+(function init() {
+  $('#frameWarn').hidden = !IN_FRAME;
+  const remember = store.get('cartouche.remember') === '1' || !!store.get('cartouche.apiKey');
+  $('#remember').checked = remember;
+  if (remember) {
+    Object.keys(state.keys).forEach(k => { state.keys[k] = store.get('cartouche.key.' + k) || ''; });
+    const old = store.get('cartouche.apiKey');
+    if (old && !state.keys.gemini) { state.keys.gemini = old; store.set('cartouche.key.gemini', old); store.del('cartouche.apiKey'); store.set('cartouche.remember', '1'); }
+  }
+  const savedProv = store.get('cartouche.provider');
+  if (savedProv && PROVIDERS[savedProv]) $('#provider').value = savedProv;
+  applyProvider();
+
+  $('#startStyle').replaceChildren(...GENRES.map(g => {
+    const o = document.createElement('option'); o.value = g.id; o.textContent = g.id === 'auto' ? 'Automatique : l’IA choisit selon l’image' : g.fr; return o;
+  }));
+  $('#startStyle').addEventListener('change', updateGo);
+  $('#styleSel').replaceChildren(...GENRES.map(g => {
+    const o = document.createElement('option'); o.value = g.id; o.textContent = g.id === 'auto' ? 'Laisser l’IA choisir une autre idée' : g.fr; return o;
+  }));
+
+  $('#provider').addEventListener('change', () => { store.set('cartouche.provider', prov()); applyProvider(); });
+  $('#apiKey').addEventListener('input', () => {
+    state.keys[prov()] = apiKey(); saveKeys();
+    delete state.models[prov()];
+    clearTimeout(modelTimer);
+    if (apiKey().length >= 20) modelTimer = setTimeout(refreshModels, 600);
+    else setModelStatus('', '');
+  });
+  $('#remember').addEventListener('change', e => {
+    if (e.target.checked) saveKeys();
+    else { store.del('cartouche.remember'); Object.keys(state.keys).forEach(k => store.del('cartouche.key.' + k)); }
+  });
+  $('#toggleKey').addEventListener('click', e => {
+    const k = $('#apiKey'), show = k.type === 'password';
+    k.type = show ? 'text' : 'password';
+    e.currentTarget.textContent = show ? 'Masquer' : 'Afficher';
+    e.currentTarget.setAttribute('aria-pressed', String(show));
+  });
+  $('#model').addEventListener('change', e => store.set('cartouche.model.' + prov(), e.target.value));
+
+  const cart = $('#cart'), file = $('#file');
+  cart.addEventListener('click', () => file.click());
+  file.addEventListener('change', () => { takeFile(file.files[0]); file.value = ''; });
+  ['dragenter', 'dragover'].forEach(n => cart.addEventListener(n, e => { e.preventDefault(); cart.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(n => cart.addEventListener(n, () => cart.classList.remove('drag')));
+  cart.addEventListener('drop', e => { e.preventDefault(); if (!state.busy) takeFile(e.dataTransfer.files[0]); });
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop', e => e.preventDefault());
+  document.addEventListener('paste', e => {
+    if (state.busy) return;
+    const item = [...(e.clipboardData ? e.clipboardData.items : [])].find(i => i.kind === 'file' && /^image\/(png|jpeg)$/.test(i.type));
+    if (item) { e.preventDefault(); takeFile(item.getAsFile()); }
+  });
+
+  $('#go').addEventListener('click', () => canResumeGo() ? generate(state.job.genreId, true) : generate($('#startStyle').value));
+  $('#resume').addEventListener('click', () => generate(state.job ? state.job.genreId : 'auto', true));
+  $('#restart').addEventListener('click', () => { const g = state.job ? state.job.genreId : 'auto'; state.job = null; updateGo(); generate(g); });
+  $('#again').addEventListener('click', () => {
+    const g = $('#styleSel').value;
+    generate(g, resumable() && state.job.genreId === g);
+  });
+  ['#gName', '#gDesc'].forEach(sel => $(sel).addEventListener('input', updateGo));
+  $('#cancel').addEventListener('click', () => { if (state.ctrl) state.ctrl.abort(); });
+  $('#play').addEventListener('click', playCurrent);
+  $('#zip').addEventListener('click', () => downloadZip().catch(e => showError('Création du .zip impossible : ' + e.message)));
+})();
+</script>
+</body>
+</html>
