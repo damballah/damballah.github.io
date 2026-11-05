@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>damballah.github.io — dépôts</title>
+<meta name="description" content="Index automatique de mes dépôts GitHub et de leurs sites.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⌘</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+/* ---------- Thème : couleurs de coloration syntaxique ---------- */
+:root{
+  --bg:#1a1b26; --panel:#20222f; --panel2:#262838; --line:#30344a;
+  --text:#c0caf5; --muted:#7a80a6; --comment:#6b7299;
+  --kw:#bb9af7; --str:#9ece6a; --num:#ff9e64; --fn:#7aa2f7; --prop:#73daca; --err:#f7768e;
+  --status:#7aa2f7; --status-text:#16161e;
+  --font:"JetBrains Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#eef0f6; --panel:#ffffff; --panel2:#f5f6fb; --line:#d6d9e6;
+    --text:#2b3150; --muted:#6c7090; --comment:#8a8fae;
+    --kw:#7c3aed; --str:#3f7d1c; --num:#c2410c; --fn:#2257c9; --prop:#0f766e; --err:#c0264b;
+    --status:#2257c9; --status-text:#ffffff; color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#eef0f6; --panel:#ffffff; --panel2:#f5f6fb; --line:#d6d9e6;
+  --text:#2b3150; --muted:#6c7090; --comment:#8a8fae;
+  --kw:#7c3aed; --str:#3f7d1c; --num:#c2410c; --fn:#2257c9; --prop:#0f766e; --err:#c0264b;
+  --status:#2257c9; --status-text:#ffffff; color-scheme:light;
+}
+
+*{box-sizing:border-box}
+html{height:100%}
+body{
+  margin:0; min-height:100%; background:var(--bg); color:var(--text);
+  font:14px/1.6 var(--font); -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(34px + env(safe-area-inset-bottom,0px));
+}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--fn); outline-offset:2px}
+.wrap{max-width:1180px; margin:0 auto; padding:calc(28px + env(safe-area-inset-top,0px)) 20px 40px}
+
+/* ---------- Hero : un vrai bloc de code généré à partir des données ---------- */
+.editor{background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden}
+.tabs{display:flex; background:var(--panel2); border-bottom:1px solid var(--line); font-size:12.5px}
+.tabs span{padding:8px 16px; color:var(--muted); border-right:1px solid var(--line)}
+.tabs span.on{background:var(--panel); color:var(--text); box-shadow:inset 0 2px 0 var(--fn)}
+.code{display:grid; grid-template-columns:auto 1fr; padding:18px 0 22px; overflow-x:auto;
+  font-size:clamp(15px,2.2vw,22px); line-height:1.65}
+.gutter{padding:0 18px 0 20px; text-align:right; color:var(--comment); opacity:.6; user-select:none; white-space:pre}
+.src{white-space:pre; padding-right:24px}
+.c{color:var(--comment); font-style:italic}.k{color:var(--kw)}.s{color:var(--str)}.n{color:var(--num)}
+.f{color:var(--fn)}.p{color:var(--prop)}
+.big{font-weight:800}
+.cursor{display:inline-block; width:.55em; background:var(--text); animation:blink 1.1s steps(1) infinite; margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+
+/* Panneau "Sortie" (journal de chargement) */
+.output{border-top:1px solid var(--line); background:var(--panel2); font-size:12px; padding:8px 20px 10px; max-height:150px; overflow:auto}
+.output .l{white-space:pre-wrap; color:var(--muted)}
+.output .tag{font-weight:600}
+.output .ok .tag{color:var(--str)} .output .info .tag{color:var(--fn)}
+.output .warn .tag{color:var(--num)} .output .err .tag{color:var(--err)} .output .err{color:var(--text)}
+
+/* ---------- Barre de commande ---------- */
+.shell{margin:26px 0 14px; display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center}
+.prompt{flex:1 1 380px; display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:9px 12px}
+.prompt .ps1{color:var(--str); white-space:nowrap}
+.prompt .ps1 b{color:var(--fn); font-weight:400}
+.prompt input{flex:1; min-width:80px; background:none; border:0; outline:none; color:var(--text); font:inherit; caret-color:var(--kw)}
+.prompt input::placeholder{color:var(--comment)}
+.prompt kbd{font:inherit; font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:0 6px}
+.opts{display:flex; flex-wrap:wrap; gap:12px; align-items:center; font-size:13px; color:var(--muted)}
+.opts select,.opts button{font:inherit; color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:6px 8px; cursor:pointer}
+.opts label{display:flex; align-items:center; gap:6px; cursor:pointer}
+.opts input[type=checkbox]{accent-color:var(--kw)}
+
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px}
+.chip{font:inherit; font-size:12.5px; cursor:pointer; color:var(--muted); background:transparent; border:1px solid var(--line); border-radius:999px; padding:3px 11px; display:flex; align-items:center; gap:7px}
+.chip i{width:9px; height:9px; border-radius:50%; background:var(--lc)}
+.chip.on{color:var(--text); border-color:var(--lc); background:var(--panel)}
+.chip small{color:var(--comment)}
+
+/* ---------- Cartes : un onglet d'éditeur par dépôt ---------- */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:20px}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; cursor:pointer}
+.card:hover,.card:focus-visible{border-color:var(--lc)}
+.card .bar{display:flex; align-items:center; gap:8px; padding:7px 12px; background:var(--panel2); border-bottom:1px solid var(--line); font-size:12.5px}
+.card .bar .dot{width:9px; height:9px; border-radius:50%; background:var(--lc); flex:none}
+.card .bar .file{color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.card .bar .file em{color:var(--comment); font-style:normal}
+.card .bar .flag{margin-left:auto; font-size:11px; color:var(--num); border:1px solid currentColor; border-radius:4px; padding:0 5px}
+.card .bar .flag + .flag{margin-left:0}
+
+.thumb{position:relative; aspect-ratio:16/9; background:var(--panel2); border-bottom:1px solid var(--line); overflow:hidden}
+.thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top center; background:var(--panel2)}
+.ph{position:absolute; inset:0; display:grid; place-content:center; text-align:center; color:var(--lc); background:
+  repeating-linear-gradient(0deg, transparent 0 22px, color-mix(in srgb, var(--line) 55%, transparent) 22px 23px)}
+.ph b{font-size:42px; font-weight:800; letter-spacing:-.02em}
+.ph small{color:var(--comment); font-size:12px}
+.skel{position:absolute; inset:0; background:linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--line) 70%, transparent) 50%, transparent 70%) var(--panel2); background-size:250% 100%; animation:sh 1.4s linear infinite}
+@keyframes sh{from{background-position:120% 0}to{background-position:-120% 0}}
+
+.body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:10px; flex:1}
+.body h2{margin:0; font-size:17px; font-weight:800; color:var(--fn); word-break:break-word}
+.desc{margin:0; color:var(--text); font-size:13px; line-height:1.6; padding-left:14px; border-left:2px solid var(--line); flex:1}
+.desc .none,.desc .loading{color:var(--comment); font-style:italic}
+.meta{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--muted)}
+.meta .lang{color:var(--lc)}
+.actions{display:flex; gap:8px; flex-wrap:wrap}
+.btn{font-size:12.5px; text-decoration:none; padding:6px 11px; border-radius:6px; border:1px solid var(--line); color:var(--text); background:var(--panel2)}
+.btn:hover{border-color:var(--fn)}
+.btn.live{border-color:var(--str); color:var(--str)}
+.btn.live:hover{background:color-mix(in srgb, var(--str) 14%, transparent)}
+.btn.off{color:var(--comment); border-style:dashed; cursor:default}
+
+.empty{grid-column:1/-1; padding:40px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:10px}
+.empty b{color:var(--err); font-weight:400}
+
+/* ---------- Barre d'état façon IDE ---------- */
+.status{position:fixed; left:0; right:0; bottom:0; z-index:5; display:flex; gap:18px; align-items:center;
+  background:var(--status); color:var(--status-text); font-size:12px; padding:5px 14px calc(5px + env(safe-area-inset-bottom,0px))}
+.status button{font:inherit; color:inherit; background:none; border:0; cursor:pointer; padding:0}
+.status .right{margin-left:auto; display:flex; gap:18px}
+
+@media (max-width:560px){
+  .code{font-size:14px}
+  .status .hide-sm{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  .cursor,.skel{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="editor" aria-label="Présentation">
+    <div class="tabs"><span class="on" id="tabname">index.js</span><span>README.md</span></div>
+    <div class="code"><div class="gutter" id="gutter"></div><div class="src" id="hero"></div></div>
+    <div class="output" id="log" aria-live="polite"></div>
+  </section>
+
+  <div class="shell">
+    <label class="prompt">
+      <span class="ps1"><span class="u">user</span>@github:<b>~/repos</b>$ grep -i</span>
+      <input id="q" type="search" placeholder="filtrer par nom, description, topic…" autocomplete="off" spellcheck="false" aria-label="Filtrer les dépôts">
+      <kbd>/</kbd>
+    </label>
+    <div class="opts">
+      <label>--sort=<select id="sort" aria-label="Trier">
+        <option value="pushed">récents</option>
+        <option value="stars">étoiles</option>
+        <option value="name">nom</option>
+        <option value="site">sites d'abord</option>
+      </select></label>
+      <label><input type="checkbox" id="forks"> --forks</label>
+      <button id="theme" type="button" title="Changer de thème">thème</button>
+    </div>
+  </div>
+
+  <div class="chips" id="langs" aria-label="Filtrer par langage"></div>
+  <main class="grid" id="grid"></main>
+</div>
+
+<footer class="status">
+  <span>⎇ main</span>
+  <span id="st-count">0 dépôts</span>
+  <div class="right">
+    <span id="st-rate" class="hide-sm"></span>
+    <span id="st-sync"></span>
+    <button id="resync" type="button" title="Vider le cache et tout recharger">↻ resynchroniser</button>
+  </div>
+</footer>
+
+<script>
+(() => {
+'use strict';
+
+/* ======================= CONFIGURATION ======================= */
+const host = location.hostname.toLowerCase();
+const CONFIG = {
+  // Détecté automatiquement sur xxx.github.io, sinon valeur par défaut :
+  user: host.endsWith('.github.io') ? host.replace('.github.io', '') : 'damballah',
+  showForks: false,            // afficher les forks par défaut
+  hideTopic: 'hide-showcase',  // ajoute ce topic à un dépôt pour le masquer
+  cardOpens: 'repo',           // clic sur une carte : 'repo' ou 'site'
+  useOpenGraph: true,          // vignette de secours générée par GitHub
+  listTTL: 10 * 60 * 1000,     // durée du cache de la liste (10 min)
+  concurrency: 4,
+};
+/* ============================================================= */
+
+const API = 'https://api.github.com';
+const PFX = 'ghidx:v1:';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  clear(p){ try { Object.keys(localStorage).filter(k => k.startsWith(p)).forEach(k => localStorage.removeItem(k)); } catch(e){} },
+};
+
+const LANG = {Python:'#3572A5',JavaScript:'#f1e05a',TypeScript:'#3178c6',HTML:'#e34c26',CSS:'#663399',Shell:'#89e051',
+  Java:'#b07219',C:'#8a8f98','C++':'#f34b7d','C#':'#178600',Go:'#00ADD8',Rust:'#dea584',PHP:'#4F5D95',Ruby:'#cc342d',
+  Vue:'#41b883',Lua:'#5b6bd6',Kotlin:'#A97BFF',Swift:'#F05138',Dart:'#00B4AB','Jupyter Notebook':'#DA5B0B',
+  SCSS:'#c6538c',Svelte:'#ff3e00',PowerShell:'#3d7bbf',Batchfile:'#C1F12E',GDScript:'#5596c4',Markdown:'#5a8fd6'};
+const langColor = l => LANG[l] || 'var(--muted)';
+
+const state = { repos: [], meta: new Map(), q: '', sort: 'pushed', forks: CONFIG.showForks, lang: null, treeBlocked: false, hydrating: false };
+
+document.querySelectorAll('.u').forEach(e => e.textContent = CONFIG.user);
+document.title = `${CONFIG.user}.github.io — dépôts`;
+$('#forks').checked = state.forks;
+
+/* ---------- Utilitaires ---------- */
+function ago(t){
+  const s = (Date.now() - t) / 1000;
+  if (s < 60) return "à l'instant";
+  const u = [[31536000,'an'],[2592000,'mois'],[86400,'j'],[3600,'h'],[60,'min']];
+  for (const [d,l] of u) if (s >= d) { const n = Math.floor(s/d); return `il y a ${n} ${l}${l==='an'&&n>1?'s':''}`; }
+}
+const trunc = (s,n) => s.length > n ? s.slice(0,n).replace(/\s+\S*$/,'') + '…' : s;
+const raw = (r,p) => `https://raw.githubusercontent.com/${r.full_name}/${encodeURI(r.default_branch)}/${p.split('/').map(encodeURIComponent).join('/')}`;
+const og = r => `https://opengraph.githubassets.com/1/${r.full_name}`;
+const isSelf = r => r.name.toLowerCase() === `${CONFIG.user}.github.io`;
+const isHidden = r => isSelf(r) || r.topics.includes(CONFIG.hideTopic);
+function siteOf(r){
+  let h = (r.homepage || '').trim();
+  if (h) return /^https?:\/\//i.test(h) ? h : 'https://' + h;
+  if (r.has_pages) return `https://${r.owner.toLowerCase()}.github.io/${r.name}/`;
+  return null;
+}
+
+/* ---------- Journal ---------- */
+const logEl = $('#log');
+function log(msg, kind='ok'){
+  const tag = {ok:'[ OK ]', info:'[ .. ]', warn:'[WARN]', err:'[FAIL]'}[kind];
+  const d = document.createElement('div');
+  d.className = 'l ' + kind;
+  d.innerHTML = `<span class="tag">${tag}</span> ${msg}`;
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+/* ---------- API GitHub ---------- */
+async function gh(path){
+  const r = await fetch(API + path, { headers: { Accept: 'application/vnd.github+json' } });
+  const rem = r.headers.get('x-ratelimit-remaining'), lim = r.headers.get('x-ratelimit-limit');
+  if (rem !== null) $('#st-rate').textContent = `API ${rem}/${lim}`;
+  if (r.status === 403 || r.status === 429) { const e = new Error('quota'); e.rate = true; e.reset = +r.headers.get('x-ratelimit-reset'); throw e; }
+  if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+  return r.json();
+}
+
+async function loadRepos(force){
+  const key = PFX + 'list:' + CONFIG.user;
+  const cached = store.get(key);
+  if (!force && cached && Date.now() - cached.t < CONFIG.listTTL) {
+    log(`liste en cache : ${cached.repos.length} dépôts (synchro ${ago(cached.t)})`, 'info');
+    return cached;
+  }
+  log(`GET api.github.com/users/${esc(CONFIG.user)}/repos`, 'info');
+  try {
+    let all = [], page = 1;
+    for (;;) {
+      const b = await gh(`/users/${encodeURIComponent(CONFIG.user)}/repos?per_page=100&page=${page}&sort=pushed`);
+      all = all.concat(b);
+      if (b.length < 100) break;
+      page++;
+    }
+    const repos = all.map(r => ({
+      name: r.name, full_name: r.full_name, owner: r.owner.login, html_url: r.html_url,
+      description: r.description, homepage: r.homepage, has_pages: r.has_pages, language: r.language,
+      stars: r.stargazers_count, forks_count: r.forks_count, fork: r.fork, archived: r.archived,
+      topics: r.topics || [], pushed_at: r.pushed_at, default_branch: r.default_branch, size: r.size,
+    }));
+    const data = { t: Date.now(), repos };
+    store.set(key, data);
+    log(`${repos.length} dépôts reçus`);
+    return data;
+  } catch (e) {
+    const why = e.rate
+      ? `quota de l'API GitHub atteint (60 requêtes/h sans compte). Nouvel essai possible à ${new Date(e.reset*1000).toLocaleTimeString('fr-FR')}`
+      : `l'API GitHub ne répond pas (${esc(e.message)}). Vérifie le nom d'utilisateur « ${esc(CONFIG.user)} » ou ta connexion`;
+    if (cached) { log(why + ' — affichage du cache', 'warn'); return cached; }
+    log(why, 'err');
+    return { t: Date.now(), repos: [] };
+  }
+}
+
+/* ---------- README : extrait + première image ---------- */
+async function fetchReadme(r){
+  for (const n of ['README.md','readme.md','Readme.md','README.markdown','README']) {
+    try { const res = await fetch(raw(r,n)); if (res.ok) return await res.text(); } catch(e){}
+  }
+  return null;
+}
+
+const BADGE = /shields\.io|badgen|badge|travis-ci|circleci|codecov|coveralls|\/workflows\/|buymeacoffee|ko-fi|paypal|herokucdn|forthebadge|visitor|hits\.|komarev|github-readme-stats|vercel\.app\/api/i;
+
+function resolveImg(src, r){
+  src = src.trim().replace(/&amp;/g,'&');
+  if (!src || src.startsWith('data:') || src.startsWith('#')) return null;
+  if (src.startsWith('//')) src = 'https:' + src;
+  const m = src.match(/^https?:\/\/github\.com\/([^/]+\/[^/]+)\/(?:blob|raw)\/([^?#]+)/i);
+  if (m) return `https://raw.githubusercontent.com/${m[1]}/${m[2]}`;
+  if (/^https?:\/\//i.test(src)) return src;
+  try { return new URL(src.replace(/^\.?\//,''), raw(r,'')).href; } catch(e){ return null; }
+}
+
+function firstImage(md, r){
+  const found = [];
+  const re1 = /!\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+["'][^"']*["'])?\s*\)/g;
+  const re2 = /<img\b[^>]*?\bsrc\s*=\s*["']([^"']+)["']/gi;
+  let m;
+  while ((m = re1.exec(md))) found.push([m.index, m[1]]);
+  while ((m = re2.exec(md))) found.push([m.index, m[1]]);
+  found.sort((a,b) => a[0] - b[0]);
+  for (const [, src] of found) {
+    if (BADGE.test(src)) continue;
+    const u = resolveImg(src, r);
+    if (u) return u;
+  }
+  return null;
+}
+
+function excerptOf(md){
+  const t = md.replace(/\r/g,'')
+    .replace(/```[\s\S]*?```/g,'\n\n')
+    .replace(/<!--[\s\S]*?-->/g,'')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g,'')
+    .replace(/<[^>]+>/g,' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g,'$1')
+    .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm,'');
+  for (const b of t.split(/\n\s*\n/)) {
+    const lines = b.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) continue;
+    if (/^#{1,6}\s/.test(lines[0])) lines.shift();
+    if (lines.length >= 2 && /^(=+|-+)$/.test(lines[1])) lines.splice(0,2);
+    if (!lines.length || /^(\||-{3,}|\*{3,}|_{3,})/.test(lines[0])) continue;
+    let s = lines.map(l => l.replace(/^>\s?/,'').replace(/^[-*+]\s+/,'• ').replace(/^\d+\.\s+/,'')).join(' ');
+    s = s.replace(/[*_`~]+/g,'').replace(/\s+/g,' ').trim();
+    if (s.replace(/[^\p{L}\p{N}]/gu,'').length < 15) continue;
+    return s;
+  }
+  return '';
+}
+
+/* ---------- Recherche d'une image dans l'arborescence du dépôt ---------- */
+const IMG = /\.(png|jpe?g|gif|webp|avif|svg)$/i;
+const KEY = /(preview|screenshot|screen|capture|thumb|thumbnail|cover|banner|hero|demo|apercu|aperçu|vignette|social)/i;
+const BAD = /(^|\/)(node_modules|vendor|\.git|bower_components)\/|favicon|apple-touch|android-chrome|mstile|sprite|emoji/i;
+
+function pickTreeImage(tree, r){
+  let best = null;
+  for (const n of tree) {
+    if (n.type !== 'blob' || !IMG.test(n.path) || BAD.test(n.path)) continue;
+    const file = n.path.split('/').pop();
+    const depth = n.path.split('/').length - 1;
+    const key = KEY.test(file);
+    let s = (key ? 100 : 0) - depth * 6;
+    if (/\.svg$/i.test(file)) s -= 15;
+    if (n.size > 20000) s += 12; else if (n.size < 4000) s -= 25;
+    if (/(^|\/)(docs?|assets|images?|img|screenshots?|media|static|captures?)\//i.test(n.path)) s += 6;
+    if (/logo|icon/i.test(file)) s -= 8;
+    if (!best || s > best.s) best = { s, key, url: raw(r, n.path) };
+  }
+  return best;
+}
+
+async function getMeta(r){
+  const m = { pushed: r.pushed_at, img: null, excerpt: '', complete: true };
+  if (!r.size) { store.set(PFX + 'meta:' + r.full_name, m); return m; }
+
+  const md = await fetchReadme(r);
+  let readmeImg = null;
+  if (md) { readmeImg = firstImage(md, r); m.excerpt = excerptOf(md); }
+
+  let best = null;
+  if (!state.treeBlocked) {
+    try {
+      const t = await gh(`/repos/${r.full_name}/git/trees/${encodeURIComponent(r.default_branch)}?recursive=1`);
+      best = pickTreeImage(t.tree || [], r);
+    } catch (e) {
+      if (e.rate) { state.treeBlocked = true; log("quota API atteint : recherche d'images suspendue, reprise au prochain chargement", 'warn'); m.complete = false; }
+      else if (e.status !== 404 && e.status !== 409) m.complete = false;
+    }
+  } else m.complete = false;
+
+  // Priorité : image nommée preview/screenshot… > 1re image du README > meilleure image du dépôt
+  m.img = (best && best.key) ? best.url : (readmeImg || (best && best.url) || null);
+  if (!m.complete && readmeImg) m.complete = true;
+  store.set(PFX + 'meta:' + r.full_name, m);
+  return m;
+}
+
+/* ---------- Rendu ---------- */
+function baseList(){
+  return state.repos.filter(r => !isHidden(r) && (state.forks || !r.fork));
+}
+function visibleList(){
+  let list = baseList();
+  if (state.lang) list = list.filter(r => (r.language || 'Autre') === state.lang);
+  if (state.q) {
+    const q = state.q.toLowerCase();
+    list = list.filter(r => [r.name, r.description, r.topics.join(' '), state.meta.get(r.full_name)?.excerpt]
+      .join(' ').toLowerCase().includes(q));
+  }
+  const by = {
+    pushed: (a,b) => Date.parse(b.pushed_at) - Date.parse(a.pushed_at),
+    stars:  (a,b) => b.stars - a.stars || Date.parse(b.pushed_at) - Date.parse(a.pushed_at),
+    name:   (a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}),
+    site:   (a,b) => (!!siteOf(b) - !!siteOf(a)) || Date.parse(b.pushed_at) - Date.parse(a.pushed_at),
+  };
+  return list.sort(by[state.sort]);
+}
+
+function thumbHTML(r, m){
+  const initials = r.name.replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
+  const ph = `<div class="ph"><b>{${esc(initials)}}</b><small>${esc(r.name)}</small></div>`;
+  if (!m) return '<div class="skel"></div>';
+  const src = m.img || (CONFIG.useOpenGraph ? og(r) : '');
+  if (!src) return ph;
+  return ph + `<img loading="lazy" alt="Aperçu de ${esc(r.name)}" src="${esc(src)}" data-step="${m.img ? 0 : 1}">`;
+}
+
+function cardHTML(r){
+  const m = state.meta.get(r.full_name);
+  const site = siteOf(r);
+  const desc = r.description || m?.excerpt || '';
+  const descHTML = desc ? esc(trunc(desc, 180))
+    : m ? '<span class="none">// aucune description</span>' : '<span class="loading">// lecture du README…</span>';
+  const flags = (r.fork ? '<span class="flag">fork</span>' : '') + (r.archived ? '<span class="flag">archivé</span>' : '');
+  return `<article class="card" data-id="${esc(r.full_name)}" tabindex="0" style="--lc:${langColor(r.language)}">
+    <div class="bar"><span class="dot"></span><span class="file"><em>~/</em>${esc(r.name)}</span>${flags}</div>
+    <div class="thumb">${thumbHTML(r, m)}</div>
+    <div class="body">
+      <h2>${esc(r.name)}</h2>
+      <p class="desc">${descHTML}</p>
+      <div class="meta">
+        <span class="lang">● ${esc(r.language || 'Autre')}</span>
+        <span title="Étoiles">★ ${r.stars}</span>
+        <span title="Forks">⑂ ${r.forks_count}</span>
+        <span title="Dernier push : ${esc(new Date(r.pushed_at).toLocaleString('fr-FR'))}">⟳ ${ago(Date.parse(r.pushed_at))}</span>
+      </div>
+      <div class="actions">
+        <a class="btn" href="${esc(r.html_url)}" target="_blank" rel="noopener">&lt;/&gt; Voir le code</a>
+        ${site ? `<a class="btn live" href="${esc(site)}" target="_blank" rel="noopener">▶ Ouvrir le site</a>` : '<span class="btn off">pas de site</span>'}
+      </div>
+    </div>
+  </article>`;
+}
+
+function renderHero(){
+  const list = baseList();
+  const langs = {};
+  list.forEach(r => { const l = r.language || 'Autre'; langs[l] = (langs[l]||0) + 1; });
+  const top = Object.entries(langs).sort((a,b) => b[1]-a[1]).slice(0,4).map(([l]) => `<span class="s">"${esc(l)}"</span>`).join(', ');
+  const sites = list.filter(siteOf).length;
+  const last = list.reduce((t,r) => Math.max(t, Date.parse(r.pushed_at)), 0);
+  const v = CONFIG.user.replace(/[^a-zA-Z0-9_$]/g,'_').replace(/^(\d)/,'_$1');
+  const lines = [
+    `<span class="c">// Index automatique de mes dépôts GitHub et de leurs sites</span>`,
+    `<span class="k">const</span> <span class="f big">${esc(v)}</span> = {`,
+    `  <span class="p">depots</span>: <span class="n">${list.length}</span>,`,
+    `  <span class="p">sitesEnLigne</span>: <span class="n">${sites}</span>,`,
+    `  <span class="p">langages</span>: [${top}],`,
+    `  <span class="p">dernierPush</span>: <span class="s">"${last ? ago(last) : '—'}"</span>,`,
+    `};`,
+    `<span class="k">export default</span> ${esc(v)};<span class="cursor">&nbsp;</span>`,
+  ];
+  $('#hero').innerHTML = lines.join('\n');
+  $('#gutter').textContent = lines.map((_,i) => i+1).join('\n');
+  $('#tabname').textContent = `${CONFIG.user}.js`;
+}
+
+function renderChips(){
+  const counts = {};
+  baseList().forEach(r => { const l = r.language || 'Autre'; counts[l] = (counts[l]||0) + 1; });
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  if (state.lang && !counts[state.lang]) state.lang = null;
+  $('#langs').innerHTML =
+    `<button class="chip ${state.lang ? '' : 'on'}" data-lang="" style="--lc:var(--fn)">* <small>${baseList().length}</small></button>` +
+    entries.map(([l,n]) => `<button class="chip ${state.lang===l?'on':''}" data-lang="${esc(l)}" style="--lc:${langColor(l)}"><i></i>${esc(l)} <small>${n}</small></button>`).join('');
+}
+
+function render(){
+  renderHero();
+  renderChips();
+  const list = visibleList();
+  $('#grid').innerHTML = list.length ? list.map(cardHTML).join('')
+    : state.repos.length
+      ? `<div class="empty"><b>grep:</b> aucun dépôt ne correspond. Efface le filtre ou choisis un autre langage.</div>`
+      : `<div class="empty"><b>ls:</b> aucun dépôt public trouvé pour « ${esc(CONFIG.user)} ». Consulte la sortie ci-dessus.</div>`;
+  $('#st-count').textContent = `${list.length} / ${baseList().length} dépôts`;
+}
+
+function updateCard(r){
+  const el = document.querySelector(`.card[data-id="${CSS.escape(r.full_name)}"]`);
+  if (el) el.outerHTML = cardHTML(r);
+}
+
+/* ---------- Analyse des dépôts (README + images), avec cache ---------- */
+async function hydrate(){
+  if (state.hydrating) return;
+  state.hydrating = true;
+  const todo = baseList().filter(r => !state.meta.get(r.full_name)?.complete);
+  if (todo.length) log(`analyse de ${todo.length} dépôt(s) : README et images…`, 'info');
+  let i = 0, done = 0;
+  const worker = async () => {
+    while (i < todo.length) {
+      const r = todo[i++];
+      try { state.meta.set(r.full_name, await getMeta(r)); done++; updateCard(r); } catch(e){}
+    }
+  };
+  await Promise.all(Array.from({length: CONFIG.concurrency}, worker));
+  if (todo.length) log(`${done} vignette(s) générée(s)`);
+  state.hydrating = false;
+}
+
+async function main(force){
+  logEl.innerHTML = '';
+  log(`whoami → ${esc(CONFIG.user)}`);
+  const data = await loadRepos(force);
+  state.repos = data.repos;
+  for (const r of state.repos) {
+    const m = store.get(PFX + 'meta:' + r.full_name);
+    if (m && m.pushed === r.pushed_at) state.meta.set(r.full_name, m);
+  }
+  render();
+  $('#st-sync').textContent = `synchro ${ago(data.t)}`;
+  await hydrate();
+  if (state.repos.length) log(`prêt : ${baseList().length} dépôts indexés`);
+}
+
+/* ---------- Événements ---------- */
+const grid = $('#grid');
+grid.addEventListener('error', e => {
+  const img = e.target;
+  if (img.tagName !== 'IMG') return;
+  const card = img.closest('.card');
+  const r = state.repos.find(x => x.full_name === card?.dataset.id);
+  if (img.dataset.step === '0' && CONFIG.useOpenGraph && r) { img.dataset.step = '1'; img.src = og(r); }
+  else img.remove();
+}, true);
+
+function openCard(card){
+  const r = state.repos.find(x => x.full_name === card.dataset.id);
+  if (!r) return;
+  const url = CONFIG.cardOpens === 'site' ? (siteOf(r) || r.html_url) : r.html_url;
+  window.open(url, '_blank', 'noopener');
+}
+grid.addEventListener('click', e => {
+  if (e.target.closest('a')) return;
+  const card = e.target.closest('.card');
+  if (card) openCard(card);
+});
+grid.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.classList.contains('card')) openCard(e.target);
+});
+
+$('#q').addEventListener('input', e => { state.q = e.target.value.trim(); render(); });
+$('#sort').addEventListener('change', e => { state.sort = e.target.value; render(); });
+$('#forks').addEventListener('change', e => { state.forks = e.target.checked; render(); hydrate(); });
+$('#langs').addEventListener('click', e => {
+  const b = e.target.closest('.chip');
+  if (!b) return;
+  state.lang = b.dataset.lang || null;
+  render();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== $('#q')) { e.preventDefault(); $('#q').focus(); }
+  if (e.key === 'Escape' && document.activeElement === $('#q')) { $('#q').value = ''; state.q = ''; render(); }
+});
+
+const savedTheme = store.get(PFX + 'theme');
+if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+$('#theme').addEventListener('click', () => {
+  const cur = document.documentElement.dataset.theme
+    || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  const next = cur === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  store.set(PFX + 'theme', next);
+});
+
+$('#resync').addEventListener('click', () => {
+  const theme = store.get(PFX + 'theme');
+  store.clear(PFX);
+  if (theme) store.set(PFX + 'theme', theme);
+  state.meta.clear(); state.treeBlocked = false;
+  main(true);
+});
+
+main(false);
+})();
+</script>
+</body>
+</html>
