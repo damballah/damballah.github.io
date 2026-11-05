@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Projets GitHub</title>
+<meta name="description" content="Mes dépôts GitHub et leurs sites, mis à jour automatiquement.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📁</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --line:#e3e6eb; --line2:#d3d8df;
+  --text:#1c2129; --muted:#5f6773; --faint:#8b929c;
+  --accent:#1f5f6b; --accent-soft:#e3eff1;
+  --font:"Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181d; --surface:#1d2127; --line:#2a3038; --line2:#38404a;
+    --text:#e6e9ee; --muted:#a0a8b3; --faint:#78808b;
+    --accent:#7cc0cc; --accent-soft:#1f3236; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15181d; --surface:#1d2127; --line:#2a3038; --line2:#38404a;
+  --text:#e6e9ee; --muted:#a0a8b3; --faint:#78808b;
+  --accent:#7cc0cc; --accent-soft:#1f3236; color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0; min-height:100%; background:var(--bg); color:var(--text);
+  font:16px/1.55 var(--font); -webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:4px}
+.wrap{max-width:1160px; margin:0 auto;
+  padding:calc(56px + env(safe-area-inset-top,0px)) 24px calc(48px + env(safe-area-inset-bottom,0px))}
+
+/* ---------- En-tête ---------- */
+header{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:20px 40px;
+  padding-bottom:32px; border-bottom:1px solid var(--line)}
+header h1{margin:0; font-size:clamp(34px,5vw,52px); line-height:1.05; font-weight:700; letter-spacing:-.025em}
+header p{margin:12px 0 0; color:var(--muted); font-size:17px; max-width:56ch}
+.head-links{display:flex; gap:10px; align-items:center}
+.link-btn{display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-size:14px; font-weight:500;
+  padding:8px 14px; border:1px solid var(--line2); border-radius:8px; background:var(--surface); color:var(--text); cursor:pointer; font-family:inherit}
+.link-btn:hover{border-color:var(--accent); color:var(--accent)}
+.link-btn svg{width:16px; height:16px}
+
+/* ---------- Filtres ---------- */
+.toolbar{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:28px 0 12px}
+.search{flex:1 1 280px; position:relative}
+.search svg{position:absolute; left:12px; top:50%; translate:0 -50%; width:16px; height:16px; color:var(--faint)}
+.search input{width:100%; font:inherit; font-size:15px; color:var(--text); background:var(--surface);
+  border:1px solid var(--line2); border-radius:8px; padding:9px 12px 9px 36px}
+.search input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.toolbar select{font:inherit; font-size:14px; color:var(--text); background:var(--surface); border:1px solid var(--line2); border-radius:8px; padding:9px 10px; cursor:pointer}
+.toolbar label.check{display:flex; align-items:center; gap:7px; font-size:14px; color:var(--muted); cursor:pointer}
+.toolbar input[type=checkbox]{accent-color:var(--accent); width:16px; height:16px}
+
+.langs{display:flex; flex-wrap:wrap; gap:4px 18px; margin-bottom:28px; font-size:14px}
+.lang-tab{font:inherit; background:none; border:0; padding:6px 0; cursor:pointer; color:var(--muted);
+  border-bottom:2px solid transparent; display:flex; align-items:center; gap:7px}
+.lang-tab:hover{color:var(--text)}
+.lang-tab.on{color:var(--text); border-bottom-color:var(--accent); font-weight:600}
+.lang-tab i{width:8px; height:8px; border-radius:50%; background:var(--lc)}
+.lang-tab small{color:var(--faint); font-weight:400}
+
+.notice{margin:0 0 24px; padding:12px 16px; border-radius:8px; font-size:14px; border:1px solid var(--line2); background:var(--surface); color:var(--muted)}
+.notice.err{border-color:#d4504a; color:var(--text)}
+.notice[hidden]{display:none}
+
+/* ---------- Grille de projets ---------- */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:36px 28px}
+.card{display:flex; flex-direction:column; cursor:pointer; min-width:0}
+.thumb{position:relative; aspect-ratio:16/10; border-radius:10px; overflow:hidden; background:var(--surface);
+  border:1px solid var(--line)}
+.thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top center; background:var(--surface)}
+.card:hover .thumb, .card:focus-visible .thumb{border-color:var(--line2); box-shadow:0 6px 24px -12px rgba(20,30,40,.35)}
+.ph{position:absolute; inset:0; display:grid; place-items:center;
+  background:color-mix(in srgb, var(--lc) 12%, var(--surface))}
+.ph b{font-size:44px; font-weight:700; letter-spacing:-.02em; color:color-mix(in srgb, var(--lc) 70%, var(--text))}
+.skel{position:absolute; inset:0; background:linear-gradient(100deg, transparent 30%, var(--line) 50%, transparent 70%) var(--surface);
+  background-size:250% 100%; animation:sh 1.5s linear infinite}
+@keyframes sh{from{background-position:120% 0}to{background-position:-120% 0}}
+
+.card h2{margin:16px 0 4px; font-size:18px; font-weight:600; letter-spacing:-.01em; word-break:break-word; display:flex; align-items:baseline; gap:10px}
+.card:hover h2 .name{color:var(--accent)}
+.badge{font-size:12px; font-weight:500; color:var(--muted); border:1px solid var(--line2); border-radius:999px; padding:0 8px; white-space:nowrap}
+.desc{margin:0; color:var(--muted); font-size:15px; line-height:1.55; flex:1}
+.desc .none{color:var(--faint)}
+.meta{display:flex; flex-wrap:wrap; gap:4px 16px; margin-top:12px; font-size:13px; color:var(--faint)}
+.meta .lang{display:flex; align-items:center; gap:6px; color:var(--muted)}
+.meta .lang i{width:8px; height:8px; border-radius:50%; background:var(--lc)}
+.actions{display:flex; gap:18px; margin-top:12px; font-size:14px; font-weight:500}
+.actions a{text-decoration:none; color:var(--text); border-bottom:1px solid var(--line2); padding-bottom:1px}
+.actions a:hover{color:var(--accent); border-color:var(--accent)}
+.actions a.site{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 45%, transparent)}
+.actions .off{color:var(--faint); font-weight:400}
+
+.empty{grid-column:1/-1; padding:48px 24px; text-align:center; color:var(--muted); border:1px dashed var(--line2); border-radius:10px}
+
+footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:8px 20px;
+  font-size:13px; color:var(--faint)}
+footer button{font:inherit; color:var(--muted); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:3px}
+footer button:hover{color:var(--accent)}
+footer .sep{flex:1}
+
+@media (max-width:560px){ .wrap{padding-left:18px; padding-right:18px} }
+@media (prefers-reduced-motion: reduce){ .skel{animation:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1 id="title">Projets</h1>
+      <p id="subtitle">Chargement des dépôts…</p>
+    </div>
+    <div class="head-links">
+      <a class="link-btn" id="profile" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Profil GitHub
+      </a>
+      <button class="link-btn" id="theme" type="button" aria-label="Changer de thème" title="Changer de thème">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <label class="search">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
+      <input id="q" type="search" placeholder="Rechercher un projet" autocomplete="off" aria-label="Rechercher un projet">
+    </label>
+    <select id="sort" aria-label="Trier les projets">
+      <option value="pushed">Plus récents</option>
+      <option value="name">Nom (A–Z)</option>
+      <option value="site">Avec site d'abord</option>
+      <option value="stars">Plus d'étoiles</option>
+    </select>
+    <label class="check"><input type="checkbox" id="forks"> Inclure les forks</label>
+  </div>
+
+  <nav class="langs" id="langs" aria-label="Filtrer par langage"></nav>
+  <p class="notice" id="notice" hidden></p>
+  <main class="grid" id="grid"></main>
+
+  <footer>
+    <span>Liste mise à jour automatiquement depuis GitHub</span>
+    <span id="st-sync"></span>
+    <span class="sep"></span>
+    <button id="resync" type="button">Actualiser</button>
+  </footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ======================= CONFIGURATION ======================= */
+const host = location.hostname.toLowerCase();
+const CONFIG = {
+  // Détecté automatiquement sur xxx.github.io, sinon valeur par défaut :
+  user: host.endsWith('.github.io') ? host.replace('.github.io', '') : 'damballah',
+  displayName: '',             // nom affiché en titre (vide = nom du compte)
+  showForks: false,            // afficher les forks par défaut
+  hideTopic: 'hide-showcase',  // ajoute ce topic à un dépôt pour le masquer
+  cardOpens: 'repo',           // clic sur une carte : 'repo' ou 'site'
+  useOpenGraph: true,          // vignette de secours générée par GitHub
+  listTTL: 10 * 60 * 1000,     // durée du cache de la liste (10 min)
+  concurrency: 4,
+};
+/* ============================================================= */
+
+const API = 'https://api.github.com';
+const PFX = 'ghidx:v1:';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  clear(p){ try { Object.keys(localStorage).filter(k => k.startsWith(p)).forEach(k => localStorage.removeItem(k)); } catch(e){} },
+};
+
+const LANG = {Python:'#3572A5',JavaScript:'#d4b52a',TypeScript:'#3178c6',HTML:'#e34c26',CSS:'#663399',Shell:'#5fa12a',
+  Java:'#b07219',C:'#6b717a','C++':'#f34b7d','C#':'#178600',Go:'#00ADD8',Rust:'#c07a4a',PHP:'#4F5D95',Ruby:'#cc342d',
+  Vue:'#41b883',Lua:'#5b6bd6',Kotlin:'#A97BFF',Swift:'#F05138',Dart:'#00B4AB','Jupyter Notebook':'#DA5B0B',
+  SCSS:'#c6538c',Svelte:'#ff3e00',PowerShell:'#3d7bbf',GDScript:'#5596c4'};
+const langColor = l => LANG[l] || '#8b929c';
+
+const state = { repos: [], meta: new Map(), q: '', sort: 'pushed', forks: CONFIG.showForks, lang: null, treeBlocked: false, hydrating: false };
+
+const display = CONFIG.displayName || CONFIG.user.charAt(0).toUpperCase() + CONFIG.user.slice(1);
+$('#title').textContent = display;
+document.title = `${display} — projets`;
+$('#profile').href = `https://github.com/${CONFIG.user}`;
+$('#forks').checked = state.forks;
+
+/* ---------- Utilitaires ---------- */
+function ago(t){
+  const s = (Date.now() - t) / 1000;
+  if (s < 60) return "à l'instant";
+  const u = [[31536000,'an'],[2592000,'mois'],[604800,'semaine'],[86400,'jour'],[3600,'heure'],[60,'minute']];
+  for (const [d,l] of u) if (s >= d) { const n = Math.floor(s/d); return `il y a ${n} ${l}${n>1 && l!=='mois' ? 's' : ''}`; }
+}
+const trunc = (s,n) => s.length > n ? s.slice(0,n).replace(/\s+\S*$/,'') + '…' : s;
+const raw = (r,p) => `https://raw.githubusercontent.com/${r.full_name}/${encodeURI(r.default_branch)}/${p.split('/').map(encodeURIComponent).join('/')}`;
+const og = r => `https://opengraph.githubassets.com/1/${r.full_name}`;
+const isSelf = r => r.name.toLowerCase() === `${CONFIG.user}.github.io`;
+const isHidden = r => isSelf(r) || r.topics.includes(CONFIG.hideTopic);
+function siteOf(r){
+  const h = (r.homepage || '').trim();
+  if (h) return /^https?:\/\//i.test(h) ? h : 'https://' + h;
+  if (r.has_pages) return `https://${r.owner.toLowerCase()}.github.io/${r.name}/`;
+  return null;
+}
+
+/* ---------- Message d'état (affiché seulement en cas de souci) ---------- */
+function notice(msg, kind){
+  const el = $('#notice');
+  if (!msg) { el.hidden = true; return; }
+  el.hidden = false; el.className = 'notice ' + (kind || ''); el.textContent = msg;
+}
+
+/* ---------- API GitHub ---------- */
+async function gh(path){
+  const r = await fetch(API + path, { headers: { Accept: 'application/vnd.github+json' } });
+  if (r.status === 403 || r.status === 429) { const e = new Error('quota'); e.rate = true; e.reset = +r.headers.get('x-ratelimit-reset'); throw e; }
+  if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+  return r.json();
+}
+
+async function loadRepos(force){
+  const key = PFX + 'list:' + CONFIG.user;
+  const cached = store.get(key);
+  if (!force && cached && Date.now() - cached.t < CONFIG.listTTL) return cached;
+  try {
+    let all = [], page = 1;
+    for (;;) {
+      const b = await gh(`/users/${encodeURIComponent(CONFIG.user)}/repos?per_page=100&page=${page}&sort=pushed`);
+      all = all.concat(b);
+      if (b.length < 100) break;
+      page++;
+    }
+    const repos = all.map(r => ({
+      name: r.name, full_name: r.full_name, owner: r.owner.login, html_url: r.html_url,
+      description: r.description, homepage: r.homepage, has_pages: r.has_pages, language: r.language,
+      stars: r.stargazers_count, fork: r.fork, archived: r.archived,
+      topics: r.topics || [], pushed_at: r.pushed_at, default_branch: r.default_branch, size: r.size,
+    }));
+    const data = { t: Date.now(), repos };
+    store.set(key, data);
+    return data;
+  } catch (e) {
+    const why = e.rate
+      ? `GitHub limite le nombre de consultations par heure. Réessayez après ${new Date(e.reset*1000).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}.`
+      : `Impossible de joindre GitHub pour le compte « ${CONFIG.user} ». Vérifiez votre connexion puis cliquez sur Actualiser.`;
+    if (cached) { notice(why + ' La liste affichée est celle de la dernière consultation.'); return cached; }
+    notice(why, 'err');
+    return { t: Date.now(), repos: [] };
+  }
+}
+
+/* ---------- README : extrait + première image ---------- */
+async function fetchReadme(r){
+  for (const n of ['README.md','readme.md','Readme.md','README.markdown','README']) {
+    try { const res = await fetch(raw(r,n)); if (res.ok) return await res.text(); } catch(e){}
+  }
+  return null;
+}
+
+const BADGE = /shields\.io|badgen|badge|travis-ci|circleci|codecov|coveralls|\/workflows\/|buymeacoffee|ko-fi|paypal|forthebadge|visitor|hits\.|komarev|github-readme-stats|vercel\.app\/api/i;
+
+function resolveImg(src, r){
+  src = src.trim().replace(/&amp;/g,'&');
+  if (!src || src.startsWith('data:') || src.startsWith('#')) return null;
+  if (src.startsWith('//')) src = 'https:' + src;
+  const m = src.match(/^https?:\/\/github\.com\/([^/]+\/[^/]+)\/(?:blob|raw)\/([^?#]+)/i);
+  if (m) return `https://raw.githubusercontent.com/${m[1]}/${m[2]}`;
+  if (/^https?:\/\//i.test(src)) return src;
+  try { return new URL(src.replace(/^\.?\//,''), raw(r,'')).href; } catch(e){ return null; }
+}
+
+function firstImage(md, r){
+  const found = [];
+  const re1 = /!\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+["'][^"']*["'])?\s*\)/g;
+  const re2 = /<img\b[^>]*?\bsrc\s*=\s*["']([^"']+)["']/gi;
+  let m;
+  while ((m = re1.exec(md))) found.push([m.index, m[1]]);
+  while ((m = re2.exec(md))) found.push([m.index, m[1]]);
+  found.sort((a,b) => a[0] - b[0]);
+  for (const [, src] of found) {
+    if (BADGE.test(src)) continue;
+    const u = resolveImg(src, r);
+    if (u) return u;
+  }
+  return null;
+}
+
+function excerptOf(md){
+  const t = md.replace(/\r/g,'')
+    .replace(/```[\s\S]*?```/g,'\n\n')
+    .replace(/<!--[\s\S]*?-->/g,'')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g,'')
+    .replace(/<[^>]+>/g,' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g,'$1')
+    .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm,'');
+  for (const b of t.split(/\n\s*\n/)) {
+    const lines = b.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) continue;
+    if (/^#{1,6}\s/.test(lines[0])) lines.shift();
+    if (lines.length >= 2 && /^(=+|-+)$/.test(lines[1])) lines.splice(0,2);
+    if (!lines.length || /^(\||-{3,}|\*{3,}|_{3,})/.test(lines[0])) continue;
+    let s = lines.map(l => l.replace(/^>\s?/,'').replace(/^[-*+]\s+/,'• ').replace(/^\d+\.\s+/,'')).join(' ');
+    s = s.replace(/[*_`~]+/g,'').replace(/\s+/g,' ').trim();
+    if (s.replace(/[^\p{L}\p{N}]/gu,'').length < 15) continue;
+    return s;
+  }
+  return '';
+}
+
+/* ---------- Recherche d'une image dans le dépôt ---------- */
+const IMG = /\.(png|jpe?g|gif|webp|avif|svg)$/i;
+const KEY = /(preview|screenshot|screen|capture|thumb|thumbnail|cover|banner|hero|demo|apercu|aperçu|vignette|social)/i;
+const BAD = /(^|\/)(node_modules|vendor|\.git|bower_components)\/|favicon|apple-touch|android-chrome|mstile|sprite|emoji/i;
+
+function pickTreeImage(tree, r){
+  let best = null;
+  for (const n of tree) {
+    if (n.type !== 'blob' || !IMG.test(n.path) || BAD.test(n.path)) continue;
+    const file = n.path.split('/').pop();
+    const depth = n.path.split('/').length - 1;
+    const key = KEY.test(file);
+    let s = (key ? 100 : 0) - depth * 6;
+    if (/\.svg$/i.test(file)) s -= 15;
+    if (n.size > 20000) s += 12; else if (n.size < 4000) s -= 25;
+    if (/(^|\/)(docs?|assets|images?|img|screenshots?|media|static|captures?)\//i.test(n.path)) s += 6;
+    if (/logo|icon/i.test(file)) s -= 8;
+    if (!best || s > best.s) best = { s, key, url: raw(r, n.path) };
+  }
+  return best;
+}
+
+async function getMeta(r){
+  const m = { pushed: r.pushed_at, img: null, excerpt: '', complete: true };
+  if (!r.size) { store.set(PFX + 'meta:' + r.full_name, m); return m; }
+
+  const md = await fetchReadme(r);
+  let readmeImg = null;
+  if (md) { readmeImg = firstImage(md, r); m.excerpt = excerptOf(md); }
+
+  let best = null;
+  if (!state.treeBlocked) {
+    try {
+      const t = await gh(`/repos/${r.full_name}/git/trees/${encodeURIComponent(r.default_branch)}?recursive=1`);
+      best = pickTreeImage(t.tree || [], r);
+    } catch (e) {
+      if (e.rate) { state.treeBlocked = true; m.complete = false; }
+      else if (e.status !== 404 && e.status !== 409) m.complete = false;
+    }
+  } else m.complete = false;
+
+  // Priorité : image nommée preview/screenshot… > 1re image du README > meilleure image du dépôt
+  m.img = (best && best.key) ? best.url : (readmeImg || (best && best.url) || null);
+  if (!m.complete && readmeImg) m.complete = true;
+  store.set(PFX + 'meta:' + r.full_name, m);
+  return m;
+}
+
+/* ---------- Rendu ---------- */
+function baseList(){ return state.repos.filter(r => !isHidden(r) && (state.forks || !r.fork)); }
+function visibleList(){
+  let list = baseList();
+  if (state.lang) list = list.filter(r => (r.language || 'Autre') === state.lang);
+  if (state.q) {
+    const q = state.q.toLowerCase();
+    list = list.filter(r => [r.name, r.description, r.topics.join(' '), state.meta.get(r.full_name)?.excerpt]
+      .join(' ').toLowerCase().includes(q));
+  }
+  const recent = (a,b) => Date.parse(b.pushed_at) - Date.parse(a.pushed_at);
+  const by = {
+    pushed: recent,
+    stars:  (a,b) => b.stars - a.stars || recent(a,b),
+    name:   (a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}),
+    site:   (a,b) => (!!siteOf(b) - !!siteOf(a)) || recent(a,b),
+  };
+  return list.sort(by[state.sort]);
+}
+
+function thumbHTML(r, m){
+  if (!m) return '<div class="skel"></div>';
+  const initials = r.name.replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
+  const ph = `<div class="ph"><b>${esc(initials)}</b></div>`;
+  const src = m.img || (CONFIG.useOpenGraph ? og(r) : '');
+  if (!src) return ph;
+  return ph + `<img loading="lazy" alt="Aperçu de ${esc(r.name)}" src="${esc(src)}" data-step="${m.img ? 0 : 1}">`;
+}
+
+function cardHTML(r){
+  const m = state.meta.get(r.full_name);
+  const site = siteOf(r);
+  const desc = r.description || m?.excerpt || '';
+  const descHTML = desc ? esc(trunc(desc, 170)) : m ? '<span class="none">Pas de description.</span>' : '';
+  const badge = r.archived ? '<span class="badge">archivé</span>' : r.fork ? '<span class="badge">fork</span>' : '';
+  return `<article class="card" data-id="${esc(r.full_name)}" tabindex="0" style="--lc:${langColor(r.language)}">
+    <div class="thumb">${thumbHTML(r, m)}</div>
+    <h2><span class="name">${esc(r.name)}</span>${badge}</h2>
+    <p class="desc">${descHTML}</p>
+    <div class="meta">
+      ${r.language ? `<span class="lang"><i></i>${esc(r.language)}</span>` : ''}
+      <span title="${esc(new Date(r.pushed_at).toLocaleString('fr-FR'))}">Modifié ${ago(Date.parse(r.pushed_at))}</span>
+      ${r.stars ? `<span>${r.stars} étoile${r.stars > 1 ? 's' : ''}</span>` : ''}
+    </div>
+    <div class="actions">
+      <a href="${esc(r.html_url)}" target="_blank" rel="noopener">Voir le code</a>
+      ${site ? `<a class="site" href="${esc(site)}" target="_blank" rel="noopener">Ouvrir le site</a>` : '<span class="off">Pas de site</span>'}
+    </div>
+  </article>`;
+}
+
+function renderHeader(){
+  const list = baseList();
+  if (!state.repos.length) return;
+  const sites = list.filter(siteOf).length;
+  $('#subtitle').textContent = `${list.length} projet${list.length > 1 ? 's' : ''} public${list.length > 1 ? 's' : ''}` +
+    (sites ? `, dont ${sites} avec un site en ligne.` : '.');
+}
+
+function renderLangs(){
+  const counts = {};
+  baseList().forEach(r => { const l = r.language || 'Autre'; counts[l] = (counts[l]||0) + 1; });
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  if (state.lang && !counts[state.lang]) state.lang = null;
+  if (entries.length < 2) { $('#langs').innerHTML = ''; return; }
+  $('#langs').innerHTML =
+    `<button class="lang-tab ${state.lang ? '' : 'on'}" data-lang="">Tous <small>${baseList().length}</small></button>` +
+    entries.map(([l,n]) => `<button class="lang-tab ${state.lang===l?'on':''}" data-lang="${esc(l)}" style="--lc:${langColor(l)}"><i></i>${esc(l)} <small>${n}</small></button>`).join('');
+}
+
+function render(){
+  renderHeader();
+  renderLangs();
+  const list = visibleList();
+  $('#grid').innerHTML = list.length ? list.map(cardHTML).join('')
+    : state.repos.length
+      ? `<div class="empty">Aucun projet ne correspond à cette recherche. Essayez un autre mot ou affichez tous les langages.</div>`
+      : `<div class="empty">Aucun projet public à afficher pour le moment.</div>`;
+}
+
+function updateCard(r){
+  const el = document.querySelector(`.card[data-id="${CSS.escape(r.full_name)}"]`);
+  if (el) el.outerHTML = cardHTML(r);
+}
+
+/* ---------- Analyse des dépôts (README + images), avec cache ---------- */
+async function hydrate(){
+  if (state.hydrating) return;
+  state.hydrating = true;
+  const todo = baseList().filter(r => !state.meta.get(r.full_name)?.complete);
+  let i = 0;
+  const worker = async () => {
+    while (i < todo.length) {
+      const r = todo[i++];
+      try { state.meta.set(r.full_name, await getMeta(r)); updateCard(r); } catch(e){}
+    }
+  };
+  await Promise.all(Array.from({length: CONFIG.concurrency}, worker));
+  state.hydrating = false;
+}
+
+async function main(force){
+  notice('');
+  const data = await loadRepos(force);
+  state.repos = data.repos;
+  for (const r of state.repos) {
+    const m = store.get(PFX + 'meta:' + r.full_name);
+    if (m && m.pushed === r.pushed_at) state.meta.set(r.full_name, m);
+  }
+  render();
+  $('#st-sync').textContent = `Dernière synchronisation ${ago(data.t)}`;
+  await hydrate();
+}
+
+/* ---------- Événements ---------- */
+const grid = $('#grid');
+grid.addEventListener('error', e => {
+  const img = e.target;
+  if (img.tagName !== 'IMG') return;
+  const r = state.repos.find(x => x.full_name === img.closest('.card')?.dataset.id);
+  if (img.dataset.step === '0' && CONFIG.useOpenGraph && r) { img.dataset.step = '1'; img.src = og(r); }
+  else img.remove();
+}, true);
+
+function openCard(card){
+  const r = state.repos.find(x => x.full_name === card.dataset.id);
+  if (!r) return;
+  const url = CONFIG.cardOpens === 'site' ? (siteOf(r) || r.html_url) : r.html_url;
+  window.open(url, '_blank', 'noopener');
+}
+grid.addEventListener('click', e => {
+  if (e.target.closest('a')) return;
+  const card = e.target.closest('.card');
+  if (card) openCard(card);
+});
+grid.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.classList.contains('card')) openCard(e.target);
+});
+
+$('#q').addEventListener('input', e => { state.q = e.target.value.trim(); render(); });
+$('#sort').addEventListener('change', e => { state.sort = e.target.value; render(); });
+$('#forks').addEventListener('change', e => { state.forks = e.target.checked; render(); hydrate(); });
+$('#langs').addEventListener('click', e => {
+  const b = e.target.closest('.lang-tab');
+  if (!b) return;
+  state.lang = b.dataset.lang || null;
+  render();
+});
+
+const savedTheme = store.get(PFX + 'theme');
+if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+$('#theme').addEventListener('click', () => {
+  const cur = document.documentElement.dataset.theme
+    || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  store.set(PFX + 'theme', next);
+});
+
+$('#resync').addEventListener('click', () => {
+  const theme = store.get(PFX + 'theme');
+  store.clear(PFX);
+  if (theme) store.set(PFX + 'theme', theme);
+  state.meta.clear(); state.treeBlocked = false;
+  main(true);
+});
+
+main(false);
+})();
+</script>
+</body>
+</html>
