@@ -59,7 +59,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--tape);outline-o
 .lvl .meta{padding:.8rem}
 .lvl h3{font-size:1.05rem;margin-bottom:.25rem}
 .lvl p{font-size:.85rem;color:var(--steel)}
-.lvl .row{display:flex;gap:.5rem;margin-top:.7rem}
+.lvl .row{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.7rem}
+.lvl .row .btn{flex:1 1 auto;padding:.6em .8em;font-size:.92rem}
 .empty{color:var(--steel);max-width:40ch;line-height:1.6}
 
 /* Éditeur */
@@ -775,9 +776,14 @@ async function renderLevels() {
   for (const lvl of list) {
     const best = Store.get(scoresKey(lvl.id), [])[0];
     const card = document.createElement('div'); card.className = 'lvl';
-    card.innerHTML = `<img alt="" src="${lvl.photo}"><div class="meta"><h3></h3><p>${best ? `Record : ${best.points} pts en ${fmtTime(best.time)}` : 'Pas encore joué'}</p><div class="row"><button class="btn primary">Jouer</button><button class="btn">Partager</button><button class="btn danger">Supprimer</button></div></div>`;
+    card.innerHTML = `<img alt="" src="${lvl.photo}"><div class="meta"><h3></h3><p>${best ? `Record : ${best.points} pts en ${fmtTime(best.time)}` : 'Pas encore joué'}</p><div class="row"><button class="btn primary">Jouer</button><button class="btn">Renommer</button><button class="btn">Partager</button><button class="btn danger">Supprimer</button></div></div>`;
     card.querySelector('h3').textContent = lvl.name;
-    const [bPlay, bShare, bDel] = card.querySelectorAll('button');
+    const [bPlay, bRename, bShare, bDel] = card.querySelectorAll('button');
+    bRename.onclick = async () => {
+      const n = prompt('Nouveau nom du niveau :', lvl.name); if (n === null) return;
+      const name = n.trim().slice(0, 40); if (!name || name === lvl.name) return;
+      lvl.name = name; await saveLevel(lvl); renderLevels();
+    };
     bShare.onclick = () => shareLevel(lvl); bShare.hidden = !Online.enabled;
     bPlay.onclick = () => startGame(lvl);
     bDel.onclick = async () => { if (confirm(`Supprimer « ${lvl.name} » ?`)) { await deleteLevel(lvl.id); Store.del(scoresKey(lvl.id)); renderLevels(); } };
