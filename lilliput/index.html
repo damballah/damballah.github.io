@@ -145,25 +145,27 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-bet
   </div></section>
 </main>
 
-<footer><div class="wrap"><span>Lilliput, un jeu où tes dessins deviennent des mondes.</span><span style="display:flex;gap:1.2rem"><a href="jeu/">Jouer</a><a href="https://github.com/damballah/damballah.github.io/tree/main/lilliput">Code source</a></span></div></footer>
+<footer><div class="wrap"><span>Lilliput, un jeu où tes dessins deviennent des mondes.</span><span style="display:flex;gap:1.2rem"><a href="jeu/">Jouer</a><a href="https://github.com/damballah/lilliput">Code source</a></span></div></footer>
 
 <script type="module">
 const $ = (id) => document.getElementById(id), CFG = window.LILLIPUT_CONFIG || {};
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // galerie : lue directement dans le dossier niveaux/ du site
+let sb = null;
+async function client() { if (!sb) { const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm'); sb = createClient(CFG.supabaseUrl, CFG.supabaseAnonKey); } return sb; }
 try {
-  const cat = await (await fetch('niveaux/catalogue.json', { cache: 'no-cache' })).json();
+  let cat = await (await fetch('niveaux/catalogue.json', { cache: 'no-cache' })).json();
+  // niveaux retirés par le modérateur : masqués tout de suite
+  if (CFG.supabaseUrl && CFG.supabaseAnonKey) { try { const { data } = await (await client()).from('levels').select('id').eq('hidden', true); const hid = new Set((data || []).map(r => r.id)); cat = cat.filter(c => !hid.has(c.id)); } catch {} }
   if (!cat.length) $('galleryEmpty').hidden = false;
   $('gallery').innerHTML = cat.slice(0, 8).map(c => `<a class="lvl" href="jeu/?niveau=${encodeURIComponent(c.id)}"><img alt="" loading="lazy" src="niveaux/${encodeURIComponent(c.thumb)}"><div><h3>${esc(c.name)}</h3><p>par <b>${esc(c.author)}</b>, ${c.gems} gemmes</p></div></a>`).join('');
 } catch { $('galleryEmpty').hidden = false; }
 // classement : lu dans la base Supabase (lecture publique, sans compte)
-let sb = null;
 async function board(period) {
   const el = $('board');
   if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) { el.innerHTML = '<p class="empty">Le classement s\'affichera dès que le site sera relié à sa base de données.</p>'; return; }
   try {
-    if (!sb) { const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm'); sb = createClient(CFG.supabaseUrl, CFG.supabaseAnonKey); }
-    const { data, error } = await sb.rpc('classement_general', { p_period: period }); if (error) throw error;
+    const { data, error } = await (await client()).rpc('classement_general', { p_period: period }); if (error) throw error;
     el.innerHTML = data.length ? `<table><thead><tr><th>Rang</th><th>Joueur</th><th>Niveaux</th><th>🏆</th><th>Points</th></tr></thead><tbody>${data.slice(0, 20).map(r => `<tr><td>${r.rang}</td><td>${esc(r.pseudo)}</td><td>${r.niveaux}</td><td>${r.parfaits}</td><td>${r.total}</td></tr>`).join('')}</tbody></table>`
       : '<p class="empty">Personne n\'a encore joué sur cette période. À toi de jouer !</p>';
   } catch { el.innerHTML = '<p class="empty">Classement momentanément indisponible.</p>'; }
