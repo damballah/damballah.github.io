@@ -6,6 +6,6 @@
   Ne mets JAMAIS ici la clé « service_role » : elle reste dans les secrets GitHub.
 */
 window.LILLIPUT_CONFIG = {
-  supabaseUrl: '',        // ex. 'https://abcdefghijkl.supabase.co'
-  supabaseAnonKey: '',    // ex. 'eyJhbGciOi...'
+  supabaseUrl: 'https://nozknmznfexvswlcsttx.supabase.co',        // ex. 'https://abcdefghijkl.supabase.co'
+  supabaseAnonKey: 'sb_publishable_G60-AsiLwejc0tVSfeN4cw_J_eaKTvk',    // ex. 'eyJhbGciOi...'
 };
