@@ -203,6 +203,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--tape);outline-o
 .set-col label{display:flex;gap:.6rem;align-items:flex-start}
 .set-row input[type=checkbox],.set-row input[type=radio]{accent-color:var(--tape);width:1.1rem;height:1.1rem;margin-top:.2rem;flex:0 0 auto}
 .set-row input[type=range]{accent-color:var(--tape);width:100%}
+.vol{display:grid;grid-template-columns:6.5em 1fr;align-items:center;gap:.6rem;font-size:.92rem}
 legend{margin-bottom:.4rem}
 /* En ligne */
 .linkbtn{color:var(--tape);text-decoration:underline;font-size:.9rem;padding:0 .2rem}
@@ -467,7 +468,7 @@ legend{margin-bottom:.4rem}
     <button class="tbtn" id="tDig" hidden>Creuser</button>
     <div class="touchhint" id="touchHint">Glisse à gauche pour marcher, à droite pour regarder</div>
   </div>
-  <div class="clickto" id="clickTo"><div><b>Clique pour jouer</b><span class="kbd">Z</span><span class="kbd">Q</span><span class="kbd">S</span><span class="kbd">D</span> pour bouger, souris pour regarder<br><span class="kbd">←</span><span class="kbd">→</span> pour tourner, <span class="kbd">↑</span><span class="kbd">↓</span> pour avancer et reculer<br><span class="kbd">Espace</span> sauter, <span class="kbd">Maj</span> courir, <span class="kbd">M</span> radar, <span class="kbd">Échap</span> pause</div></div>
+  <div class="clickto" id="clickTo"><div><b>Clique pour jouer</b><span class="kbd">Z</span><span class="kbd">Q</span><span class="kbd">S</span><span class="kbd">D</span> pour bouger, souris pour regarder<br><span class="kbd">←</span><span class="kbd">→</span> pour tourner, <span class="kbd">↑</span><span class="kbd">↓</span> pour avancer et reculer<br><span class="kbd">Espace</span> sauter, <span class="kbd">Maj</span> courir, <span class="kbd">R</span> radar, <span class="kbd">N</span> son, <span class="kbd">Échap</span> pause</div></div>
 </section>
 
 <!-- Modales -->
@@ -518,7 +519,13 @@ legend{margin-bottom:.4rem}
   <div class="actions"><button class="btn ghost" data-close>Annuler</button></div></div></div>
 <div class="modal" id="mSettings"><div class="card"><h2>Réglages</h2><div class="settings">
   <label class="set-row"><input type="checkbox" id="setFx"><span><b>Effets visuels</b><small>Couleurs étalonnées, vignettage, anticrénelage renforcé. Désactive-les si le jeu manque de fluidité.</small></span></label>
-  <label class="set-row"><input type="checkbox" id="setRadar"><span><b>Radar</b><small>Affiche en jeu une petite carte qui tourne avec toi, avec les objets à ramasser et la direction de la sortie. La touche M l'affiche ou le masque aussi en cours de partie.</small></span></label>
+  <fieldset class="set-row set-col"><legend><b>Son</b></legend>
+    <label class="vol">Musique <input type="range" id="setVolMusic" min="0" max="1" step=".05"></label>
+    <label class="vol">Ambiance <input type="range" id="setVolAmb" min="0" max="1" step=".05"></label>
+    <label class="vol">Effets <input type="range" id="setVolSfx" min="0" max="1" step=".05"></label>
+    <small>La musique est composée en direct par le jeu, dans le style du thème choisi. La touche N coupe ou rétablit tout le son.</small>
+  </fieldset>
+  <label class="set-row"><input type="checkbox" id="setRadar"><span><b>Radar</b><small>Affiche en jeu une petite carte qui tourne avec toi, avec les objets à ramasser et la direction de la sortie. La touche R l'affiche ou le masque aussi en cours de partie.</small></span></label>
   <fieldset class="set-row set-col"><legend><b>Qualité de reconstruction 3D</b></legend>
     <label><input type="radio" name="setQuality" value="standard"><span>Standard <small>IA légère (25 Mo), rapide, idéale sur mobile</small></span></label>
     <label><input type="radio" name="setQuality" value="high"><span>Haute <small>IA plus précise (environ 100 Mo), contours et volumes plus fins</small></span></label>
@@ -674,13 +681,20 @@ function renderShop() {
 /* ================= Sons (synthétisés) ================= */
 const Sfx = {
   ctx: null,
-  init() { if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch {} } if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+  init() {
+    if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch {} }
+    if (this.ctx && !this.sfxOut) {   // trois canaux réglables, mélangés vers les haut-parleurs
+      const c = this.ctx, comp = c.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 3; comp.connect(c.destination);
+      this.sfxOut = c.createGain(); this.musicOut = c.createGain(); this.ambOut = c.createGain(); [this.sfxOut, this.musicOut, this.ambOut].forEach(g => g.connect(comp)); applyVolumes();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  },
   tone(freq, dur, type = 'sine', vol = .15, slide = 0, delay = 0) {
     if (!this.ctx) return; const c = this.ctx, t = c.currentTime + delay;
     const o = c.createOscillator(), g = c.createGain();
     o.type = type; o.frequency.setValueAtTime(freq, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), t + dur);
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .02);
+    o.connect(g).connect(this.sfxOut); o.start(t); o.stop(t + dur + .02);
   },
   gem(color) { const f = { g: 880, b: 1175, r: 1568 }[color]; this.tone(f, .12, 'triangle', .14); this.tone(f * 1.5, .18, 'sine', .1, 0, .07); },
   shock() {
@@ -689,7 +703,7 @@ const Sfx = {
     for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (Math.sin(i / 18) > 0 ? 1 : .3) * (1 - i / d.length);
     const s = c.createBufferSource(), g = c.createGain(), f = c.createBiquadFilter();
     f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = .7; g.gain.value = .35;
-    s.buffer = buf; s.connect(f).connect(g).connect(c.destination); s.start(t);
+    s.buffer = buf; s.connect(f).connect(g).connect(this.sfxOut); s.start(t);
     this.tone(60, .35, 'sawtooth', .18, 40);
   },
   heal() { [523, 784, 1047, 1319].forEach((f, i) => this.tone(f, .25, 'sine', .1, 0, i * .06)); },
@@ -701,7 +715,7 @@ const Sfx = {
     const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = buf; f.type = type; f.Q.value = q;
     f.frequency.setValueAtTime(freq, t); if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    s.connect(f).connect(g).connect(c.destination); s.start(t); s.stop(t + dur + .02);
+    s.connect(f).connect(g).connect(this.sfxOut); s.start(t); s.stop(t + dur + .02);
   },
   // souffle de l'outil qui fend l'air
   swing(delay = 0) {
@@ -710,7 +724,7 @@ const Sfx = {
     const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = buf; f.type = 'bandpass'; f.Q.value = 2.5;
     f.frequency.setValueAtTime(700, t); f.frequency.exponentialRampToValueAtTime(2600, t + dur);
     g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.12, t + dur * .7); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    s.connect(f).connect(g).connect(c.destination); s.start(t); s.stop(t + dur + .02);
+    s.connect(f).connect(g).connect(this.sfxOut); s.start(t); s.stop(t + dur + .02);
   },
   // impact de la pointe : claquement sec, tintement d'acier qui résonne, puis petits éclats qui crépitent
   dig() {
@@ -733,7 +747,7 @@ const Sfx = {
     if (!this.jetNode) {
       const c = this.ctx, buf = c.createBuffer(1, c.sampleRate, c.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
       const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = buf; s.loop = true; f.type = 'bandpass'; f.frequency.value = 500; f.Q.value = .6; g.gain.value = 0;
-      s.connect(f).connect(g).connect(c.destination); s.start(); this.jetNode = g;
+      s.connect(f).connect(g).connect(this.sfxOut); s.start(); this.jetNode = g;
     }
     this.jetNode.gain.setTargetAtTime(on ? .22 : 0, this.ctx.currentTime, .05);
   },
@@ -2279,10 +2293,11 @@ function makeComposer(scene, camera) {
 
 /* ================= Réglages ================= */
 const SETTINGS_KEY = 'lilliput_settings_v1';
-const Settings = Object.assign({ fx: !IS_TOUCH, sens: 1, radar: false }, Store.get(SETTINGS_KEY, {}));
+const Settings = Object.assign({ fx: !IS_TOUCH, sens: 1, radarOpt: false, volMusic: .5, volAmb: .6, volSfx: .85, mute: false }, Store.get(SETTINGS_KEY, {}));
 function saveSettings() { Store.set(SETTINGS_KEY, Settings); }
 function renderSettings() {
-  $('setFx').checked = Settings.fx; $('setSens').value = Settings.sens; $('setRadar').checked = !!Settings.radar;
+  $('setVolMusic').value = Settings.volMusic; $('setVolAmb').value = Settings.volAmb; $('setVolSfx').value = Settings.volSfx;
+  $('setFx').checked = Settings.fx; $('setSens').value = Settings.sens; $('setRadar').checked = !!Settings.radarOpt;
   const tl = $('themeList'); tl.innerHTML = '';
   for (const [id, t] of Object.entries(THEMES)) {
     const b = document.createElement('button'); b.className = 'theme' + ((Settings.theme || 'papier') === id ? ' on' : ''); b.type = 'button';
@@ -2296,7 +2311,8 @@ function renderSettings() {
 }
 $('bSettings').onclick = () => { renderSettings(); $('mSettings').classList.add('on'); };
 $('setFx').onchange = (e) => { Settings.fx = e.target.checked; saveSettings(); };
-$('setRadar').onchange = (e) => { Settings.radar = e.target.checked; saveSettings(); };
+$('setRadar').onchange = (e) => { Settings.radarOpt = e.target.checked; saveSettings(); };
+[['setVolMusic', 'volMusic'], ['setVolAmb', 'volAmb'], ['setVolSfx', 'volSfx']].forEach(([id, k]) => $(id).oninput = (e) => { Settings[k] = +e.target.value; saveSettings(); Sfx.init(); applyVolumes(); });
 $('setSens').oninput = (e) => { Settings.sens = +e.target.value; saveSettings(); };
 document.querySelectorAll('[name="setQuality"]').forEach(r => r.onchange = () => { Settings.quality = r.value; saveSettings(); });
 
@@ -2454,6 +2470,192 @@ function buildDesk(geo) {
   const sleeve = new THREE.Mesh(new THREE.BoxGeometry(7, 3.2, 5.9), std(0x2a6fd6, .7)); sleeve.position.set(b.x0 - 8.4, .95, b.z1 - D * .25 - .95); sleeve.rotation.y = -.5; g.add(sleeve);
   g.traverse(o => { if (o.isMesh && o !== desk) { o.castShadow = true; o.receiveShadow = true; } });
   return g;
+}
+
+/* ================= Musique générée en direct, ambiances et sons de jeu =================
+  Tout est fabriqué par le navigateur (Web Audio), sans aucun fichier.
+  Trois canaux réglables : musique, ambiance, effets.
+*/
+const SCALES = {
+  major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10], dorian: [0, 2, 3, 5, 7, 9, 10], lydian: [0, 2, 4, 6, 7, 9, 11],
+  phrygDom: [0, 1, 4, 5, 7, 8, 10], harmMinor: [0, 2, 3, 5, 7, 8, 11], pentaMaj: [0, 2, 4, 7, 9], pentaMin: [0, 3, 5, 7, 10],
+};
+// une recette musicale par thème : tempo, tonalité, gamme, enchaînement d'accords, instruments, rythme
+const MUSIC = {
+  papier:   { bpm: 88, root: 60, scale: 'major', prog: [0, 5, 3, 4], pad: 'soft', arp: 'pluck', lead: 'bell', bass: 'sine', drums: 'brush', rev: .35 },
+  desert:   { bpm: 84, root: 62, scale: 'phrygDom', prog: [0, 1, 0, 6], pad: 'drone', arp: 'oud', lead: 'flute', bass: 'sine', drums: 'hand', rev: .3 },
+  banquise: { bpm: 68, root: 64, scale: 'lydian', prog: [0, 1, 4, 3], pad: 'air', arp: 'bell', lead: 'bell', bass: 'none', drums: 'none', rev: .6 },
+  jungle:   { bpm: 100, root: 55, scale: 'dorian', prog: [0, 3, 0, 4], pad: 'soft', arp: 'marimba', lead: 'flute', bass: 'sine', drums: 'shaker', rev: .3 },
+  volcan:   { bpm: 74, root: 48, scale: 'harmMinor', prog: [0, 5, 4, 0], pad: 'dark', arp: 'none', lead: 'none', bass: 'saw', drums: 'taiko', rev: .45 },
+  neon:     { bpm: 112, root: 57, scale: 'minor', prog: [0, 5, 2, 6], pad: 'saw', arp: 'square', lead: 'saw', bass: 'square', drums: 'synth', rev: .35 },
+  plage:    { bpm: 96, root: 65, scale: 'major', prog: [0, 3, 4, 3], pad: 'soft', arp: 'steel', lead: 'steel', bass: 'sine', drums: 'shaker', rev: .3 },
+  lune:     { bpm: 60, root: 59, scale: 'pentaMin', prog: [0, 3, 2, 4], pad: 'air', arp: 'none', lead: 'bell', bass: 'none', drums: 'none', rev: .75 },
+  bonbons:  { bpm: 108, root: 72, scale: 'major', prog: [0, 4, 5, 3], pad: 'soft', arp: 'musicbox', lead: 'musicbox', bass: 'sine', drums: 'clap', rev: .3 },
+  briques:  { bpm: 116, root: 67, scale: 'major', prog: [0, 3, 4, 0], pad: 'none', arp: 'square', lead: 'square', bass: 'tri', drums: 'chip', rev: .15 },
+  temple:   { bpm: 80, root: 52, scale: 'pentaMin', prog: [0, 2, 3, 0], pad: 'drone', arp: 'marimba', lead: 'flute', bass: 'sine', drums: 'hand', rev: .5 },
+  hante:    { bpm: 70, root: 50, scale: 'harmMinor', prog: [0, 3, 4, 0], pad: 'organ', arp: 'musicbox', lead: 'bell', bass: 'sine', drums: 'none', rev: .6 },
+  photo:    { bpm: 86, root: 62, scale: 'pentaMaj', prog: [0, 3, 1, 4], pad: 'soft', arp: 'pluck', lead: 'bell', bass: 'sine', drums: 'brush', rev: .4 },
+};
+const SURFACE = { papier: 'paper', desert: 'sand', banquise: 'snow', jungle: 'grass', volcan: 'rock', neon: 'metal', plage: 'sand', lune: 'dust', bonbons: 'soft', briques: 'plastic', temple: 'stone', hante: 'gravel', photo: 'paper' };
+const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+
+const Music = {
+  on: false, timer: 0, step: 0, next: 0, R: null, intensity: 0, freeze: 0, nodes: null,
+  bus() { return Sfx.musicOut; },
+  setup() {
+    const c = Sfx.ctx; if (this.nodes) return;
+    // réverbération synthétique (réponse impulsionnelle de bruit qui décroît) + filtre global (effet « chrono figé »)
+    const len = c.sampleRate * 2.6, ir = c.createBuffer(2, len, c.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    const conv = c.createConvolver(); conv.buffer = ir;
+    const dry = c.createGain(), wet = c.createGain(), filt = c.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 18000; filt.Q.value = .4;
+    dry.connect(filt); conv.connect(wet).connect(filt); filt.connect(this.bus());
+    this.nodes = { dry, conv, wet, filt };
+  },
+  start(themeKey) {
+    if (!Sfx.ctx) return; this.stop(); this.setup();
+    this.R = MUSIC[themeKey] || MUSIC.photo; this.nodes.wet.gain.value = this.R.rev; this.step = 0; this.next = Sfx.ctx.currentTime + .15; this.on = true;
+    this.motif = null; this.timer = setInterval(() => this.schedule(), 40);
+  },
+  stop() { this.on = false; clearInterval(this.timer); },
+  schedule() {
+    const c = Sfx.ctx; if (!this.on || !c) return;
+    // effet « chrono figé » : la musique s'assourdit
+    this.nodes.filt.frequency.setTargetAtTime(this.freeze ? 700 : 18000, c.currentTime, .25);
+    const spb = 60 / this.R.bpm / 4;   // durée d'une double croche
+    while (this.next < c.currentTime + .18) { this.play(this.step, this.next, spb); this.next += spb; this.step++; }
+  },
+  // notes de l'accord (degré de la gamme) et note de gamme à une hauteur donnée
+  deg(d, oct = 0) { const sc = SCALES[this.R.scale], n = sc.length, o = Math.floor(d / n); return this.R.root + sc[((d % n) + n) % n] + 12 * (o + oct); },
+  play(step, t, spb) {
+    const R = this.R, bar = Math.floor(step / 16), s = step % 16, chord = R.prog[bar % R.prog.length], I = this.intensity;
+    const tones = [this.deg(chord), this.deg(chord + 2), this.deg(chord + 4)];
+    if (s === 0) { if (R.pad !== 'none') this.pad(tones, t, spb * 16); }
+    if (R.bass !== 'none' && (s === 0 || s === 8 || (I > .5 && s === 14))) this.bassNote(this.deg(chord, -2), t, spb * (s === 14 ? 2 : 6));
+    // arpèges : plus denses quand on approche du but
+    if (R.arp !== 'none') { const every = I > .55 ? 2 : 4; if (s % every === 0) { const k = (s / every) | 0, oct = (k >> 2) & 1; this.inst(R.arp, tones[k % 3] + 12 * oct, t, spb * every * .9, .1); } }
+    // mélodie : un motif de 2 mesures, varié à chaque reprise
+    if (R.lead !== 'none' && bar % 4 >= 2 && s % 4 === 0 && Math.random() < .55 + I * .3) {
+      if (!this.motif || (s === 0 && bar % 4 === 2)) { let d = chord + 7; this.motif = Array.from({ length: 8 }, () => (d += [-2, -1, 1, 2, 0][(Math.random() * 5) | 0])); }
+      this.inst(R.lead, this.deg(this.motif[(s / 4 + (bar % 2) * 4) | 0], 0), t, spb * 3.5, .08);
+    }
+    this.drum(R.drums, s, t, I);
+  },
+  env(g, t, a, peak, dur) { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + dur); },
+  out(node, send = .5) { node.connect(this.nodes.dry); const s = Sfx.ctx.createGain(); s.gain.value = send; node.connect(s).connect(this.nodes.conv); },
+  osc(type, f, t, dur, detune = 0) { const o = Sfx.ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.detune.value = detune; o.start(t); o.stop(t + dur + .05); return o; },
+  pad(tones, t, dur) {
+    const c = Sfx.ctx, kind = this.R.pad, g = c.createGain(), f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = kind === 'saw' ? 1600 : kind === 'dark' ? 500 : 1100;
+    const type = kind === 'saw' ? 'sawtooth' : kind === 'organ' ? 'sine' : kind === 'dark' ? 'sawtooth' : 'triangle', vol = kind === 'air' ? .035 : kind === 'drone' ? .04 : .045;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + dur * .25); g.gain.setValueAtTime(vol, t + dur * .7); g.gain.exponentialRampToValueAtTime(.0001, t + dur * 1.05);
+    const list = kind === 'drone' ? [tones[0] - 12, tones[0] - 5] : tones.map(m => m - 12);
+    for (const m of list) for (const dt of kind === 'organ' ? [0, 1200] : [-7, 7]) this.osc(type, mtof(m), t, dur * 1.1, dt).connect(f);
+    f.connect(g); this.out(g, .7);
+  },
+  bassNote(m, t, dur) {
+    const c = Sfx.ctx, g = c.createGain(), type = { sine: 'sine', saw: 'sawtooth', square: 'square', tri: 'triangle' }[this.R.bass] || 'sine';
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 420;
+    this.osc(type, mtof(m), t, dur).connect(f).connect(g); this.env(g, t, .02, type === 'sine' ? .16 : .09, dur); this.out(g, .1);
+  },
+  inst(kind, m, t, dur, vol) {
+    const c = Sfx.ctx, g = c.createGain(), f = mtof(m);
+    const P = {
+      pluck: [['triangle', 1, 1], ['sine', 2, .3]], oud: [['sawtooth', 1, .5]], bell: [['sine', 1, 1], ['sine', 2.76, .35], ['sine', 5.4, .12]], marimba: [['sine', 1, 1], ['sine', 4, .25]],
+      square: [['square', 1, .6]], saw: [['sawtooth', 1, .5], ['sawtooth', 1.005, .5]], steel: [['sine', 1, 1], ['triangle', 2, .4], ['sine', 3.01, .2]], musicbox: [['sine', 1, 1], ['sine', 3, .2], ['triangle', 6, .05]],
+      flute: [['sine', 1, 1], ['triangle', 2, .08]],
+    }[kind] || [['triangle', 1, 1]];
+    const decay = kind === 'bell' ? dur * 2.2 : kind === 'flute' ? dur : kind === 'musicbox' ? dur * 1.6 : dur * .9;
+    const filt = c.createBiquadFilter(); filt.type = kind === 'oud' ? 'bandpass' : 'lowpass'; filt.frequency.value = kind === 'oud' ? f * 3 : kind === 'square' || kind === 'saw' ? 2600 : 7000; filt.Q.value = kind === 'oud' ? 2 : .5;
+    for (const [type, mul, amp] of P) { const o = this.osc(type, f * mul, t, decay); if (kind === 'flute') { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 5.2; lg.gain.value = 6; l.connect(lg).connect(o.detune); l.start(t); l.stop(t + decay); } const a = c.createGain(); a.gain.value = amp; o.connect(a).connect(filt); }
+    filt.connect(g); this.env(g, t, kind === 'flute' ? .06 : .005, vol, decay); this.out(g, .55);
+  },
+  hit(t, freq, endF, dur, vol, noise = 0, hp = 0) {
+    const c = Sfx.ctx, g = c.createGain();
+    if (noise) { const b = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = c.createBufferSource(); s.buffer = b; const f = c.createBiquadFilter(); f.type = hp ? 'highpass' : 'bandpass'; f.frequency.value = freq; f.Q.value = hp ? .7 : 1.2; s.connect(f).connect(g); s.start(t); }
+    else { const o = this.osc('sine', freq, t, dur); o.frequency.exponentialRampToValueAtTime(endF, t + dur); o.connect(g); }
+    this.env(g, t, .003, vol, dur); this.out(g, .15);
+  },
+  drum(kind, s, t, I) {
+    if (kind === 'none') return;
+    const hat = I > .35;
+    if (kind === 'synth' || kind === 'chip') { if (s % 4 === 0) this.hit(t, 140, 45, .28, .28); if (s === 4 || s === 12) this.hit(t, kind === 'chip' ? 3000 : 1800, 0, .14, .1, 1); if (s % 2 === 0 && hat) this.hit(t, 8000, 0, .04, .04, 1, 1); }
+    else if (kind === 'taiko') { if (s === 0 || s === 6 || (I > .5 && s === 10)) this.hit(t, 90, 38, .6, .32); }
+    else if (kind === 'hand') { if (s === 0 || s === 10) this.hit(t, 180, 90, .2, .16); if (s === 3 || s === 6 || s === 13) this.hit(t, 520, 300, .08, .07); if (hat && s % 2) this.hit(t, 6000, 0, .03, .025, 1, 1); }
+    else if (kind === 'shaker') { if (s % 2 === 0) this.hit(t, 7000, 0, .05, s % 4 === 2 ? .045 : .02, 1, 1); if (s === 0 || (I > .5 && s === 8)) this.hit(t, 120, 50, .25, .14); }
+    else if (kind === 'brush') { if (s % 4 === 2) this.hit(t, 5000, 0, .09, .025, 1, 1); if (s === 0) this.hit(t, 110, 50, .3, .12); if (hat && s === 8) this.hit(t, 2000, 0, .12, .03, 1); }
+    else if (kind === 'clap') { if (s === 4 || s === 12) this.hit(t, 1400, 0, .1, .07, 1); if (s % 8 === 0) this.hit(t, 160, 60, .2, .14); }
+  },
+};
+
+const Ambience = {
+  nodes: [], timers: [],
+  start(themeKey) {
+    const c = Sfx.ctx; if (!c) return; this.stop();
+    const out = Sfx.ambOut, noiseBuf = (() => { const b = c.createBuffer(1, c.sampleRate * 3, c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; })();
+    const layer = (type, freq, q, vol, lfoRate = 0, lfoDepth = 0, lfoTarget = 'gain') => {
+      const s = c.createBufferSource(); s.buffer = noiseBuf; s.loop = true; const f = c.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q; const g = c.createGain(); g.gain.value = vol;
+      s.connect(f).connect(g).connect(out); s.start();
+      if (lfoRate) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = lfoRate; lg.gain.value = lfoDepth; l.connect(lg).connect(lfoTarget === 'gain' ? g.gain : f.frequency); l.start(); this.nodes.push(l); }
+      this.nodes.push(s);
+    };
+    const every = (ms, fn) => { const tm = setInterval(() => { if (!paused) fn(); }, ms); this.timers.push(tm); };
+    const blip = (f0, f1, dur, vol, type = 'sine', delay = 0) => { const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(g).connect(out); o.start(t); o.stop(t + dur + .02); };
+    const crack = (vol, f = 2500) => { const t = c.currentTime, s = c.createBufferSource(); s.buffer = noiseBuf; const fl = c.createBiquadFilter(); fl.type = 'highpass'; fl.frequency.value = f; const g = c.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + .04); s.connect(fl).connect(g).connect(out); s.start(t, Math.random() * 2, .05); };
+    const R = Math.random;
+    switch (themeKey) {
+      case 'papier': layer('lowpass', 300, .5, .035); every(1000, () => crack(.035, 3500)); every(7000, () => R() < .5 && layer && crack(.05, 1200)); break;
+      case 'desert': layer('bandpass', 600, .8, .07, .07, 250, 'freq'); layer('highpass', 4000, .5, .015, .11, .01); break;
+      case 'banquise': layer('bandpass', 900, 1, .06, .05, 400, 'freq'); every(3000, () => R() < .5 && blip(2400 + R() * 900, 2300, .9, .015)); break;
+      case 'jungle': layer('lowpass', 900, .5, .03); layer('bandpass', 5200, 6, .02, 31, .015); every(1300, () => { if (R() < .6) { const f = 2200 + R() * 1800; blip(f, f * 1.5, .09, .04); blip(f * 1.1, f * .8, .1, .035, 'sine', .12); } }); break;
+      case 'volcan': layer('lowpass', 140, .7, .14, .15, .05); every(220, () => R() < .45 && crack(.05 + R() * .08, 1500 + R() * 2500)); break;
+      case 'neon': { const o = c.createOscillator(), g = c.createGain(); o.type = 'sawtooth'; o.frequency.value = 60; g.gain.value = .012; const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 300; o.connect(f).connect(g).connect(out); o.start(); this.nodes.push(o); layer('bandpass', 8000, 3, .008); every(4200, () => R() < .4 && blip(1800, 300, .12, .03, 'square')); break; }
+      case 'plage': layer('lowpass', 520, .6, .1, .14, .08); layer('highpass', 3000, .5, .012, .14, .01); every(5000, () => R() < .4 && blip(1900, 2400, .2, .02)); break;
+      case 'lune': layer('lowpass', 180, .5, .025); every(9000, () => R() < .5 && blip(600 + R() * 200, 580, 2.5, .01)); break;
+      case 'bonbons': layer('lowpass', 400, .5, .02); every(1800, () => R() < .5 && blip(2600 + R() * 1400, 2600, 1.2, .018)); break;
+      case 'briques': layer('lowpass', 500, .5, .025); every(2600, () => { if (R() < .5) { const f = 2600 + R() * 1200; blip(f, f * 1.3, .08, .03); } }); break;
+      case 'temple': layer('bandpass', 500, .7, .05, .06, 180, 'freq'); every(6000, () => R() < .4 && blip(400, 395, 1.8, .015, 'triangle')); break;
+      case 'hante': layer('bandpass', 700, 1, .05, .05, 300, 'freq'); every(700, () => { if (R() < .7) for (let k = 0; k < 3; k++) blip(4300, 4200, .03, .015, 'sine', k * .06); }); every(11000, () => { if (R() < .6) { blip(420, 380, .35, .05); blip(400, 360, .5, .05, 'sine', .45); } }); break;
+      default: layer('lowpass', 400, .5, .025);
+    }
+  },
+  stop() { this.nodes.forEach(n => { try { n.stop(); } catch {} }); this.nodes = []; this.timers.forEach(clearInterval); this.timers = []; },
+};
+
+// sons de jeu spatialisés : barrière qui grésille à l'approche, cadeau qui tinte, pas, battement de cœur
+const GameAudio = {
+  buzz: null, lastChime: 0, lastBeat: 0,
+  startBuzz() {
+    const c = Sfx.ctx; if (!c || this.buzz) return;
+    const o = c.createOscillator(), o2 = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain(), p = c.createStereoPanner();
+    o.type = 'sawtooth'; o.frequency.value = 100; o2.type = 'square'; o2.frequency.value = 50.5; f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = .8; g.gain.value = 0;
+    o.connect(f); o2.connect(f); f.connect(g).connect(p).connect(Sfx.sfxOut); o.start(); o2.start(); this.buzz = { o, o2, g, p };
+  },
+  stopBuzz() { if (!this.buzz) return; try { this.buzz.o.stop(); this.buzz.o2.stop(); } catch {} this.buzz = null; },
+  // angle d'un point vu par le joueur → panoramique gauche/droite
+  pan(game, x, z) { const dx = x - game.pos.x, dz = z - game.pos.z, rx = Math.cos(game.yaw), rz = -Math.sin(game.yaw), l = Math.hypot(dx, dz) || 1; return clamp((dx * rx + dz * rz) / l, -1, 1); },
+  update(game, dt) {
+    const c = Sfx.ctx; if (!c) return; this.startBuzz();
+    const [bd, bp] = game.geo.borderDist(game.pos.x, game.pos.z), v = Math.pow(clamp(1 - bd / 6, 0, 1), 2) * .22;
+    this.buzz.g.gain.setTargetAtTime(game.finished ? 0 : v, c.currentTime, .08); if (bp) this.buzz.p.pan.setTargetAtTime(this.pan(game, bp[0], bp[1]) * .8, c.currentTime, .1);
+    // le cadeau caché tinte doucement, audible seulement de près : un jeu de « chaud ou froid »
+    const gf = game.gift, d = Math.hypot(gf.x - game.pos.x, gf.z - game.pos.z);
+    if (!gf.taken && game.started && d < 18 && game.t - this.lastChime > 1.5) {
+      this.lastChime = game.t; const vol = Math.pow(1 - d / 18, 2) * .16, pn = this.pan(game, gf.x, gf.z), t = c.currentTime;
+      [1568, 2093, 2637].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), p = c.createStereoPanner(); o.frequency.value = f; p.pan.value = pn; g.gain.setValueAtTime(.0001, t + i * .07); g.gain.exponentialRampToValueAtTime(vol, t + i * .07 + .01); g.gain.exponentialRampToValueAtTime(.0001, t + i * .07 + .6); o.connect(g).connect(p).connect(Sfx.sfxOut); o.start(t + i * .07); o.stop(t + i * .07 + .65); });
+    }
+    // vie basse : battement de cœur
+    if (game.hp <= 30 && game.hp > 0 && !game.finished && game.t - this.lastBeat > .85) { this.lastBeat = game.t; Sfx.tone(62, .16, 'sine', .3, -20); Sfx.tone(58, .18, 'sine', .22, -20, .2); }
+  },
+  footstep(surface, run) {
+    const v = run ? 1.25 : 1;
+    const S = { paper: [2600, 1.2, .05, .06], sand: [1200, .8, .09, .08], snow: [900, 2, .1, .09], grass: [1800, .7, .08, .05], rock: [600, 1.5, .05, .08], metal: [3000, 8, .06, .04], dust: [700, .6, .1, .04], soft: [500, 1, .07, .05], plastic: [1600, 6, .04, .05], stone: [800, 2, .05, .07], gravel: [2000, 1.2, .07, .07] }[surface] || [1500, 1, .06, .05];
+    Sfx.burst(S[2], 'bandpass', S[0] * (.85 + Math.random() * .3), S[1], S[3] * v);
+    if (surface === 'metal' || surface === 'plastic') Sfx.tone(surface === 'metal' ? 1800 : 900, .05, 'triangle', .02 * v);
+  },
+};
+function applyVolumes() {
+  if (!Sfx.ctx || !Sfx.musicOut) return; const t = Sfx.ctx.currentTime, m = Settings.mute ? 0 : 1;
+  Sfx.musicOut.gain.setTargetAtTime(Settings.volMusic * .9 * m, t, .05); Sfx.ambOut.gain.setTargetAtTime(Settings.volAmb * m, t, .05); Sfx.sfxOut.gain.setTargetAtTime(Settings.volSfx * m, t, .05);
 }
 
 /* ================= Moteur de jeu ================= */
@@ -2629,7 +2831,7 @@ class Game {
     this.scene.fog = new THREE.Fog(0x1d2026, 90, 400);
     this.camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .03, 2000);
     this.scene.add(this.camera);
-    this.drawn = level.kind === 'drawing';
+    this.drawn = level.kind === 'drawing'; this.themeKey = this.drawn ? (THEMES[Settings.theme] ? Settings.theme : 'papier') : 'photo';
     if (this.drawn) {
       // lumière de lampe de bureau chaude + ciel doux ; ombres portées si les effets visuels sont activés
       renderer.shadowMap.enabled = !!Settings.fx; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -2649,7 +2851,7 @@ class Game {
     this.flames = [-1, 1].map(sd => { const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('#ff9a2e'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); f.position.set(sd * .32, -.5, -.45); f.visible = false; this.camera.add(f); return f; });
     this.debris = []; this.debrisGeo = new THREE.BoxGeometry(.18, .18, .18);
     this.origY = new Float32Array(this.geo.pos.length / 3); for (let k = 0; k < this.origY.length; k++) this.origY[k] = this.geo.pos[k * 3 + 1];
-    this.baseY = this.origY.slice(); this.origFill = this.geo.back.fill.slice(); this.baseFill = this.origFill.slice(); this.renderOff = this.geo.back.rfill.map((v, c) => v - this.origFill[c]); this.flatF = 0; this.toolEquipped = false; this.jetOn = true; this.radarOn = !!Settings.radar;
+    this.baseY = this.origY.slice(); this.origFill = this.geo.back.fill.slice(); this.baseFill = this.origFill.slice(); this.renderOff = this.geo.back.rfill.map((v, c) => v - this.origFill[c]); this.flatF = 0; this.toolEquipped = false; this.jetOn = true; this.radarOn = !!Settings.radarOpt;
     this.reset();
   }
   buildTerrain() {
@@ -3168,6 +3370,12 @@ class Game {
       arm.wrist.rotation.x = -.15 - .2 * a;
     }
     this.drawRadar();
+    { const tot = this.gems.length + this.coinsTotal, got = this.gems.filter(g => g.taken).length + this.coinsTaken, ex = Math.hypot(this.exitPt[0] - px, this.exitPt[1] - pz);
+      Music.intensity = this.started ? Math.max(tot ? got / tot * .75 : 0, clamp(1 - ex / 22, 0, 1)) : 0; Music.freeze = this.timeStop > 0; }
+    GameAudio.update(this, dt);
+    const stepIdx = Math.floor(this.stepPhase / Math.PI);
+    if (stepIdx !== this.lastStepIdx) { this.lastStepIdx = stepIdx; if (this.onGround && moving > 1) GameAudio.footstep(SURFACE[this.themeKey] || 'paper', runAmt > .3); }
+    if (!this.onGround) this.airT = (this.airT || 0) + dt; else { if (this.airT > .35) Sfx.burst(.12, 'lowpass', 380, .7, .22); this.airT = 0; }
     this.updateHud();
   }
   shock(bp) {
@@ -3203,7 +3411,7 @@ class Game {
     return out;
   }
   finish() {
-    if (this.finished) return; this.finished = true; exitLock(); this.saveFuel(); Sfx.jet(false);
+    if (this.finished) return; this.finished = true; exitLock(); this.saveFuel(); Sfx.jet(false); Music.stop();
     // niveau parfait : toutes les gemmes, toutes les pièces, le chronomètre et le cadeau
     this.missingAtEnd = this.missing(); const perfect = !this.missingAtEnd.length;
     if (perfect) this.celebrate(() => this.showResults(true)); else { Sfx.win(); this.showResults(false); }
@@ -3300,7 +3508,7 @@ class Game {
     renderEndOnline(this.level, entry);
   }
   die() {
-    this.dead = true; this.finished = true; Sfx.lose(); exitLock(); $('endOnline').hidden = true; $('mEnd').classList.remove('perfect');
+    this.dead = true; this.finished = true; Music.stop(); Sfx.lose(); exitLock(); $('endOnline').hidden = true; $('mEnd').classList.remove('perfect');
     $('endTitle').textContent = 'Électrocuté !';
     $('endGrid').innerHTML = `<dt>Points ramassés</dt><dd>${this.points}</dd><dt>Temps</dt><dd>${fmtTime(this.elapsed)}</dd>`;
     $('endBoard').innerHTML = '<p class="help">Ta vie est tombée à zéro. Les barrières rouges retirent 10 % de vie à chaque contact : vise le centre des passages étroits.</p>';
@@ -3332,7 +3540,8 @@ function flash(text, color, ms = 900) { const t = $('toast'); t.textContent = te
 let introOn = false, introToken = 0;
 const wait = (ms) => new Promise(r => setTimeout(r, ms));
 async function runIntro(g, warn) {
-  const token = ++introToken; introOn = true; paused = true;
+  const token = ++introToken;
+  Sfx.init(); Music.start(g.themeKey); Ambience.start(g.themeKey); introOn = true; paused = true;
   exitLock(); $('clickTo').classList.remove('on'); $('touch').classList.remove('on');
   const fade = $('fade'); fade.style.transition = 'none'; fade.classList.add('on');
   $('intro').classList.add('on'); $('introName').textContent = g.level.name; $('introCount').textContent = '';
@@ -3384,7 +3593,7 @@ function startGame(level, warn, geo) {
   if (!warn && level.method === 'plat') warn = 'Terrain plat : relief IA non utilisé';
   runIntro(game, warn);
 }
-function quitGame(to) { cancelIntro(); exitLock(); if (game) { game.dispose(); game = null; } ['mEnd', 'mPause'].forEach(m => $(m).classList.remove('on')); show(to); }
+function quitGame(to) { cancelIntro(); Music.stop(); Ambience.stop(); GameAudio.stopBuzz(); exitLock(); if (game) { game.dispose(); game = null; } ['mEnd', 'mPause'].forEach(m => $(m).classList.remove('on')); show(to); }
 
 // Souris : verrouillage du pointeur si le navigateur l'autorise, sinon clic maintenu pour regarder
 const gl = $('glCanvas');
@@ -3430,7 +3639,8 @@ window.addEventListener('keydown', (e) => {
   if ((invOpen || $('mWish').classList.contains('on')) && e.code === 'Escape') { closeInv(); return; }
   if (invOpen || $('mWish').classList.contains('on')) return;
   if (e.code === 'KeyF' && !e.repeat) game.digReq = true;
-  if ((e.key === 'm' || e.key === 'M') && !e.repeat) { game.radarOn = !game.radarOn; Settings.radar = game.radarOn; saveSettings(); flash(game.radarOn ? 'Radar affiché' : 'Radar masqué (touche M)', '#ffffff', 1200); }
+  if ((e.key === 'n' || e.key === 'N') && !e.repeat) { Settings.mute = !Settings.mute; saveSettings(); applyVolumes(); flash(Settings.mute ? 'Son coupé (touche N)' : 'Son rétabli', '#ffffff', 1200); }
+  if ((e.key === 'r' || e.key === 'R') && !e.repeat) { game.radarOn = !game.radarOn; Settings.radarOpt = game.radarOn; saveSettings(); flash(game.radarOn ? 'Radar affiché' : 'Radar masqué (touche R)', '#ffffff', 1200); }
   if (e.code === 'Escape') {
     // si le navigateur vient de libérer la souris avec Échap, la pause est déjà faite
     if (document.pointerLockElement || performance.now() - lastUnlock < 400) return;
@@ -3523,6 +3733,7 @@ $('tJump').addEventListener('touchend', () => { if (game) game.jumpHeld = false;
 $('tDig').addEventListener('touchstart', (e) => { e.preventDefault(); if (game) game.digReq = true; }, { passive: false });
 $('tRun').addEventListener('touchstart', (e) => { e.preventDefault(); if (!game) return; game.running = !game.running; $('tRun').classList.toggle('on', game.running); }, { passive: false });
 
+document.addEventListener('visibilitychange', () => { if (Sfx.ctx) { if (document.hidden) Sfx.ctx.suspend(); else Sfx.ctx.resume(); } });
 document.addEventListener('visibilitychange', () => { if (document.hidden && game && !game.finished) togglePause(true); });
 </script>
 </body>
