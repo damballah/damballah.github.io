@@ -137,8 +137,8 @@ async function render() {
         <div class="row"><a class="btn" href="../jeu/?niveau=${encodeURIComponent(r.id)}" target="_blank" rel="noopener">Jouer</a><button class="btn ${r.hidden ? '' : 'danger'}">${r.hidden ? 'Rétablir' : 'Retirer'}</button></div></div>`;
       el.querySelector('button').onclick = async () => {
         if (!r.hidden && !confirm(`Retirer « ${r.name} » de la galerie ?`)) return;
-        const { error } = await sb.from('levels').update({ hidden: !r.hidden }).eq('id', r.id);
-        if (error) { toast('Erreur : ' + error.message); return; } toast(r.hidden ? 'Niveau rétabli' : 'Niveau retiré (effectif à la prochaine publication)'); render();
+        const { data: done, error } = await sb.from('levels').update({ hidden: !r.hidden }).eq('id', r.id).select('id');
+        if (error || !done?.length) { toast(error ? 'Erreur : ' + error.message : 'Refusé par la base : droit de modification manquant (voir le guide)'); return; } toast(r.hidden ? 'Niveau rétabli' : 'Niveau retiré (effectif à la prochaine publication)'); render();
       };
       g.appendChild(el);
     }
@@ -148,7 +148,7 @@ async function render() {
     v.innerHTML = ''; for (const c of data) {
       const el = document.createElement('div'); el.className = 'cmt';
       el.innerHTML = `<div><b>${esc(c.profiles?.pseudo)}</b> ${esc(c.body)}<small>${date(c.created_at)}, niveau ${esc(c.level_id)}</small></div><button class="btn danger">Supprimer</button>`;
-      el.querySelector('button').onclick = async () => { const { error } = await sb.from('comments').delete().eq('id', c.id); if (error) toast('Erreur : ' + error.message); else { toast('Commentaire supprimé'); el.remove(); } };
+      el.querySelector('button').onclick = async () => { const { data: done, error } = await sb.from('comments').delete().eq('id', c.id).select('id'); if (error || !done?.length) toast(error ? 'Erreur : ' + error.message : 'Refusé par la base'); else { toast('Commentaire supprimé'); el.remove(); } };
       v.appendChild(el);
     }
   }
@@ -163,8 +163,8 @@ async function act(a, r, btn) {
   }
   const patch = a === 'ok' ? { status: 'approved' } : a === 'back' ? { status: 'pending' } : { status: 'rejected', data: null, thumb: null };
   if (a === 'no' && !confirm(`Refuser « ${r.name} » ? Il sera définitivement effacé.`)) { btn.disabled = false; return; }
-  const { error } = await sb.from('inbox').update(patch).eq('id', r.id);
-  if (error) { toast('Erreur : ' + error.message); btn.disabled = false; return; }
+  const { data: done, error } = await sb.from('inbox').update(patch).eq('id', r.id).select('id');
+  if (error || !done?.length) { toast(error ? 'Erreur : ' + error.message : 'Refusé par la base'); btn.disabled = false; return; }
   toast(a === 'ok' ? 'Accepté : publication dans l\'heure' : a === 'back' ? 'Remis en attente' : 'Refusé'); render();
 }
 </script>
