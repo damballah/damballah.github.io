@@ -518,6 +518,7 @@ legend{margin-bottom:.4rem}
   <div class="actions"><button class="btn ghost" data-close>Annuler</button></div></div></div>
 <div class="modal" id="mSettings"><div class="card"><h2>Réglages</h2><div class="settings">
   <label class="set-row"><input type="checkbox" id="setFx"><span><b>Effets visuels</b><small>Couleurs étalonnées, vignettage, anticrénelage renforcé. Désactive-les si le jeu manque de fluidité.</small></span></label>
+  <label class="set-row"><input type="checkbox" id="setRadar"><span><b>Radar</b><small>Affiche en jeu une petite carte qui tourne avec toi, avec les objets à ramasser et la direction de la sortie. La touche M l'affiche ou le masque aussi en cours de partie.</small></span></label>
   <fieldset class="set-row set-col"><legend><b>Qualité de reconstruction 3D</b></legend>
     <label><input type="radio" name="setQuality" value="standard"><span>Standard <small>IA légère (25 Mo), rapide, idéale sur mobile</small></span></label>
     <label><input type="radio" name="setQuality" value="high"><span>Haute <small>IA plus précise (environ 100 Mo), contours et volumes plus fins</small></span></label>
@@ -2278,10 +2279,10 @@ function makeComposer(scene, camera) {
 
 /* ================= Réglages ================= */
 const SETTINGS_KEY = 'lilliput_settings_v1';
-const Settings = Object.assign({ fx: !IS_TOUCH, sens: 1 }, Store.get(SETTINGS_KEY, {}));
+const Settings = Object.assign({ fx: !IS_TOUCH, sens: 1, radar: false }, Store.get(SETTINGS_KEY, {}));
 function saveSettings() { Store.set(SETTINGS_KEY, Settings); }
 function renderSettings() {
-  $('setFx').checked = Settings.fx; $('setSens').value = Settings.sens;
+  $('setFx').checked = Settings.fx; $('setSens').value = Settings.sens; $('setRadar').checked = !!Settings.radar;
   const tl = $('themeList'); tl.innerHTML = '';
   for (const [id, t] of Object.entries(THEMES)) {
     const b = document.createElement('button'); b.className = 'theme' + ((Settings.theme || 'papier') === id ? ' on' : ''); b.type = 'button';
@@ -2295,6 +2296,7 @@ function renderSettings() {
 }
 $('bSettings').onclick = () => { renderSettings(); $('mSettings').classList.add('on'); };
 $('setFx').onchange = (e) => { Settings.fx = e.target.checked; saveSettings(); };
+$('setRadar').onchange = (e) => { Settings.radar = e.target.checked; saveSettings(); };
 $('setSens').oninput = (e) => { Settings.sens = +e.target.value; saveSettings(); };
 document.querySelectorAll('[name="setQuality"]').forEach(r => r.onchange = () => { Settings.quality = r.value; saveSettings(); });
 
@@ -2647,7 +2649,7 @@ class Game {
     this.flames = [-1, 1].map(sd => { const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('#ff9a2e'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); f.position.set(sd * .32, -.5, -.45); f.visible = false; this.camera.add(f); return f; });
     this.debris = []; this.debrisGeo = new THREE.BoxGeometry(.18, .18, .18);
     this.origY = new Float32Array(this.geo.pos.length / 3); for (let k = 0; k < this.origY.length; k++) this.origY[k] = this.geo.pos[k * 3 + 1];
-    this.baseY = this.origY.slice(); this.origFill = this.geo.back.fill.slice(); this.baseFill = this.origFill.slice(); this.renderOff = this.geo.back.rfill.map((v, c) => v - this.origFill[c]); this.flatF = 0; this.toolEquipped = false; this.jetOn = true; this.radarOn = Store.get('lilliput_radar', true);
+    this.baseY = this.origY.slice(); this.origFill = this.geo.back.fill.slice(); this.baseFill = this.origFill.slice(); this.renderOff = this.geo.back.rfill.map((v, c) => v - this.origFill[c]); this.flatF = 0; this.toolEquipped = false; this.jetOn = true; this.radarOn = !!Settings.radar;
     this.reset();
   }
   buildTerrain() {
@@ -3428,7 +3430,7 @@ window.addEventListener('keydown', (e) => {
   if ((invOpen || $('mWish').classList.contains('on')) && e.code === 'Escape') { closeInv(); return; }
   if (invOpen || $('mWish').classList.contains('on')) return;
   if (e.code === 'KeyF' && !e.repeat) game.digReq = true;
-  if ((e.key === 'm' || e.key === 'M') && !e.repeat) { game.radarOn = !game.radarOn; Store.set('lilliput_radar', game.radarOn); flash(game.radarOn ? 'Radar affiché' : 'Radar masqué (touche M)', '#ffffff', 1200); }
+  if ((e.key === 'm' || e.key === 'M') && !e.repeat) { game.radarOn = !game.radarOn; Settings.radar = game.radarOn; saveSettings(); flash(game.radarOn ? 'Radar affiché' : 'Radar masqué (touche M)', '#ffffff', 1200); }
   if (e.code === 'Escape') {
     // si le navigateur vient de libérer la souris avec Échap, la pause est déjà faite
     if (document.pointerLockElement || performance.now() - lastUnlock < 400) return;
