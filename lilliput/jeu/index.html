@@ -906,6 +906,7 @@ const Online = {
     if (error) throw new Error(error.message);
   },
   async leaderboard(levelId, period) { await this.init(); const { data, error } = await this.sb.rpc('classement', { p_level: levelId, p_period: period }); if (error) throw error; return data || []; },
+  async hiddenIds() { await this.init(); const { data } = await this.sb.from('levels').select('id').eq('hidden', true); return new Set((data || []).map(r => r.id)); },
   async stats() { await this.init(); const { data } = await this.sb.from('level_stats').select('*'); const m = {}; (data || []).forEach(r => m[r.level_id] = r); return m; },
   async myVote(levelId) { await this.ensureUser(); const { data } = await this.sb.from('votes').select('stars').eq('level_id', levelId).eq('user_id', this.user.id).maybeSingle(); return data ? data.stars : 0; },
   async vote(levelId, stars) { await this.requirePseudo(); const { error } = await this.sb.from('votes').upsert({ level_id: levelId, user_id: this.user.id, stars }); if (error) throw new Error(error.message); },
@@ -939,6 +940,8 @@ async function renderCommunity() {
   let cat;
   try { const r = await fetch(SITE_BASE + 'niveaux/catalogue.json', { cache: 'no-cache' }); if (!r.ok) throw 0; cat = await r.json(); }
   catch { msg.textContent = 'La galerie n\'est disponible que sur le site en ligne.'; return; }
+  // niveaux retirés par le modérateur : masqués tout de suite, sans attendre la publication suivante
+  try { if (Online.enabled) { const hid = await Online.hiddenIds(); cat = cat.filter(c => !hid.has(c.id)); } } catch {}
   if (!cat.length) { msg.textContent = 'Aucun niveau partagé pour l\'instant. Sois le premier : depuis « Mes niveaux », touche « Partager ».'; return; }
   msg.textContent = '';
   let stats = {}; try { if (Online.enabled) stats = await Online.stats(); } catch {}
