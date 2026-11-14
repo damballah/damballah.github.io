@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quizz - Twitch : le jeu télé de ton chat</title>
+<meta name="description" content="Un jeu de quiz façon émission télé, joué en direct par ton chat Twitch. Un seul fichier, rien à installer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0221; --panel:#190a3a; --line:#3b1f7a;
+  --pink:#ff2e88; --cyan:#00e5ff; --yel:#ffd319; --grn:#39ff14;
+  --txt:#f4f0ff; --dim:#b3a6e0;
+  --px:'Press Start 2P','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--txt);font:1.45rem/1.35 'VT323','Courier New',monospace;
+  background:
+    linear-gradient(rgba(59,31,122,.25) 1px,transparent 1px) 0 0/100% 48px,
+    linear-gradient(90deg,rgba(59,31,122,.25) 1px,transparent 1px) 0 0/48px 100%,
+    radial-gradient(ellipse at 50% 0,#2a0f5e 0,var(--bg) 60rem) var(--bg)}
+/* Lignes de balayage façon tube cathodique, par-dessus toute la page */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 2px,transparent 2px 5px)}
+a{color:var(--cyan)}
+.wrap{max-width:68rem;margin-inline:auto;padding-inline:1.25rem}
+h1,h2,h3,.px{font-family:var(--px);font-weight:400;line-height:1.5}
+
+/* ---------- En-tête ---------- */
+header{text-align:center;padding-block:4.5rem 1rem}
+h1{font-size:clamp(1.6rem,6vw,3.6rem);color:var(--yel);text-shadow:.08em .08em 0 var(--pink);margin:0}
+.tag{font-family:var(--px);font-size:clamp(.6rem,1.6vw,.85rem);color:var(--cyan);letter-spacing:.15rem;margin:1.2rem 0 1.6rem}
+.lead{font-size:1.9rem;max-width:44rem;margin:0 auto 2.2rem;line-height:1.2}
+.cta{display:flex;gap:1.4rem;justify-content:center;flex-wrap:wrap}
+.btn{font-family:var(--px);font-size:.85rem;text-decoration:none;color:var(--bg);background:var(--cyan);
+  padding:1rem 1.3rem;box-shadow:.3rem .3rem 0 rgba(0,0,0,.6);display:inline-block}
+.btn.big{background:var(--yel);font-size:1.15rem;padding:1.2rem 1.9rem;box-shadow:.4rem .4rem 0 var(--pink)}
+.btn:hover{filter:brightness(1.15)} .btn:active{transform:translate(.15rem,.15rem)}
+.btn:focus-visible{outline:.2rem solid #fff;outline-offset:.2rem}
+.note{color:var(--dim);margin-top:1.3rem}
+
+/* ---------- Écran de démonstration ---------- */
+.screen{display:block;width:100%;height:auto;border:.25rem solid var(--cyan);box-shadow:.6rem .6rem 0 var(--pink);background:#000}
+.hero-shot{margin:3rem auto 0}
+
+/* ---------- Sections ---------- */
+section{padding-block:3.5rem 1rem}
+h2{font-size:clamp(1rem,2.6vw,1.45rem);color:var(--cyan);margin:0 0 1.8rem}
+h2::before{content:"► ";color:var(--pink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1.3rem}
+.card{background:var(--panel);border:.2rem solid var(--line);padding:1.2rem 1.3rem}
+.card h3{font-size:.8rem;color:var(--yel);margin:0 0 .7rem}
+.card p{margin:0;color:var(--txt)}
+.card:nth-child(4n+1){border-color:var(--pink)} .card:nth-child(4n+2){border-color:var(--cyan)}
+.card:nth-child(4n+3){border-color:var(--yel)} .card:nth-child(4n+4){border-color:var(--grn)}
+
+.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:1rem}
+.steps li{counter-increment:s;display:flex;gap:1.1rem;align-items:baseline;background:var(--panel);border-left:.4rem solid var(--pink);padding:.9rem 1.2rem}
+.steps li::before{content:counter(s);font-family:var(--px);font-size:1.1rem;color:var(--yel);flex:none;width:1.6rem}
+
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(20rem,1fr));gap:2rem;align-items:center}
+.split p{margin:0 0 1rem}
+table{width:100%;border-collapse:collapse;background:var(--panel)}
+th,td{text-align:left;padding:.55rem .9rem;border-bottom:.12rem dashed var(--line);vertical-align:top}
+th{font-family:var(--px);font-size:.65rem;color:var(--cyan)}
+code{font:inherit;color:var(--grn);background:rgba(0,0,0,.45);padding:0 .35rem;white-space:nowrap}
+pre{margin:0;background:#07010f;border:.2rem solid var(--grn);padding:1rem 1.2rem;overflow-x:auto;color:var(--grn);font:inherit;line-height:1.25}
+pre b{color:var(--yel);font-weight:400} pre i{color:var(--dim);font-style:normal}
+
+footer{text-align:center;padding-block:3rem 4rem;color:var(--dim);border-top:.2rem solid var(--pink);margin-top:4rem}
+footer .cta{margin-bottom:1.6rem}
+.hide{display:none !important}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>QUIZZ - TWITCH</h1>
+  <p class="tag">LE JEU TÉLÉ DE TON CHAT</p>
+  <p class="lead">Un quiz façon émission télé, joué en direct par tes spectateurs. Ils répondent dans le chat, le jeu compte les points et anime la partie.</p>
+  <div class="cta">
+    <a class="btn big" href="Quizz%20-%20Twitch.html">JOUER</a>
+    <a class="btn gh-zip hide" href="#">TÉLÉCHARGER</a>
+    <a class="btn gh-repo hide" href="#">VOIR SUR GITHUB</a>
+  </div>
+  <p class="note">Un seul fichier. Rien à installer. Pas de compte ni de clé Twitch à créer.</p>
+  <img class="screen hero-shot" src="docs/equipes.png" width="1280" height="720"
+       alt="Écran du jeu : une question à choix multiple, la bonne réponse en vert, le classement des joueurs et le cadre de la webcam.">
+</header>
+
+<main>
+  <section class="wrap">
+    <h2>CE QUE FAIT LE JEU</h2>
+    <div class="cards">
+      <div class="card"><h3>300 QUESTIONS</h3><p>Dix catégories fournies : littérature, science, sport, histoire, jeux vidéo, films et séries, géographie, musique, animaux, culture générale.</p></div>
+      <div class="card"><h3>TROIS TYPES</h3><p>Choix multiples, questions ouvertes et questions image, où la photo apparaît en gros pixels avant de devenir nette.</p></div>
+      <div class="card"><h3>INDICES</h3><p>Sur une partie des questions ouvertes, quelques lettres de la réponse apparaissent une à une. Chaque lettre coûte un point.</p></div>
+      <div class="card"><h3>JOKER 50/50</h3><p>Au hasard, deux mauvaises réponses disparaissent en pleine question. Ceux qui s'étaient trompés peuvent rejouer.</p></div>
+      <div class="card"><h3>SÉRIES</h3><p>Trois bonnes réponses d'affilée rapportent cinq points de bonus, et le classement affiche la série en cours.</p></div>
+      <div class="card"><h3>SAISON</h3><p>Les points se cumulent d'un live à l'autre. Un bouton bascule entre le classement de la partie et celui de la saison.</p></div>
+      <div class="card"><h3>WEBCAM</h3><p>Un cadre au format 16:9 est réservé sous le classement : il suffit d'y poser ta caméra dans OBS.</p></div>
+      <div class="card"><h3>TOLÉRANT</h3><p>Majuscules, accents, articles et petites fautes de frappe sont pardonnés. Le retard du stream est compensé.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <h2>EN LIVE DANS CINQ MINUTES</h2>
+    <ol class="steps">
+      <li><span>Ouvre le jeu dans ton navigateur : Chrome, Edge ou Firefox, sur Windows, Mac ou Linux.</span></li>
+      <li><span>Écris le nom de ta chaîne Twitch. Le voyant passe à « EN LIGNE » dès que le chat est lu.</span></li>
+      <li><span>Charge le fichier <code>questions.txt</code>, choisis une catégorie, un mode de jeu et un thème.</span></li>
+      <li><span>Dans OBS, capture la fenêtre du navigateur et pose ta webcam sur le cadre prévu.</span></li>
+      <li><span>Clique sur JOUER. Tes spectateurs répondent dans le chat.</span></li>
+    </ol>
+  </section>
+
+  <section class="wrap">
+    <h2>QUATRE FAÇONS DE JOUER</h2>
+    <div class="split">
+      <div>
+        <table>
+          <tr><th>MODE</th><th>PRINCIPE</th></tr>
+          <tr><td>Classique</td><td>Chacun pour soi.</td></tr>
+          <tr><td>Équipes</td><td>Rouge contre bleu, avec <code>!rouge</code> ou <code>!bleu</code>.</td></tr>
+          <tr><td>Chat contre streamer</td><td>Tu réponds au clavier, sans rien montrer à l'écran.</td></tr>
+          <tr><td>Mort subite</td><td>Une erreur élimine. Le dernier en jeu gagne.</td></tr>
+        </table>
+        <p style="margin-top:1.2rem">Et pour finir en beauté : une manche à mise, où chacun parie ses points avec <code>!mise 20</code>, ou une mort subite entre les trois meilleurs.</p>
+      </div>
+      <img class="screen" src="docs/indices.png" width="1280" height="720" loading="lazy"
+           alt="Écran du jeu avec un thème orange : une question ouverte dont la réponse s'affiche en tirets, avec trois lettres déjà dévoilées.">
+    </div>
+  </section>
+
+  <section class="wrap">
+    <h2>VINGT THÈMES</h2>
+    <p>Arcade néon, terminal vert, console de poche, plateau télé des années 70, cyberpunk, film d'horreur… Choisis aussi ta police, ton titre et ton image de fond.</p>
+    <img class="screen" src="docs/themes.png" width="1920" height="1080" loading="lazy"
+         alt="Neuf écrans du jeu côte à côte, chacun avec un thème de couleurs différent.">
+  </section>
+
+  <section class="wrap">
+    <h2>TES PROPRES QUESTIONS</h2>
+    <div class="split">
+      <div>
+        <p>Un éditeur intégré permet de chercher, modifier, ajouter et supprimer des questions sans quitter le jeu.</p>
+        <p>Tu peux aussi écrire directement dans le fichier texte, lisible par n'importe qui :</p>
+        <pre><b>[Géographie]</b>
+Quelle est la capitale de l'Australie ? = Canberra
+Le plus long fleuve d'Afrique ? = *Le Nil | Le Congo | Le Niger | Le Zambèze
+
+<b>[Drapeaux]</b>
+{japon.png} De quel pays est-ce le drapeau ? = Japon
+<i># L'étoile marque la bonne réponse d'un choix multiple.</i></pre>
+      </div>
+      <img class="screen" src="docs/editeur.png" width="1280" height="720" loading="lazy"
+           alt="L'éditeur de questions : la liste des questions à gauche, le formulaire d'une question à choix multiple à droite.">
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="cta">
+    <a class="btn big" href="Quizz%20-%20Twitch.html">JOUER</a>
+    <a class="btn gh-zip hide" href="#">TÉLÉCHARGER</a>
+    <a class="btn gh-repo hide" href="#">VOIR SUR GITHUB</a>
+  </div>
+  <p>Le jeu lit le chat Twitch sans compte ni clé. Il n'écrit jamais dans le chat.</p>
+</footer>
+
+<script>
+// Sur GitHub Pages, l'adresse du site donne celle du dépôt : on en déduit les liens GitHub et Télécharger.
+(function(){
+  var m = location.hostname.match(/^([^.]+)\.github\.io$/), repo = location.pathname.split('/')[1];
+  if (!m || !repo) return;
+  var url = 'https://github.com/' + m[1] + '/' + repo;
+  document.querySelectorAll('.gh-repo').forEach(function(a){ a.href = url; a.classList.remove('hide'); });
+  document.querySelectorAll('.gh-zip').forEach(function(a){ a.href = url + '/archive/refs/heads/main.zip'; a.classList.remove('hide'); });
+})();
+</script>
+</body>
+</html>
