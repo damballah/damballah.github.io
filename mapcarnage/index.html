@@ -102,7 +102,7 @@
 
   /* ---------- MOBILE / TACTILE ---------- */
   .touchhelp{display:none;margin-top:14px;font-size:13px;color:var(--muted);line-height:1.5} body.touch .touchhelp{display:block}
-  #touch{position:absolute;inset:0;z-index:6;display:none;touch-action:none;user-select:none;-webkit-user-select:none}
+  #touch{position:absolute;inset:0;z-index:6;display:none;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}
   body.touch #touch{display:block}
   body.touch #help, body.touch #lockhint, body.touch .controls{display:none!important}
   #tLeft{position:absolute;left:0;top:0;width:42%;height:100%}
@@ -137,6 +137,9 @@
     #flash{font-size:34px!important}
   }
   body.touch #rage{bottom:auto;top:172px}
+  .pbtns{display:flex;gap:12px} .pbtns .btn{flex:1;margin-top:14px;padding:14px 8px;font-size:clamp(14px,3.6vw,22px)}
+  #pause .card{max-height:94vh;overflow-y:auto}
+  @media (max-height:520px){ #pause .card{width:min(640px,92vw);padding:38px 18px 14px} #pause h2{font-size:28px;margin:0 0 4px} #pause .tag{font-size:12px;line-height:1.35} .pbtns .btn{margin-top:8px;padding:11px 8px} }
   /* ---------- PAUSE ---------- */
   #pause{position:fixed;inset:0;z-index:15;background:rgba(5,6,10,.72);display:flex;align-items:center;justify-content:center}
   #pause .card{width:min(440px,90vw);text-align:center}
@@ -280,7 +283,7 @@
       <span><kbd>V</kbd></span><span>vue rue (au niveau du trottoir) / vue de dos</span>
       <span><kbd>Échap</kbd> / <kbd>P</kbd></span><span>pause</span>
     </div>
-    <div class="foot"><b>MapCarnage · version 2026.11.19-q</b> · Cartes 100 % gratuites : tuiles <a href="https://openfreemap.org" style="color:inherit">OpenFreeMap</a> © OpenMapTiles, secours VersaTiles et Overpass, recherche Photon / Nominatim. Données © contributeurs OpenStreetMap (ODbL). Satellite (option) © Esri, Maxar, Earthstar Geographics. Jeu pour ordinateur (clavier + souris).</div>
+    <div class="foot"><b>MapCarnage · version 2026.11.19-s</b> · Cartes 100 % gratuites : tuiles <a href="https://openfreemap.org" style="color:inherit">OpenFreeMap</a> © OpenMapTiles, secours VersaTiles et Overpass, recherche Photon / Nominatim. Données © contributeurs OpenStreetMap (ODbL). Satellite (option) © Esri, Maxar, Earthstar Geographics. Jeu pour ordinateur (clavier + souris).</div>
   </div>
 </div>
 
@@ -336,7 +339,6 @@
   </div>
   <div id="flash"></div>
   <div id="touch">
-    <div id="tLeft"></div><div id="tLook"></div>
     <div id="joy"><i></i></div>
     <div id="joyHint">◀ ▲ ▶ glisse ici pour marcher (loin = courir)</div>
     <div class="tsmall">
@@ -371,8 +373,7 @@
   <div class="card">
     <h2>PAUSE</h2>
     <div class="tag" id="pauseStats"></div>
-    <button class="btn" id="resume">REPRENDRE</button>
-    <button class="btn ghost" id="newplace">NOUVEAU LIEU</button>
+    <div class="pbtns"><button class="btn" id="resume">REPRENDRE</button><button class="btn ghost" id="newplace">NOUVEAU LIEU</button></div>
   </div>
 </div>
 
@@ -4447,6 +4448,7 @@ addEventListener('blur',()=>{ for(const k in keys) keys[k]=false; });
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('mousedown',e=>{
   if(!running||paused) return;
+  if(IS_TOUCH || (e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)) return;   // sur mobile : seuls les boutons tactiles frappent
   Audio.init();
   if(document.pointerLockElement!==canvas){ try{ const p=canvas.requestPointerLock(); if(p&&p.catch) p.catch(()=>{}); }catch(err){} }
   if(e.button===0) startAction('punch'); else if(e.button===2) startAction('kick'); else if(e.button===1){ e.preventDefault(); startAction('sweep'); }
@@ -4468,7 +4470,7 @@ function setPause(p){
   paused=p; $('pause').classList.toggle('hidden',!p);
   if(p){ for(const k in keys) keys[k]=false; if(document.pointerLockElement) document.exitPointerLock();
     const S=W.stats, pct=100*W.destroyedVolume/W.zoneVolume;
-    $('pauseStats').innerHTML=`<span style="opacity:.6">MapCarnage · version 2026.11.19-q</span><br>${W.label}<br><b>${fmtMoney(S.money)}</b> de dégâts · ${pct.toLocaleString(loc(),{maximumFractionDigits:1})} % du quartier<br>${fmtInt(S.razed)} bâtiments rasés · ${fmtInt(S.blocks)} blocs · ${fmtInt(S.cars)} véhicules · ${fmtInt(S.props)} arbres/lampadaires<br>Médailles : ${W.medals?MEDALS.slice(0,W.medals).map(m=>m[1]).join(', '):'aucune pour l\'instant'}<br><span style="opacity:.7;font-size:.85em">🏠 ${fmtInt(BSTAT.built)} bâtiments en 3D (${fmtInt(BSTAT.ign||0)} avec hauteur IGN, ${fmtInt(W.addedBD||0)} ajoutés depuis l'IGN, ${fmtInt(BSTAT.osm)} depuis OpenStreetMap, ${fmtInt(BSTAT.roofs||0)} toits d'après photo, ${fmtInt(BSTAT.hull+BSTAT.fracFix)} simplifiés)${FILL.queue.length+FILL.pending.length?` · ${fmtInt(FILL.queue.length+FILL.pending.length)} en cours de construction`:''}${BSTAT.lost?` · ${fmtInt(BSTAT.lost)} impossibles`:''}</span>`; }
+    $('pauseStats').innerHTML=`<span style="opacity:.6">MapCarnage · version 2026.11.19-s</span><br>${W.label}<br><b>${fmtMoney(S.money)}</b> de dégâts · ${pct.toLocaleString(loc(),{maximumFractionDigits:1})} % du quartier<br>${fmtInt(S.razed)} bâtiments rasés · ${fmtInt(S.blocks)} blocs · ${fmtInt(S.cars)} véhicules · ${fmtInt(S.props)} arbres/lampadaires<br>Médailles : ${W.medals?MEDALS.slice(0,W.medals).map(m=>m[1]).join(', '):'aucune pour l\'instant'}<br><span style="opacity:.7;font-size:.85em">🏠 ${fmtInt(BSTAT.built)} bâtiments en 3D (${fmtInt(BSTAT.ign||0)} avec hauteur IGN, ${fmtInt(W.addedBD||0)} ajoutés depuis l'IGN, ${fmtInt(BSTAT.osm)} depuis OpenStreetMap, ${fmtInt(BSTAT.roofs||0)} toits d'après photo, ${fmtInt(BSTAT.hull+BSTAT.fracFix)} simplifiés)${FILL.queue.length+FILL.pending.length?` · ${fmtInt(FILL.queue.length+FILL.pending.length)} en cours de construction`:''}${BSTAT.lost?` · ${fmtInt(BSTAT.lost)} impossibles`:''}</span>`; }
 }
 $('resume').onclick=()=>setPause(false);
 $('newplace').onclick=()=>location.reload();
@@ -4758,42 +4760,54 @@ const IS_TOUCH=matchMedia('(pointer: coarse)').matches || (('ontouchstart' in wi
 const TOUCH={fy:0,tx:0,run:false,joy:null,look:null};
 if(IS_TOUCH) document.body.classList.add('touch');
 (function setupTouch(){
-  const joy=$('joy'), knob=joy.querySelector('i'), R=60;
-  const left=$('tLeft'), look=$('tLook');
-  left.addEventListener('pointerdown',e=>{ if(TOUCH.joy!=null) return; TOUCH.joy={id:e.pointerId,x:e.clientX,y:e.clientY}; try{ left.setPointerCapture(e.pointerId); }catch(_){}
-    joy.style.left=e.clientX+'px'; joy.style.top=e.clientY+'px'; joy.style.display='block'; knob.style.transform=''; $('joyHint').style.display='none'; Audio.init(); e.preventDefault(); });
-  left.addEventListener('pointermove',e=>{ const J=TOUCH.joy; if(!J||J.id!==e.pointerId) return;
-    let dx=e.clientX-J.x, dy=e.clientY-J.y; const d=Math.hypot(dx,dy); if(d>R){ dx*=R/d; dy*=R/d; }
+  // Événements tactiles natifs (touchstart / touchmove / touchend) : fonctionnent sur tous les téléphones,
+  // y compris Safari (iPhone) et Samsung Internet. Chaque doigt est suivi par son identifiant.
+  const joy=$('joy'), knob=joy.querySelector('i'), R=60, layer=$('touch');
+  const fingers=new Map();          // identifiant du doigt -> {role:'joy'|'look'|'btn', x, y}
+  const actBtn=b=>{
+    Audio.init(); if(!running) return;
+    const a=b.dataset.a;
+    if(a==='pause'){ setPause(!paused); return; }
+    if(paused) return;
+    if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
+    b.classList.add('on'); setTimeout(()=>b.classList.remove('on'),150);
+    if(a==='view'){ cam.mode=cam.mode==='rue'?'dos':'rue'; flash(cam.mode==='rue'?'VUE RUE':'VUE DE DOS'); }
+    else if(a==='names'){ LBL.on=!LBL.on; flash(LBL.on?'NOMS AFFICHÉS':'NOMS MASQUÉS'); }
+    else if(a==='zoomin') cam.zoomT=clamp(cam.zoomT*0.87,0.55,2.2);
+    else if(a==='zoomout') cam.zoomT=clamp(cam.zoomT*1.15,0.55,2.2);
+    else if(a==='rage') activateRage();
+    else if(a==='grab') startAction(giant.held?'throw':'grab');
+    else if(a==='hammer') startAction(giant.held?'throw':'hammer');
+    else startAction(a);
+  };
+  const joyStart=(id,x,y)=>{ fingers.set(id,{role:'joy',x,y}); joy.style.left=x+'px'; joy.style.top=y+'px'; joy.style.display='block'; knob.style.transform=''; $('joyHint').style.display='none'; };
+  const joyMove=(f,x,y)=>{ let dx=x-f.x, dy=y-f.y; const d=Math.hypot(dx,dy); if(d>R){ dx*=R/d; dy*=R/d; }
     knob.style.transform=`translate(${dx}px,${dy}px)`;
     const k=v=>Math.abs(v)<0.12?0:v;
-    TOUCH.fy=k(-dy/R); TOUCH.tx=k(-dx/R)*0.85; TOUCH.run=d>R*1.15 && -dy>R*0.6; });
-  const endJoy=e=>{ const J=TOUCH.joy; if(!J||J.id!==e.pointerId) return; TOUCH.joy=null; TOUCH.fy=TOUCH.tx=0; TOUCH.run=false; joy.style.display='none'; };
-  left.addEventListener('pointerup',endJoy); left.addEventListener('pointercancel',endJoy);
-  // glisser à droite : regarder / viser
-  look.addEventListener('pointerdown',e=>{ if(TOUCH.look!=null) return; TOUCH.look={id:e.pointerId,x:e.clientX,y:e.clientY}; try{ look.setPointerCapture(e.pointerId); }catch(_){} e.preventDefault(); });
-  look.addEventListener('pointermove',e=>{ const L=TOUCH.look; if(!L||L.id!==e.pointerId||paused) return;
-    const dx=e.clientX-L.x, dy=e.clientY-L.y; L.x=e.clientX; L.y=e.clientY;
-    mouseYaw-=dx*0.0065; cam.pitchT=clamp(cam.pitchT+dy*0.004,0.55,1.6); });
-  const endLook=e=>{ if(TOUCH.look&&TOUCH.look.id===e.pointerId) TOUCH.look=null; };
-  look.addEventListener('pointerup',endLook); look.addEventListener('pointercancel',endLook);
-  // boutons d'action
-  document.querySelectorAll('#touch .tb').forEach(b=>{
-    b.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); Audio.init(); if(!running) return;
-      const a=b.dataset.a;
-      if(a==='pause'){ setPause(!paused); return; }
-      if(paused) return;
-      if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
-      if(a==='view'){ cam.mode=cam.mode==='rue'?'dos':'rue'; flash(cam.mode==='rue'?'VUE RUE':'VUE DE DOS'); }
-      else if(a==='names'){ LBL.on=!LBL.on; flash(LBL.on?'NOMS AFFICHÉS':'NOMS MASQUÉS'); }
-      else if(a==='zoomin') cam.zoomT=clamp(cam.zoomT*0.87,0.55,2.2);
-      else if(a==='zoomout') cam.zoomT=clamp(cam.zoomT*1.15,0.55,2.2);
-      else if(a==='rage') activateRage();
-      else if(a==='grab') startAction(giant.held?'throw':'grab');
-      else if(a==='hammer') startAction(giant.held?'throw':'hammer');
-      else startAction(a);
-    });
-    b.addEventListener('contextmenu',e=>e.preventDefault());
-  });
+    TOUCH.fy=k(-dy/R); TOUCH.tx=k(-dx/R)*0.85; TOUCH.run=d>R*1.15 && -dy>R*0.6; };
+  const joyEnd=()=>{ TOUCH.fy=TOUCH.tx=0; TOUCH.run=false; joy.style.display='none'; };
+  const begin=(id,x,y,target)=>{
+    const b=target&&target.closest?target.closest('#touch .tb'):null;
+    if(b){ fingers.set(id,{role:'btn'}); actBtn(b); return; }
+    if(x<innerWidth*0.42){ if(![...fingers.values()].some(f=>f.role==='joy')) joyStart(id,x,y); }
+    else fingers.set(id,{role:'look',x,y});
+  };
+  const move=(id,x,y)=>{ const f=fingers.get(id); if(!f) return;
+    if(f.role==='joy') joyMove(f,x,y);
+    else if(f.role==='look' && !paused){ const dx=x-f.x, dy=y-f.y; f.x=x; f.y=y; mouseYaw-=dx*0.0065; cam.pitchT=clamp(cam.pitchT+dy*0.004,0.55,1.6); } };
+  const end=id=>{ const f=fingers.get(id); if(!f) return; fingers.delete(id); if(f.role==='joy') joyEnd(); };
+  layer.addEventListener('touchstart',e=>{ e.preventDefault(); for(const t of e.changedTouches) begin(t.identifier,t.clientX,t.clientY,t.target); },{passive:false});
+  layer.addEventListener('touchmove',e=>{ e.preventDefault(); for(const t of e.changedTouches) move(t.identifier,t.clientX,t.clientY); },{passive:false});
+  const tend=e=>{ e.preventDefault(); for(const t of e.changedTouches) end(t.identifier); };
+  layer.addEventListener('touchend',tend,{passive:false}); layer.addEventListener('touchcancel',tend,{passive:false});
+  // secours pour les écrans tactiles sans événements « touch » (stylet, certains PC) : événements pointeur, hors toucher
+  layer.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') return; e.preventDefault(); try{ layer.setPointerCapture(e.pointerId); }catch(_){} begin('p'+e.pointerId,e.clientX,e.clientY,e.target); });
+  layer.addEventListener('pointermove',e=>{ if(e.pointerType==='touch') return; move('p'+e.pointerId,e.clientX,e.clientY); });
+  const pend=e=>{ if(e.pointerType==='touch') return; end('p'+e.pointerId); };
+  layer.addEventListener('pointerup',pend); layer.addEventListener('pointercancel',pend);
+  layer.addEventListener('contextmenu',e=>e.preventDefault());
+  // si on perd le fil (appel, notification…), on relâche tout
+  addEventListener('blur',()=>{ fingers.clear(); joyEnd(); });
 })();
 function touchTick(){
   if(!IS_TOUCH||!running) return;
