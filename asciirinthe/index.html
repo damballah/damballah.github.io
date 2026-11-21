@@ -324,7 +324,7 @@ const EN_DICT = {
   '* NOUVEAU RECORD POUR CETTE CHAÎNE *': '* NEW RECORD FOR THIS STRING *', '★ NOUVEAU RECORD ★': '★ NEW RECORD ★',
   '► MENU': '► MENU', '► NIVEAU SUIVANT': '► NEXT LEVEL', '► REJOUER': '► PLAY AGAIN', '► RÉESSAYER': '► RETRY', 'REJOUER': 'REPLAY', 'CARTE': 'MAP',
   'ENTRÉE : CONTINUER · R : REJOUER · V : CARTE · P : PARTAGER · ÉCHAP : MENU': 'ENTER : CONTINUE · R : REPLAY · V : MAP · P : SHARE · ESC : MENU',
-  'AFFICHER LES RÉSULTATS': 'SHOW RESULTS', 'PAS DE C4': 'NO C4', "APPROCHE-TOI D'UN MUR": 'GET CLOSER TO A WALL', 'MUR EXTÉRIEUR INDESTRUCTIBLE': 'OUTER WALL CANNOT BE DESTROYED',
+  'AFFICHER LES RÉSULTATS': 'SHOW RESULTS', 'À PROPOS': 'ABOUT', 'PAS DE C4': 'NO C4', "APPROCHE-TOI D'UN MUR": 'GET CLOSER TO A WALL', 'MUR EXTÉRIEUR INDESTRUCTIBLE': 'OUTER WALL CANNOT BE DESTROYED',
   'C4 POSÉ · RECULE !': 'C4 PLANTED · BACK OFF!', 'C4 RAMASSÉ · TOUCHE C CONTRE UN MUR': 'C4 PICKED UP · PRESS C FACING A WALL', 'C4 RAMASSÉ · BOUTON C4 CONTRE UN MUR': 'C4 PICKED UP · C4 BUTTON FACING A WALL',
   'LAMPE DÉTRUITE': 'LIGHT DESTROYED', 'BOUTON  C4 (FACE À UN MUR)': 'BUTTON  C4 (FACING A WALL)', 'C · CLIC MOLETTE (FACE À UN MUR)': 'C · MIDDLE CLICK (FACING A WALL)',
   'RT/A tirer · LT/B onde · Y C4 · START pause': 'RT/A fire · LT/B wave · Y C4 · START pause', '[>>] arme  [*] onde  [#] carte 12 s  [C4] fait sauter un mur': '[>>] weapon  [*] wave  [#] map 12 s  [C4] blows up a wall', 'VIES AU MAX · SOIN +40': 'MAX LIVES · HEAL +40', '1 VIE MAX PAR NIVEAU · SOIN +40': '1 LIFE PER LEVEL MAX · HEAL +40', '► REVOIR LE PARCOURS': '► REPLAY MY RUN', '↺ REVOIR LE PARCOURS': '↺ REPLAY MY RUN', '■ ARRÊTER': '■ STOP', 'MANETTE DÉCONNECTÉE': 'GAMEPAD DISCONNECTED', 'MANETTE BRANCHÉE : APPUIE SUR UN BOUTON': 'GAMEPAD PLUGGED IN : PRESS A BUTTON',
@@ -1620,7 +1620,8 @@ const MENU_ALL = [
   { adj: 'theme', label: () => 'COULEUR : ◄ ' + THEMES[theme].name + ' ►', act: () => cycleTheme(1) },
   { adj: 'sens', label: () => 'SENSIBILITÉ SOURIS : ◄ ' + settings.sens.toFixed(1) + ' ►', act: () => changeSens(1) },
   { adj: 'lang', label: () => LANG === 'fr' ? 'LANGUE : ◄ FRANÇAIS ►' : 'LANGUAGE : ◄ ENGLISH ►', act: () => setLang(LANG === 'fr' ? 'en' : 'fr') },
-  { label: () => 'COMMANDES', act: () => go('help') }];
+  { label: () => 'COMMANDES', act: () => go('help') },
+  { label: () => 'À PROPOS', act: () => go('about') }];
 let MENU = [];
 // « CONTINUER » n'apparaît que s'il y a une campagne en cours
 function refreshMenu() {
@@ -1631,11 +1632,11 @@ function refreshMenu() {
 refreshMenu();
 function menuAdj(dir) { const a = MENU[S.sel] && MENU[S.sel].adj; if (!a) return false; Snd.move(); if (a === 'theme') cycleTheme(dir); else if (a === 'sens') changeSens(dir); else setLang(LANG === 'fr' ? 'en' : 'fr'); return true; }
 function changeSens(dir) { settings.sens = clamp(Math.round((settings.sens + dir * .2) * 10) / 10, .4, 4); Store.set('asciirinthe.settings', settings); }
-const MENU_Y = 164, MENU_H = 26;
+const MENU_Y = 158, MENU_H = 22, MENU_FS = 15;
 // clic sur la ligne Couleur : à gauche du nom => couleur précédente, à droite => suivante
 // lignes réglables du menu (« ◄ valeur ► ») : clic à gauche du milieu de la valeur => recule, à droite => avance
 function arrowClickDir(i, px) {
-  ctx.font = `bold 17px ${FONT}`;
+  ctx.font = `bold ${MENU_FS}px ${FONT}`;
   const full = '> ' + tr(MENU[i].label()) + ' <', x0 = VW / 2 - ctx.measureText(full).width / 2;
   const a = full.indexOf('◄'), b = full.indexOf('►');
   const left = x0 + ctx.measureText(full.slice(0, a)).width, right = x0 + ctx.measureText(full.slice(0, b)).width;
@@ -1650,7 +1651,7 @@ function drawMenu(dt) {
   txt('LABYRINTHES NÉS D\'UNE CHAÎNE · SHA-256', VW / 2, 136, 12, .6, 'center');
   MENU.forEach((m, i) => {
     const s = i === S.sel, l = tr(m.label());
-    txt(s ? '> ' + l + ' <' : l, VW / 2, MENU_Y + i * MENU_H, 17, s ? 1 : .45, 'center', s);
+    txt(s ? '> ' + l + ' <' : l, VW / 2, MENU_Y + i * MENU_H, MENU_FS, s ? 1 : .45, 'center', s);
   });
   txt(TOUCH ? 'TOUCHE UNE LIGNE · ◄ ► POUR RÉGLER · MODE PAYSAGE CONSEILLÉ' : '↑↓ CHOISIR · ←→ RÉGLER · ENTRÉE VALIDER · SOURIS · MANETTE', VW / 2, VH - 20, 10, .4, 'center', false);
 }
@@ -1726,6 +1727,25 @@ function drawLibrary() {
     uiRow(row, 360, { size: 12 });
   }
   if (!TOUCH && !(S.toast && S.toastT > 0)) txt('ENTRÉE JOUER · P PARTAGER · SUPPR EFFACER · C COPIER · ÉCHAP RETOUR', VW / 2, VH - 14, 10, .4, 'center', false);
+}
+const VERSION = 'v1.0 · 2026';
+function drawAbout() {
+  drawRain(1 / 60, .06);
+  txt('À PROPOS', VW / 2, 24, 22, 1, 'center');
+  drawTitle(58, 3.2);
+  txt(L('Un labyrinthe à la première personne, fait uniquement de caractères.', 'A first-person maze made entirely of characters.'), VW / 2, 104, 12, .85, 'center');
+  txt(L('CONCEPTION, IDÉE ET DIRECTION DU JEU', 'CONCEPT, IDEA AND GAME DIRECTION'), VW / 2, 132, 10, .55, 'center', false);
+  txt('DAMBALLAH', VW / 2, 146, 20, 1, 'center');
+  txt(L("Développé avec l'aide de CLAUDE (Anthropic)", 'Developed with the help of CLAUDE (Anthropic)'), VW / 2, 176, 12, .85, 'center');
+  txt(L('Chaque chaîne de caractères devient un labyrinthe unique grâce au SHA-256 :', 'Every string of characters becomes a unique maze thanks to SHA-256:'), VW / 2, 204, 11, .7, 'center', false);
+  txt(L('même chaîne, même labyrinthe, partout dans le monde.', 'same string, same maze, anywhere in the world.'), VW / 2, 219, 11, .7, 'center', false);
+  txt(L('Il y a plus de labyrinthes possibles que de grains de sable sur Terre.', 'There are more possible mazes than grains of sand on Earth.'), VW / 2, 234, 11, .7, 'center', false);
+  txt(L('Graphismes, sons et musique générés par le code · aucune image ni aucun son externe.', 'Graphics, sounds and music generated by code · no external images or sounds.'), VW / 2, 256, 10, .55, 'center', false);
+  uiBtn(GAME_URL.replace(/^https?:\/\//, ''), VW / 2, 286, () => { try { window.open(GAME_URL, '_blank', 'noopener'); } catch (e) {} }, { size: 13 });
+  txt(L("MERCI D'AVOIR JOUÉ !", 'THANKS FOR PLAYING!'), VW / 2, 322, 15, .6 + .4 * Math.abs(Math.sin(performance.now() / 600)), 'center');
+  txt(VERSION, VW / 2, 346, 10, .45, 'center', false);
+  backBtn();
+  if (!TOUCH) txt('ÉCHAP : RETOUR', VW / 2, VH - 14, 10, .4, 'center', false);
 }
 function drawHelp() {
   drawRain(1 / 60, .06);
@@ -2266,7 +2286,7 @@ function onKey(code, key) {
       if (S.libSel >= S.libScroll + LIB_ROWS) S.libScroll = S.libSel - LIB_ROWS + 1;
       break;
     }
-    case 'help': if (code === 'Escape') go('menu'); break;
+    case 'help': case 'about': if (code === 'Escape') go('menu'); break;
     case 'intro': if (code === 'Space' || code === 'Enter' || code === 'Escape') startZoom(); break;
     case 'play':
       if (code === 'Escape' || code === 'KeyP') pause();
@@ -2320,10 +2340,12 @@ function handleTap(p) {
       break;
     }
     case 'input': if (TOUCH && p.y > 100 && p.y < 170) showSeedInput(true); break;
+    case 'about': case 'help': Snd.ok(); go('menu'); break;   // un clic n'importe où (hors lien) ramène au menu
     case 'library': {
       const r = Math.floor((p.y - LIB_Y + 2) / LIB_H), idx = S.libScroll + r, L = sortedLib();
       if (r >= 0 && r < LIB_ROWS && L[idx] && p.x > 602 - 18 && p.x < 602 + 18) { S.libSel = idx; Snd.ok(); openShare(libShareData(L[idx])); break; }
-      if (r >= 0 && r < LIB_ROWS && L[idx]) { if (idx === S.libSel) { Snd.ok(); goFull(); playSeed(L[idx].seed); } else { S.libSel = idx; S.delArm = 0; Snd.move(); } }
+      if (r >= 0 && r < LIB_ROWS && L[idx] && p.x > 22 && p.x < VW - 22) { if (idx === S.libSel) { Snd.ok(); goFull(); playSeed(L[idx].seed); } else { S.libSel = idx; S.delArm = 0; Snd.move(); } break; }
+      Snd.ok(); go('menu');   // clic en dehors des lignes du tableau (et des boutons) : retour au menu
       break;
     }
     case 'intro': startZoom(); break;
@@ -2423,6 +2445,7 @@ function frame(now) {
       case 'input': drawInput(); break;
       case 'library': drawLibrary(); break;
       case 'help': drawHelp(); break;
+      case 'about': drawAbout(); break;
       case 'intro': updateIntro(dt); if (S.state === 'intro') drawIntro(); else drawZoom(); break;
       case 'zoom':
         Z.t += dt; drawZoom();
