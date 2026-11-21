@@ -715,7 +715,7 @@ function uiRow(items, cy, o = {}) { // items : [label, action, hot]
   items.forEach(([l, act, hot], i) => { uiBtn(l, x + ws[i] / 2, cy, act, { size: sz, hot }); x += ws[i] + gap; });
 }
 function backBtn(to = () => go('menu')) { uiBtn('◄ RETOUR', 56, 24, to, { size: 12 }); }
-function moveFocus(d) { if (!BTNS.length) return false; S.bf = clamp((S.bf == null ? 0 : S.bf) + d, 0, BTNS.length - 1); Snd.move(); return true; }
+function moveFocus(d) { if (!BTNS.length) return false; S.bfHover = false; S.bf = clamp((S.bf == null ? 0 : S.bf) + d, 0, BTNS.length - 1); Snd.move(); return true; }
 function pressFocus() { const b = BTNS[S.bf]; if (S.bf == null || !b) return false; Snd.ok(); b.act(); return true; }
 function hitBtn(p) {
   for (let i = BTNS.length - 1; i >= 0; i--) { const b = BTNS[i]; if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) { Snd.ok(); b.act(); return true; } }
@@ -2414,7 +2414,10 @@ cv.addEventListener('mousemove', e => {
     return;
   }
   const p = toCanvas(e); S.mx = p.x; S.mouseT = performance.now();
-  for (let i = 0; i < BTNS.length; i++) { const b = BTNS[i]; if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) { S.bf = i; break; } }
+  // survol : le bouton s'allume ; en sortant, il s'éteint (on revient au bouton principal s'il y en a un)
+  let over = -1;
+  for (let i = 0; i < BTNS.length; i++) { const b = BTNS[i]; if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) { over = i; break; } }
+  if (over >= 0) { S.bf = over; S.bfHover = true; } else if (S.bfHover) { S.bf = null; S.bfHover = false; }
   if (S.state === 'menu') { const i = Math.floor((p.y - MENU_Y + 6) / MENU_H); if (i >= 0 && i < MENU.length && i !== S.sel) S.sel = i; }
 });
 cv.addEventListener('mouseleave', () => { S.mx = null; });
