@@ -1,0 +1,47 @@
+# Atlas du Ciel (damballah.github.io/atlas) : météo mondiale toutes les heures -> branche « atlas-meteo »
+# Nuages (EUMETSAT + NASA GIBS), pluie (NASA IMERG), vents (NOAA GFS). 72 h d'historique gardées,
+# en un seul commit remplacé à chaque fois : la branche principale du site n'est jamais touchée.
+name: Atlas - météo
+
+on:
+  schedule:
+    - cron: '41 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-meteo
+  cancel-in-progress: false
+
+jobs:
+  meteo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: atlas/outils
+      - name: Outils (images, lecture des fichiers météo GRIB)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libeccodes-tools > /dev/null
+          python3 -m pip install --quiet numpy pillow
+      - name: Historique déjà publié
+        run: |
+          git clone -q --depth 1 --branch atlas-meteo "https://github.com/${GITHUB_REPOSITORY}.git" /tmp/meteo || mkdir -p /tmp/meteo
+          rm -rf /tmp/meteo/.git
+      - name: Relevé de l'heure
+        run: python3 atlas/outils/meteo.py --dir /tmp/meteo
+      - name: Publication
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/meteo
+          git init -q -b atlas-meteo
+          git config user.name "atlas-du-ciel[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Météo $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:atlas-meteo
