@@ -1,0 +1,37 @@
+# Atlas du Ciel (damballah.github.io/atlas) : satellites toutes les 3 h -> branche « atlas-donnees »
+# (un seul commit remplacé à chaque fois : la branche principale du site n'est jamais touchée)
+name: Atlas - satellites
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-satellites
+  cancel-in-progress: false
+
+jobs:
+  satellites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: atlas/outils
+      - name: Téléchargement (CelesTrak, sinon GCAT / SatNOGS, sinon copie précédente)
+        run: python3 atlas/outils/donnees.py --out /tmp/donnees --previous "https://raw.githubusercontent.com/${{ github.repository }}/atlas-donnees"
+      - name: Publication
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/donnees
+          git init -q -b atlas-donnees
+          git config user.name "atlas-du-ciel[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Satellites $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:atlas-donnees
