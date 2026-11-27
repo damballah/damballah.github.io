@@ -1,0 +1,39 @@
+# Atlas du Ciel (damballah.github.io/atlas) : instantané mondial des navires (AIS) -> branche « atlas-bateaux »
+# Lancée toutes les 5 min par cron-job.org (voir le README). Clé gratuite aisstream.io :
+# Settings > Secrets and variables > Actions > AISSTREAM_API_KEY
+name: Atlas - bateaux
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-bateaux
+  cancel-in-progress: true
+
+jobs:
+  bateaux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: atlas/outils
+      - name: Écoute du flux AIS (50 s)
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: python3 atlas/outils/bateaux.py --out /tmp/bateaux --precedent "https://raw.githubusercontent.com/${{ github.repository }}/atlas-bateaux/"
+      - name: Publication
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f /tmp/bateaux/bateaux.json ]; then echo "Pas de nouveau relevé : le précédent reste en ligne."; exit 0; fi
+          cd /tmp/bateaux
+          git init -q -b atlas-bateaux
+          git config user.name "atlas-du-ciel[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Bateaux $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:atlas-bateaux
