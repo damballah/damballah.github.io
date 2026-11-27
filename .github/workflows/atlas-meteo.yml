@@ -4,8 +4,6 @@
 name: Atlas - météo
 
 on:
-  schedule:
-    - cron: '41 * * * *'
   workflow_dispatch:
 
 permissions:
