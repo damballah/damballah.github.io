@@ -18,9 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: atlas/outils
+      - name: Outil WebSocket
+        run: python3 -m pip install --quiet websockets
       - name: Écoute du flux AIS (50 s)
         env:
           AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
