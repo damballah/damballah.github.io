@@ -138,11 +138,48 @@ def ingerer(m, nav, stat, now):
         d['t'] = int(now)
 
 
+def abonnement(cle):
+    return json.dumps({'APIKey': cle, 'BoundingBoxes': [[[-90, -180], [90, 180]]], 'FilterMessageTypes': list(POSITIONS + STATIQUES)})
+
+
+def ecouter_lib(cle, duree, nav, stat, url):
+    """version avec la bibliothèque « websockets » (installée par la tâche GitHub)"""
+    import asyncio
+    import websockets
+
+    async def run():
+        t0 = time.time()
+        async with websockets.connect(url, open_timeout=40, ping_interval=20, ping_timeout=40, max_size=2 ** 24, close_timeout=5) as ws:
+            print(f'[bateaux] connecté en {time.time() - t0:.1f} s')
+            await ws.send(abonnement(cle))
+            fin, n, premier = time.time() + duree, 0, None
+            while time.time() < fin:
+                try:
+                    txt = await asyncio.wait_for(ws.recv(), timeout=min(30, max(1, fin - time.time())))
+                except asyncio.TimeoutError:
+                    if n == 0: raise RuntimeError('connecté, mais aucun message reçu en 30 s')
+                    break
+                if isinstance(txt, bytes): txt = txt.decode('utf-8', errors='replace')
+                try: m = json.loads(txt)
+                except ValueError: continue
+                if isinstance(m, dict) and m.get('error'):
+                    raise RuntimeError('aisstream : ' + str(m['error']))
+                if premier is None:
+                    premier = time.time() - t0; print(f'[bateaux] premier message après {premier:.1f} s')
+                ingerer(m, nav, stat, time.time()); n += 1
+            return n
+    return asyncio.run(run())
+
+
 def ecouter(cle, duree, nav, stat, url=URL):
-    ws = WS(url)
+    try:
+        import websockets  # noqa: F401
+        return ecouter_lib(cle, duree, nav, stat, url)
+    except ImportError:
+        pass
+    ws = WS(url, timeout=40)
     # aisstream exige l'abonnement dans les 3 secondes
-    ws.send(json.dumps({'APIKey': cle, 'BoundingBoxes': [[[-90, -180], [90, 180]]],
-                        'FilterMessageTypes': list(POSITIONS + STATIQUES)}))
+    ws.send(abonnement(cle))
     ws.s.settimeout(15)
     fin, n = time.time() + duree, 0
     try:
@@ -194,12 +231,21 @@ def main():
         for k, d in s.items():
             if now - d.get('t', 0) < GARDE_STATIQUE: stat[int(k)] = d
     avant = len(nav)
-    try:
-        n = ecouter(cle, a.duree, nav, stat, a.url)
-        print(f'[bateaux] {n} messages reçus en {a.duree:.0f} s')
-    except Exception as e:   # noqa: BLE001
-        print(f'[bateaux] flux indisponible : {e}', file=sys.stderr)
-        if not avant: return 1
+    n, err = 0, None
+    for essai in range(1, 4):   # le service est en bêta : jusqu'à 3 essais
+        try:
+            n = ecouter(cle, a.duree, nav, stat, a.url)
+            print(f'[bateaux] {n} messages reçus en {a.duree:.0f} s')
+            break
+        except Exception as e:   # noqa: BLE001
+            err = f'{type(e).__name__} : {e}'
+            print(f'[bateaux] essai {essai} : flux indisponible ({err})', file=sys.stderr)
+            if 'aisstream :' in str(e): break       # clé refusée : inutile d'insister
+            time.sleep(5)
+    if not n:
+        # pas d'erreur rouge toutes les 5 min : un simple avertissement, le relevé précédent reste en ligne
+        print(f'::warning title=Navires::aisstream.io injoignable ({err}). Le relevé précédent reste en ligne.')
+        if not avant: return 0
         print('[bateaux] on republie les positions précédentes encore valables')
     # fichier lu par le site : [mmsi, nom, lat, lon, vitesse(nœuds), route, cap, type, t, statut, destination, longueur, imo, classe]
     rows = []
