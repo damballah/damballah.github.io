@@ -1,0 +1,37 @@
+# Atlas du Ciel (damballah.github.io/atlas) : noms des fleuves, lacs, sommets et massifs -> branche « atlas-noms »
+# Source : Natural Earth (domaine public). La géographie ne bouge pas : à lancer UNE fois à la main
+# (Actions > Atlas - noms > Run workflow), puis seulement si on veut reprendre une nouvelle version de Natural Earth.
+# Pas besoin de cron-job.org pour celui-ci.
+name: Atlas - noms
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-noms
+  cancel-in-progress: true
+
+jobs:
+  noms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: atlas/outils
+      - name: Préparation des noms (Natural Earth)
+        run: python3 atlas/outils/noms.py --out /tmp/noms
+      - name: Publication
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/noms
+          git init -q -b atlas-noms
+          git config user.name "atlas-du-ciel[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Noms Natural Earth $(date -u +%Y-%m-%d)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:atlas-noms
