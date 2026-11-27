@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Atlas du Ciel · avions, bateaux et satellites en direct</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='18' fill='%231a6fb3'/%3E%3Cellipse cx='32' cy='32' rx='30' ry='10' fill='none' stroke='%2340e0ff' stroke-width='3' transform='rotate(-25 32 32)'/%3E%3Ccircle cx='58' cy='22' r='4' fill='%23ffd34d'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css?v=2026112702">
+<script>window.ATLAS_WEB = true; window.ATLAS_ASSETS = 'https://cdn.jsdelivr.net/npm/three-globe/example/img/';
+window.ATLAS_DONNEES = 'https://raw.githubusercontent.com/damballah/damballah.github.io/atlas-donnees/'; window.ATLAS_AVIONS = 'https://raw.githubusercontent.com/damballah/damballah.github.io/atlas-avions/'; window.ATLAS_METEO = 'https://raw.githubusercontent.com/damballah/damballah.github.io/atlas-meteo/'; window.ATLAS_BATEAUX = 'https://raw.githubusercontent.com/damballah/damballah.github.io/atlas-bateaux/'; window.ATLAS_NOMS = 'https://raw.githubusercontent.com/damballah/damballah.github.io/atlas-noms/';</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="globe"></canvas>
+<canvas id="names"></canvas>
+
+<!-- En-tête : date et mode -->
+<header id="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 64 64" width="30" height="30"><circle cx="32" cy="32" r="16" fill="#1a6fb3"/><ellipse cx="32" cy="32" rx="29" ry="9" fill="none" stroke="#40e0ff" stroke-width="3" transform="rotate(-25 32 32)"/><circle cx="57" cy="21" r="4" fill="#ffd34d"/></svg>
+    <div><div class="brand-name">ATLAS DU CIEL</div><div class="brand-sub">avions, bateaux &amp; satellites</div></div>
+  </div>
+  <div class="clock">
+    <div id="clockDate">—</div>
+    <div class="clock-row"><span id="clockTime">—</span><button id="liveBadge" class="live on" title="Revenir au temps réel (touche L)">● DIRECT</button></div>
+  </div>
+  <div class="gsearch">
+    <input id="gsearch" type="search" placeholder="🔍 Vol, compagnie, satellite…" title="Rechercher un vol (AFR1234), une compagnie (air france), un satellite (ISS), un n° NORAD" autocomplete="off" spellcheck="false">
+    <div id="gsearchResults"></div>
+  </div>
+  <div id="stats" title="Clic : afficher / masquer · Ctrl + clic : n'afficher que cette catégorie">
+    <div class="stat" data-g="planes"><span class="v" id="stPlanes">—</span><span class="l" id="stPlanesL">avions en vol</span></div>
+    <div class="stat" data-g="ships"><span class="v" id="stShips">—</span><span class="l" id="stShipsL">navires</span></div>
+    <div class="stat" data-g="active"><span class="v" id="stActive">—</span><span class="l">satellites actifs</span></div>
+    <div class="stat" data-g="inactive"><span class="v" id="stInactive">—</span><span class="l">satellites éteints</span></div>
+    <div class="stat" data-g="rb"><span class="v" id="stRB">—</span><span class="l">étages de fusée</span></div>
+    <div class="stat" data-g="debris"><span class="v" id="stDebris">—</span><span class="l">débris</span></div>
+    <button id="statAll" title="Tout réafficher">↺</button>
+    <button id="btnAbout" title="À propos d'Atlas du Ciel">ⓘ<span class="lbl"> À propos</span></button>
+    <button id="btnSettings" title="Paramètres">⚙</button>
+  </div>
+</header>
+
+<!-- Panneau gauche : calques et options -->
+<aside id="leftPanel" class="panel">
+  <div class="panel-head"><span>Calques</span><button class="collapse" data-target="leftPanel" title="Replier">‹</button></div>
+  <div class="panel-body">
+    <div class="layers" id="layers"></div>
+    <h4>Météo</h4>
+    <label class="opt"><input type="checkbox" id="optNuages" checked> ☁️ Nuages (satellites)</label>
+    <div class="slider-row"><input type="range" id="optNuagesOp" min="0.2" max="1" step="0.05" value="0.85" title="Opacité des nuages"></div>
+    <label class="opt" title="Les images satellites arrivent une fois par heure. Entre deux, les nuages et la pluie dérivent en accéléré selon le vent du modèle GFS, autour de leur position réelle."><input type="checkbox" id="optNuagesAnim" checked> 🔄 Nuages animés (dérive avec le vent)</label>
+    <label class="opt"><input type="checkbox" id="optPluie" checked> 🌧️ Pluie / orages</label>
+    <label class="opt"><input type="checkbox" id="optVents"> 💨 Vents animés</label>
+    <label class="opt"><input type="checkbox" id="optMeteoClic" checked> 📍 Météo au clic sur la Terre</label>
+    <div id="meteoInfo" class="small muted"></div>
+    <div class="legend-rain small"><span class="lr-r"></span>pluie faible → forte <span class="lr-s"></span>neige</div>
+    <h4>Noms sur la carte</h4>
+    <label class="opt" title="Couche Esri « World Boundaries and Places », posée sur l'image satellite quand on s'approche (quel que soit le fond choisi). Villes et villages jusqu'au zoom maximal, frontières des pays et des régions."><input type="checkbox" id="optLieux" checked> 🏙️ Villes, lieux et frontières</label>
+    <label class="opt"><input type="checkbox" id="optEau" checked> 💧 Fleuves, rivières, canaux, lacs</label>
+    <label class="opt"><input type="checkbox" id="optEauTrace"> 〰️ Tracer les cours d'eau</label>
+    <label class="opt"><input type="checkbox" id="optMonts" checked> ⛰️ Montagnes et massifs</label>
+    <h4>Affichage</h4>
+    <label class="opt"><input type="checkbox" id="optLight" checked> Jour / nuit réaliste</label>
+    <label class="opt"><input type="checkbox" id="optAtmo" checked> Atmosphère</label>
+    <label class="opt"><input type="checkbox" id="optStars" checked> Étoiles</label>
+    <label class="opt"><input type="checkbox" id="optTrails" checked> Traînées des avions (trajet réel)</label>
+    <label class="opt" title="Vus de loin, les avions à leur vraie vitesse paraissent immobiles : chacun rejoue en accéléré ses ~45 dernières minutes de vol réel jusqu'à sa position actuelle. De près, ils avancent en temps réel."><input type="checkbox" id="optReplay" checked> Avions animés (rejeu accéléré du trajet)</label>
+    <label class="opt"><input type="checkbox" id="optFamous" checked> Noms : ISS, Tiangong, Hubble</label>
+    <label class="opt"><input type="checkbox" id="optPulse" checked> Faire clignoter les nouveaux</label>
+    <label class="opt"><input type="checkbox" id="optOrbitHover"> Orbite au survol</label>
+    <label class="opt"><input type="checkbox" id="optSpin"> Rotation automatique</label>
+    <label class="opt"><input type="checkbox" id="optZoomCursor"> Zoom vers le curseur</label>
+    <label class="opt"><input type="checkbox" id="optUTC"> Heure UTC</label>
+    <div class="slider-row"><span>Taille des points</span><input type="range" id="optSize" min="0.4" max="3" step="0.1" value="1"></div>
+    <div class="slider-row"><span>Taille des bateaux</span><input type="range" id="optShipSize" min="0.6" max="5" step="0.1" value="2" title="Plus grand : les bateaux prennent leur forme de navire même vus de loin"></div>
+    <div class="slider-row"><span>Altitude avions ×<b id="exagVal">8</b></span><input type="range" id="optExag" min="1" max="40" step="1" value="8"></div>
+    <h4>Caméra</h4>
+    <div class="btn-row">
+      <button id="camMode" title="Orbite : rotation stable autour de la Terre — Libre : rotation dans tous les axes, y compris roulis">Mode : Orbite</button>
+      <button id="camReset" title="Recentrer sur la Terre (touche R)">Recentrer</button>
+    </div>
+    <div class="btn-row">
+      <button data-view="europe">Europe</button>
+      <button data-view="france">France</button>
+      <button data-view="usa">USA</button>
+      <button data-view="asie">Asie</button>
+    </div>
+    <div class="btn-row">
+      <button data-view="leo">Orbite basse</button>
+      <button data-view="geo">Géostationnaire</button>
+      <button data-view="pole">Pôle Nord</button>
+    </div>
+    <p class="help">Clic gauche : tourner · Molette : zoom · Clic droit : déplacer · Double-clic : plonger sur un point · Clic sur un objet : détails · Flèches / + / − / Espace / L / R au clavier</p>
+  </div>
+</aside>
+
+<!-- Panneau droit : recherche, sélection, nouveautés -->
+<aside id="rightPanel" class="panel">
+  <div class="panel-head">
+    <div class="tabs">
+      <button class="tab active" data-tab="info">Détails</button>
+      <button class="tab" data-tab="vis">Visibilité</button>
+      <button class="tab" data-tab="new">Nouveaux <span id="newCount" class="pill">0</span></button>
+      <button class="tab" data-tab="lanc" title="Prochains lancements de fusées">🚀</button>
+      <button class="tab" data-tab="sources">Sources</button>
+    </div>
+    <button class="collapse" data-target="rightPanel" title="Replier">›</button>
+  </div>
+  <div class="panel-body">
+    <div class="tab-page active" data-page="info">
+      <div id="info"><p class="muted">Cliquez sur un avion ou un satellite pour voir ses détails.</p>
+        <div class="quick">
+          <button data-pick="25544">Suivre l'ISS</button>
+          <button data-pick="48274">Station chinoise</button>
+          <button data-pick="20580">Hubble</button>
+          <button data-pick="1965-096A">Astérix (1965)</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-page" data-page="vis">
+      <h4 style="margin-top:0">Où êtes-vous ?</h4>
+      <div class="loc-row"><input id="locInput" type="search" placeholder="Adresse, ville, code postal…"><button id="locSearch">OK</button></div>
+      <div id="locResults"></div>
+      <div class="btn-row"><button id="locGeo">📍 Ma position</button><button id="locPick">🖱 Choisir sur le globe</button></div>
+      <div id="locCurrent" class="small"></div>
+      <h4>Quel satellite ?</h4>
+      <select id="visSat">
+        <option value="25544">ISS — Station spatiale internationale</option>
+        <option value="48274">Tiangong — station chinoise</option>
+        <option value="20580">Télescope Hubble</option>
+        <option value="sel" disabled>Objet sélectionné (aucun)</option>
+      </select>
+      <label class="opt"><input type="checkbox" id="visOnly" checked> Seulement les passages visibles à l'œil nu</label>
+      <div id="passList"></div>
+    </div>
+    <div class="tab-page" data-page="new">
+      <p class="muted small">Lancements des 30 derniers jours. La liste se met à jour toute seule pendant que l'application tourne ; les objets apparus depuis votre dernière visite sont marqués <span class="tag new">NOUVEAU</span>.</p>
+      <div id="newList"></div>
+    </div>
+    <div class="tab-page" data-page="lanc">
+      <p class="muted small">Prochains décollages dans le monde, avec leur retransmission en direct quand l'opérateur en annonce une : on y entend le directeur de tir, le compte à rebours et les échanges avec la base.</p>
+      <div id="lchList"></div>
+    </div>
+    <div class="tab-page" data-page="sources">
+      <div id="sourcesInfo"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- Frise temporelle -->
+<footer id="timeline">
+  <div class="tl-controls">
+    <button id="btnBack" title="Lecture arrière">◀◀</button>
+    <button id="btnPlay" title="Lecture / pause (Espace)">❚❚</button>
+    <select id="speed" title="Vitesse du temps">
+      <option value="1" selected>×1 (réel)</option>
+      <option value="10">×10</option>
+      <option value="60">1 min / s</option>
+      <option value="600">10 min / s</option>
+      <option value="3600">1 heure / s</option>
+      <option value="86400">1 jour / s</option>
+      <option value="604800">1 semaine / s</option>
+      <option value="2629800">1 mois / s</option>
+      <option value="31557600">1 an / s</option>
+      <option value="315576000">10 ans / s</option>
+    </select>
+    <select id="range" title="Période affichée sur la frise">
+      <option value="1900">1900 → aujourd'hui</option>
+      <option value="1957">1957 → aujourd'hui (ère spatiale)</option>
+      <option value="10y">10 dernières années</option>
+      <option value="1y">Dernière année</option>
+      <option value="30d">30 derniers jours</option>
+      <option value="7d">7 derniers jours</option>
+      <option value="1d">Dernières 24 h</option>
+    </select>
+    <input type="datetime-local" id="dateInput" title="Aller à une date précise">
+    <div class="jumps">
+      <button data-jump="1900-01-01">1900</button>
+      <button data-jump="1903-12-17T15:00">1903</button>
+      <button data-jump="1957-10-05">1957</button>
+      <button data-jump="1969-07-20T20:17">1969</button>
+      <button data-jump="1990-01-01">1990</button>
+      <button data-jump="2010-01-01">2010</button>
+      <button data-jump="2019-05-25">2019</button>
+    </div>
+    <div class="legend"><span class="lg pay"></span>satellites <span class="lg rb"></span>étages <span class="lg deb"></span>débris <span class="lg air"></span>avions (estim.)</div>
+  </div>
+  <div id="tlTrack">
+    <canvas id="tlChart"></canvas>
+    <div id="tlEvents"></div>
+    <div id="tlCursor"><div id="tlCursorLabel"></div></div>
+    <div id="tlHover"></div>
+  </div>
+</footer>
+
+<div id="aboutModal" class="modal"><div class="modal-box about-box">
+  <h3>🌍 À propos d'Atlas du Ciel</h3>
+  <p>Les avions et les navires du monde entier, tous les objets spatiaux depuis 1957 et la météo en direct, sur un globe 3D, de 1900 à aujourd'hui.</p>
+  <div class="about-credits">
+    <div><span class="about-ico">💡</span><div><b>Idée et conception</b><br><a href="https://github.com/damballah" target="_blank" rel="noopener">Damballah</a><br><small class="muted">le projet, les fonctionnalités, les choix et les essais</small></div></div>
+    <div><span class="about-ico">🤖</span><div><b>Programmation et documentation</b><br>Claude (Anthropic)<br><small class="muted">le code du site, les calculs d'orbite, les tâches automatiques et la documentation, à partir des idées et des retours de Damballah</small></div></div>
+  </div>
+  <p class="small">Logiciel libre sous <b>licence MIT</b>, hébergé gratuitement sur GitHub : <a href="https://github.com/damballah" target="_blank" rel="noopener">github.com/damballah</a>.<br>
+  Les données viennent de nombreux fournisseurs (OpenSky pour les avions, aisstream.io pour les navires, CelesTrak pour les satellites, EUMETSAT, NASA, NOAA et Open-Meteo pour la météo…) : la liste complète et leurs licences sont dans l'onglet <a href="#" id="aboutSources">Sources</a>.</p>
+  <div class="actions"><button id="aboutClose">Fermer</button></div>
+</div></div>
+<div id="issModal" class="modal"><div class="modal-box iss-box"><div class="iss-head"><b id="issTitle">📺 NASA en direct</b><button type="button" id="issClose">Fermer</button></div>
+  <div class="iss-frame"></div>
+  <div class="small muted" id="issHelp">Si la vidéo ne s'affiche pas (aucun direct en cours), ouvrez <a href="https://www.youtube.com/@NASA/streams" target="_blank" rel="noopener">les directs de la NASA sur YouTube</a> ou <a href="https://plus.nasa.gov/" target="_blank" rel="noopener">NASA+</a>.</div></div></div>
+<div id="settingsModal" class="modal">
+  <form class="modal-box" autocomplete="off" onsubmit="return false">
+    <h3>⚙ Paramètres</h3>
+    <h4>Données</h4>
+    <div id="setData" class="small"></div>
+    <h4>Imagerie détaillée (quand on zoome)</h4>
+    <label class="opt">Source <select id="setImagerie">
+      <option value="eox">Sentinel-2 sans nuages (EOX) – 10 m, gratuit non commercial</option>
+      <option value="esri">Esri World Imagery – jusqu'à 1 m, plus net en ville</option>
+      <option value="off">Désactivée (vieux PC, connexion lente)</option></select></label>
+    <div id="setImagerieInfo" class="small muted"></div>
+    <h4>Avions</h4>
+    <label class="opt">Chercher un nouveau relevé toutes les <input id="setRefresh" class="web-only" type="number" min="30" max="600" step="10" style="width:80px"> secondes</label>
+    <p class="small muted">GitHub relève tous les avions du monde toutes les 5 minutes environ ; entre deux relevés, chaque avion avance selon sa vitesse et son cap réels.</p>
+    <h4>Clés et comptes (API)</h4>
+    <div class="note">Rien à saisir ici : les clés sont rangées en sécurité dans le dépôt GitHub, jamais dans la page.<br>
+      <b>OpenSky</b> (conseillé, gratuit) : <i>Settings › Secrets and variables › Actions › New repository secret</i> :
+      <code>OPENSKY_CLIENT_ID</code> et <code>OPENSKY_CLIENT_SECRET</code> (créés sur opensky-network.org › Account › API client).</div>
+    <div class="btn-row"><button id="setSave" type="button" class="primary">Enregistrer</button><button id="setCancel" type="button">Fermer</button><button id="setReset" type="button">Réinitialiser</button></div>
+  </form>
+</div>
+<div id="compass" title="Boussole">
+  <button id="cmpL" title="Tourner la vue vers la gauche (maintenir)">↺</button>
+  <button id="cmpN" title="Remettre le nord en haut"><svg viewBox="0 0 40 40" width="34" height="34"><circle cx="20" cy="20" r="18" fill="rgba(8,14,26,.85)" stroke="currentColor" stroke-opacity=".35"/><g id="cmpNeedle"><path d="M20 5 L25 20 L15 20 Z" fill="#ff5c6c"/><path d="M20 35 L25 20 L15 20 Z" fill="#cfd8ea"/><text x="20" y="14.5" text-anchor="middle" font-size="7" font-weight="700" fill="#fff">N</text></g></svg></button>
+  <button id="cmpR" title="Tourner la vue vers la droite (maintenir)">↻</button>
+  <button id="cmpTilt" title="Incliner la vue">3D</button>
+</div>
+<div id="zoomInfo" title="Altitude de la caméra et finesse de l'image satellite affichée"></div>
+<div id="isolateChip"><b>Affichage isolé :</b> <span></span><button title="Échap">✕ Tout réafficher</button></div>
+<div id="tooltip"></div>
+<div id="label"></div>
+<div id="toasts"></div>
+<div id="emptySky">Le ciel est vide.<small>Aucun avion motorisé, aucun satellite. Lancez la lecture…</small></div>
+
+<div id="loading">
+  <div class="load-box">
+    <div class="spinner"></div>
+    <div class="load-title">ATLAS DU CIEL</div>
+    <ul id="loadSteps"></ul>
+    <p class="muted small">Premier lancement : téléchargement du catalogue de tous les objets spatiaux depuis 1957 (≈ 10 Mo). Les fois suivantes, c'est instantané.</p>
+  </div>
+</div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
