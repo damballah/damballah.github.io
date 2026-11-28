@@ -1,0 +1,688 @@
+{
+ "frames": [
+  {
+   "t": "2026-11-26T13:00:00Z",
+   "nuages": "nuages_20261126T13.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 10:00",
+    "GOES-Est 12:40",
+    "GOES-Ouest 12:40",
+    "Himawari 12:40",
+    "Meteosat 0° 12:30",
+    "Meteosat océan Indien 12:30"
+   ],
+   "nuages_t": "2026-11-26T12:40:00Z",
+   "pluie": "pluie_20261126T13.png",
+   "pluie_t": "2026-11-26T07:30:00Z"
+  },
+  {
+   "t": "2026-11-26T17:00:00Z",
+   "nuages": "nuages_20261126T17.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 17:00",
+    "GOES-Est 16:40",
+    "GOES-Ouest 16:40",
+    "Himawari 16:40",
+    "Meteosat 0° 16:30",
+    "Meteosat océan Indien 16:30"
+   ],
+   "nuages_t": "2026-11-26T16:40:00Z",
+   "pluie": "pluie_20261126T17.png",
+   "pluie_t": "2026-11-26T11:30:00Z",
+   "vents": "vents_20261126T17.png",
+   "vents_run": "2026-11-26T12:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T01:00:00Z",
+   "nuages": "nuages_20261127T01.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 01:00",
+    "GOES-Est 00:40",
+    "GOES-Ouest 00:40",
+    "Himawari 00:40",
+    "Meteosat 0° 00:30",
+    "Meteosat océan Indien 00:30"
+   ],
+   "nuages_t": "2026-11-27T00:40:00Z",
+   "pluie": "pluie_20261127T01.png",
+   "pluie_t": "2026-11-26T19:30:00Z",
+   "vents": "vents_20261127T01.png",
+   "vents_run": "2026-11-26T18:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T04:00:00Z",
+   "nuages": "nuages_20261127T04.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 04:00",
+    "GOES-Est 03:40",
+    "GOES-Ouest 03:40",
+    "Himawari 03:40",
+    "Meteosat 0° 03:30",
+    "Meteosat océan Indien 03:30"
+   ],
+   "nuages_t": "2026-11-27T03:40:00Z",
+   "pluie": "pluie_20261127T04.png",
+   "pluie_t": "2026-11-26T22:30:00Z",
+   "vents": "vents_20261127T04.png",
+   "vents_run": "2026-11-27T00:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-27T05:00:00Z",
+   "nuages": "nuages_20261127T05.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 05:00",
+    "GOES-Est 04:40",
+    "GOES-Ouest 04:40",
+    "Himawari 04:40",
+    "Meteosat 0° 04:30",
+    "Meteosat océan Indien 04:30"
+   ],
+   "nuages_t": "2026-11-27T04:40:00Z",
+   "pluie": "pluie_20261127T05.png",
+   "pluie_t": "2026-11-26T23:30:00Z",
+   "vents": "vents_20261127T05.png",
+   "vents_run": "2026-11-27T00:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T06:00:00Z",
+   "nuages": "nuages_20261127T06.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 06:00",
+    "GOES-Est 05:40",
+    "GOES-Ouest 05:40",
+    "Himawari 05:40",
+    "Meteosat 0° 05:30",
+    "Meteosat océan Indien 05:30"
+   ],
+   "nuages_t": "2026-11-27T05:40:00Z",
+   "pluie": "pluie_20261127T06.png",
+   "pluie_t": "2026-11-27T00:30:00Z",
+   "vents": "vents_20261127T06.png",
+   "vents_run": "2026-11-27T00:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T07:00:00Z",
+   "nuages": "nuages_20261127T07.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 07:00",
+    "GOES-Est 06:40",
+    "GOES-Ouest 06:40",
+    "Himawari 06:40",
+    "Meteosat 0° 06:30",
+    "Meteosat océan Indien 06:30"
+   ],
+   "nuages_t": "2026-11-27T06:40:00Z",
+   "pluie": "pluie_20261127T07.png",
+   "pluie_t": "2026-11-27T01:30:00Z",
+   "vents": "vents_20261127T07.png",
+   "vents_run": "2026-11-27T00:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T08:00:00Z",
+   "nuages": "nuages_20261127T08.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 08:00",
+    "GOES-Est 07:40",
+    "GOES-Ouest 07:40",
+    "Himawari 07:40",
+    "Meteosat 0° 07:30",
+    "Meteosat océan Indien 07:30"
+   ],
+   "nuages_t": "2026-11-27T07:40:00Z",
+   "pluie": "pluie_20261127T08.png",
+   "pluie_t": "2026-11-27T02:30:00Z",
+   "vents": "vents_20261127T08.png",
+   "vents_run": "2026-11-27T00:00:00Z",
+   "vents_echeance": 9
+  },
+  {
+   "t": "2026-11-27T09:00:00Z",
+   "nuages": "nuages_20261127T09.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 09:00",
+    "GOES-Est 08:40",
+    "GOES-Ouest 08:40",
+    "Himawari 08:40",
+    "Meteosat 0° 08:30",
+    "Meteosat océan Indien 08:30"
+   ],
+   "nuages_t": "2026-11-27T08:40:00Z",
+   "pluie": "pluie_20261127T09.png",
+   "pluie_t": "2026-11-27T03:30:00Z",
+   "vents": "vents_20261127T09.png",
+   "vents_run": "2026-11-27T06:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-27T10:00:00Z",
+   "nuages": "nuages_20261127T10.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 10:00",
+    "GOES-Est 09:40",
+    "GOES-Ouest 09:40",
+    "Himawari 09:40",
+    "Meteosat 0° 09:30",
+    "Meteosat océan Indien 09:30"
+   ],
+   "nuages_t": "2026-11-27T09:40:00Z",
+   "pluie": "pluie_20261127T10.png",
+   "pluie_t": "2026-11-27T04:30:00Z",
+   "vents": "vents_20261127T10.png",
+   "vents_run": "2026-11-27T06:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-27T11:00:00Z",
+   "nuages": "nuages_20261127T11.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 11:00",
+    "GOES-Est 10:40",
+    "GOES-Ouest 10:40",
+    "Himawari 10:40",
+    "Meteosat 0° 10:30",
+    "Meteosat océan Indien 10:30"
+   ],
+   "nuages_t": "2026-11-27T10:40:00Z",
+   "pluie": "pluie_20261127T11.png",
+   "pluie_t": "2026-11-27T05:30:00Z",
+   "vents": "vents_20261127T11.png",
+   "vents_run": "2026-11-27T06:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T12:00:00Z",
+   "nuages": "nuages_20261127T12.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 12:00",
+    "GOES-Est 11:40",
+    "GOES-Ouest 11:40",
+    "Himawari 11:40",
+    "Meteosat 0° 11:30",
+    "Meteosat océan Indien 11:30"
+   ],
+   "nuages_t": "2026-11-27T11:40:00Z",
+   "pluie": "pluie_20261127T12.png",
+   "pluie_t": "2026-11-27T06:30:00Z",
+   "vents": "vents_20261127T12.png",
+   "vents_run": "2026-11-27T06:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T13:00:00Z",
+   "nuages": "nuages_20261127T13.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 13:00",
+    "GOES-Est 12:40",
+    "GOES-Ouest 12:40",
+    "Himawari 12:40",
+    "Meteosat 0° 12:30",
+    "Meteosat océan Indien 12:30"
+   ],
+   "nuages_t": "2026-11-27T12:40:00Z",
+   "pluie": "pluie_20261127T13.png",
+   "pluie_t": "2026-11-27T07:30:00Z",
+   "vents": "vents_20261127T13.png",
+   "vents_run": "2026-11-27T06:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T14:00:00Z",
+   "nuages": "nuages_20261127T14.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 14:00",
+    "GOES-Est 13:40",
+    "GOES-Ouest 13:40",
+    "Himawari 13:40",
+    "Meteosat 0° 13:30",
+    "Meteosat océan Indien 13:30"
+   ],
+   "nuages_t": "2026-11-27T13:40:00Z",
+   "pluie": "pluie_20261127T14.png",
+   "pluie_t": "2026-11-27T08:30:00Z",
+   "vents": "vents_20261127T14.png",
+   "vents_run": "2026-11-27T06:00:00Z",
+   "vents_echeance": 9
+  },
+  {
+   "t": "2026-11-27T15:00:00Z",
+   "nuages": "nuages_20261127T15.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 15:00",
+    "GOES-Est 14:40",
+    "GOES-Ouest 14:40",
+    "Himawari 14:30",
+    "Meteosat 0° 14:30",
+    "Meteosat océan Indien 14:30"
+   ],
+   "nuages_t": "2026-11-27T14:40:00Z",
+   "pluie": "pluie_20261127T15.png",
+   "pluie_t": "2026-11-27T09:30:00Z",
+   "vents": "vents_20261127T15.png",
+   "vents_run": "2026-11-27T12:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-27T16:00:00Z",
+   "nuages": "nuages_20261127T16.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 16:00",
+    "GOES-Est 15:40",
+    "GOES-Ouest 15:40",
+    "Himawari 15:40",
+    "Meteosat 0° 15:30",
+    "Meteosat océan Indien 15:30"
+   ],
+   "nuages_t": "2026-11-27T15:40:00Z",
+   "pluie": "pluie_20261127T16.png",
+   "pluie_t": "2026-11-27T10:30:00Z",
+   "vents": "vents_20261127T16.png",
+   "vents_run": "2026-11-27T12:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-27T17:00:00Z",
+   "nuages": "nuages_20261127T17.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 17:00",
+    "GOES-Est 16:40",
+    "GOES-Ouest 16:40",
+    "Himawari 16:40",
+    "Meteosat 0° 16:30",
+    "Meteosat océan Indien 16:30"
+   ],
+   "nuages_t": "2026-11-27T16:40:00Z",
+   "pluie": "pluie_20261127T17.png",
+   "pluie_t": "2026-11-27T11:30:00Z",
+   "vents": "vents_20261127T17.png",
+   "vents_run": "2026-11-27T12:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T18:00:00Z",
+   "nuages": "nuages_20261127T18.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 18:00",
+    "GOES-Est 17:40",
+    "GOES-Ouest 17:40",
+    "Himawari 17:40",
+    "Meteosat 0° 17:30",
+    "Meteosat océan Indien 17:30"
+   ],
+   "nuages_t": "2026-11-27T17:40:00Z",
+   "pluie": "pluie_20261127T18.png",
+   "pluie_t": "2026-11-27T12:30:00Z",
+   "vents": "vents_20261127T18.png",
+   "vents_run": "2026-11-27T12:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T19:00:00Z",
+   "nuages": "nuages_20261127T19.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 19:00",
+    "GOES-Est 18:40",
+    "GOES-Ouest 18:40",
+    "Himawari 18:40",
+    "Meteosat 0° 18:30",
+    "Meteosat océan Indien 18:30"
+   ],
+   "nuages_t": "2026-11-27T18:40:00Z",
+   "pluie": "pluie_20261127T19.png",
+   "pluie_t": "2026-11-27T13:30:00Z",
+   "vents": "vents_20261127T19.png",
+   "vents_run": "2026-11-27T12:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-27T20:00:00Z",
+   "nuages": "nuages_20261127T20.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 20:00",
+    "GOES-Est 19:20",
+    "GOES-Ouest 19:40",
+    "Himawari 19:40",
+    "Meteosat 0° 19:30",
+    "Meteosat océan Indien 19:30"
+   ],
+   "nuages_t": "2026-11-27T19:40:00Z",
+   "pluie": "pluie_20261127T20.png",
+   "pluie_t": "2026-11-27T14:30:00Z",
+   "vents": "vents_20261127T20.png",
+   "vents_run": "2026-11-27T12:00:00Z",
+   "vents_echeance": 9
+  },
+  {
+   "t": "2026-11-27T21:00:00Z",
+   "nuages": "nuages_20261127T21.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 21:00",
+    "GOES-Est 20:40",
+    "GOES-Ouest 20:40",
+    "Himawari 20:40",
+    "Meteosat 0° 20:30",
+    "Meteosat océan Indien 20:30"
+   ],
+   "nuages_t": "2026-11-27T20:40:00Z",
+   "pluie": "pluie_20261127T21.png",
+   "pluie_t": "2026-11-27T15:30:00Z",
+   "vents": "vents_20261127T21.png",
+   "vents_run": "2026-11-27T18:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-27T22:00:00Z",
+   "nuages": "nuages_20261127T22.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 22:00",
+    "GOES-Est 21:40",
+    "GOES-Ouest 21:40",
+    "Himawari 21:40",
+    "Meteosat 0° 21:30",
+    "Meteosat océan Indien 21:30"
+   ],
+   "nuages_t": "2026-11-27T21:40:00Z",
+   "pluie": "pluie_20261127T22.png",
+   "pluie_t": "2026-11-27T16:30:00Z",
+   "vents": "vents_20261127T22.png",
+   "vents_run": "2026-11-27T18:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-27T23:00:00Z",
+   "nuages": "nuages_20261127T23.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 23:00",
+    "GOES-Est 22:40",
+    "GOES-Ouest 22:40",
+    "Himawari 22:40",
+    "Meteosat 0° 22:30",
+    "Meteosat océan Indien 22:30"
+   ],
+   "nuages_t": "2026-11-27T22:40:00Z",
+   "pluie": "pluie_20261127T23.png",
+   "pluie_t": "2026-11-27T17:30:00Z",
+   "vents": "vents_20261127T23.png",
+   "vents_run": "2026-11-27T18:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T00:00:00Z",
+   "nuages": "nuages_20261128T00.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 00:00",
+    "GOES-Est 23:40",
+    "GOES-Ouest 23:40",
+    "Himawari 23:40",
+    "Meteosat 0° 23:30",
+    "Meteosat océan Indien 23:30"
+   ],
+   "nuages_t": "2026-11-27T23:40:00Z",
+   "pluie": "pluie_20261128T00.png",
+   "pluie_t": "2026-11-27T18:30:00Z",
+   "vents": "vents_20261128T00.png",
+   "vents_run": "2026-11-27T18:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T01:00:00Z",
+   "nuages": "nuages_20261128T01.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 01:00",
+    "GOES-Est 00:40",
+    "GOES-Ouest 00:40",
+    "Himawari 00:40",
+    "Meteosat 0° 00:30",
+    "Meteosat océan Indien 00:30"
+   ],
+   "nuages_t": "2026-11-28T00:40:00Z",
+   "pluie": "pluie_20261128T01.png",
+   "pluie_t": "2026-11-27T19:30:00Z",
+   "vents": "vents_20261128T01.png",
+   "vents_run": "2026-11-27T18:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T02:00:00Z",
+   "nuages": "nuages_20261128T02.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 02:00",
+    "GOES-Est 01:40",
+    "GOES-Ouest 01:40",
+    "Himawari 01:40",
+    "Meteosat 0° 01:30",
+    "Meteosat océan Indien 01:30"
+   ],
+   "nuages_t": "2026-11-28T01:40:00Z",
+   "pluie": "pluie_20261128T02.png",
+   "pluie_t": "2026-11-27T20:30:00Z",
+   "vents": "vents_20261128T02.png",
+   "vents_run": "2026-11-27T18:00:00Z",
+   "vents_echeance": 9
+  },
+  {
+   "t": "2026-11-28T03:00:00Z",
+   "nuages": "nuages_20261128T03.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 03:00",
+    "GOES-Est 02:40",
+    "GOES-Ouest 02:40",
+    "Himawari 02:30",
+    "Meteosat 0° 02:30",
+    "Meteosat océan Indien 02:30"
+   ],
+   "nuages_t": "2026-11-28T02:40:00Z",
+   "pluie": "pluie_20261128T03.png",
+   "pluie_t": "2026-11-27T21:30:00Z",
+   "vents": "vents_20261128T03.png",
+   "vents_run": "2026-11-28T00:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-28T04:00:00Z",
+   "nuages": "nuages_20261128T04.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 04:00",
+    "GOES-Est 03:40",
+    "GOES-Ouest 03:40",
+    "Himawari 03:40",
+    "Meteosat 0° 03:30",
+    "Meteosat océan Indien 03:30"
+   ],
+   "nuages_t": "2026-11-28T03:40:00Z",
+   "pluie": "pluie_20261128T04.png",
+   "pluie_t": "2026-11-27T22:30:00Z",
+   "vents": "vents_20261128T04.png",
+   "vents_run": "2026-11-28T00:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-28T05:00:00Z",
+   "nuages": "nuages_20261128T05.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 05:00",
+    "GOES-Est 04:40",
+    "GOES-Ouest 04:40",
+    "Himawari 04:40",
+    "Meteosat 0° 04:30",
+    "Meteosat océan Indien 04:30"
+   ],
+   "nuages_t": "2026-11-28T04:40:00Z",
+   "pluie": "pluie_20261128T05.png",
+   "pluie_t": "2026-11-27T23:30:00Z",
+   "vents": "vents_20261128T05.png",
+   "vents_run": "2026-11-28T00:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T06:00:00Z",
+   "nuages": "nuages_20261128T06.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 06:00",
+    "GOES-Est 05:40",
+    "GOES-Ouest 05:40",
+    "Himawari 05:40",
+    "Meteosat 0° 05:30",
+    "Meteosat océan Indien 05:30"
+   ],
+   "nuages_t": "2026-11-28T05:40:00Z",
+   "pluie": "pluie_20261128T06.png",
+   "pluie_t": "2026-11-28T00:30:00Z",
+   "vents": "vents_20261128T06.png",
+   "vents_run": "2026-11-28T00:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T07:00:00Z",
+   "nuages": "nuages_20261128T07.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 07:00",
+    "GOES-Est 06:40",
+    "GOES-Ouest 06:40",
+    "Himawari 06:40",
+    "Meteosat 0° 06:30",
+    "Meteosat océan Indien 06:30"
+   ],
+   "nuages_t": "2026-11-28T06:40:00Z",
+   "pluie": "pluie_20261128T07.png",
+   "pluie_t": "2026-11-28T01:30:00Z",
+   "vents": "vents_20261128T07.png",
+   "vents_run": "2026-11-28T00:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T08:00:00Z",
+   "nuages": "nuages_20261128T08.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 08:00",
+    "GOES-Est 07:40",
+    "GOES-Ouest 07:40",
+    "Himawari 07:40",
+    "Meteosat 0° 07:30",
+    "Meteosat océan Indien 07:30"
+   ],
+   "nuages_t": "2026-11-28T07:40:00Z",
+   "pluie": "pluie_20261128T08.png",
+   "pluie_t": "2026-11-28T02:30:00Z",
+   "vents": "vents_20261128T08.png",
+   "vents_run": "2026-11-28T00:00:00Z",
+   "vents_echeance": 9
+  },
+  {
+   "t": "2026-11-28T09:00:00Z",
+   "nuages": "nuages_20261128T09.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 09:00",
+    "GOES-Est 08:40",
+    "GOES-Ouest 08:40",
+    "Himawari 08:40",
+    "Meteosat 0° 08:30",
+    "Meteosat océan Indien 08:30"
+   ],
+   "nuages_t": "2026-11-28T08:40:00Z",
+   "pluie": "pluie_20261128T09.png",
+   "pluie_t": "2026-11-28T03:30:00Z",
+   "vents": "vents_20261128T09.png",
+   "vents_run": "2026-11-28T06:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-28T10:00:00Z",
+   "nuages": "nuages_20261128T10.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 10:00",
+    "GOES-Est 09:40",
+    "GOES-Ouest 09:40",
+    "Himawari 09:40",
+    "Meteosat 0° 09:30",
+    "Meteosat océan Indien 09:30"
+   ],
+   "nuages_t": "2026-11-28T09:40:00Z",
+   "pluie": "pluie_20261128T10.png",
+   "pluie_t": "2026-11-28T04:30:00Z",
+   "vents": "vents_20261128T10.png",
+   "vents_run": "2026-11-28T06:00:00Z",
+   "vents_echeance": 3
+  },
+  {
+   "t": "2026-11-28T11:00:00Z",
+   "nuages": "nuages_20261128T11.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 11:00",
+    "GOES-Est 10:40",
+    "GOES-Ouest 10:40",
+    "Himawari 10:40",
+    "Meteosat 0° 10:30",
+    "Meteosat océan Indien 10:30"
+   ],
+   "nuages_t": "2026-11-28T10:40:00Z",
+   "pluie": "pluie_20261128T11.png",
+   "pluie_t": "2026-11-28T05:30:00Z",
+   "vents": "vents_20261128T11.png",
+   "vents_run": "2026-11-28T06:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T12:00:00Z",
+   "nuages": "nuages_20261128T12.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 12:00",
+    "GOES-Est 11:40",
+    "GOES-Ouest 11:40",
+    "Himawari 11:40",
+    "Meteosat 0° 11:30",
+    "Meteosat océan Indien 11:30"
+   ],
+   "nuages_t": "2026-11-28T11:40:00Z",
+   "pluie": "pluie_20261128T12.png",
+   "pluie_t": "2026-11-28T06:30:00Z",
+   "vents": "vents_20261128T12.png",
+   "vents_run": "2026-11-28T06:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T13:00:00Z",
+   "nuages": "nuages_20261128T13.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 13:00",
+    "GOES-Est 12:40",
+    "GOES-Ouest 12:40",
+    "Himawari 12:40",
+    "Meteosat 0° 12:30",
+    "Meteosat océan Indien 12:30"
+   ],
+   "nuages_t": "2026-11-28T12:40:00Z",
+   "pluie": "pluie_20261128T13.png",
+   "pluie_t": "2026-11-28T07:30:00Z",
+   "vents": "vents_20261128T13.png",
+   "vents_run": "2026-11-28T06:00:00Z",
+   "vents_echeance": 6
+  },
+  {
+   "t": "2026-11-28T14:00:00Z",
+   "nuages": "nuages_20261128T14.jpg",
+   "nuages_sources": [
+    "EUMETSAT assemblage 14:00",
+    "GOES-Est 13:40",
+    "GOES-Ouest 13:40",
+    "Himawari 13:40",
+    "Meteosat 0° 13:30",
+    "Meteosat océan Indien 13:30"
+   ],
+   "nuages_t": "2026-11-28T13:40:00Z",
+   "pluie": "pluie_20261128T14.png",
+   "pluie_t": "2026-11-28T08:30:00Z",
+   "vents": "vents_20261128T14.png",
+   "vents_run": "2026-11-28T06:00:00Z",
+   "vents_echeance": 9
+  }
+ ],
+ "genere": "2026-11-28T14:41:45Z",
+ "erreurs": {},
+ "historique_h": 72
+}
