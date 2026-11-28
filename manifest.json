@@ -1,0 +1,11 @@
+{
+ "genere": "2026-11-28T14:01:15.799343+00:00",
+ "satellites": "gp.json",
+ "satellites_source": "CelesTrak",
+ "satellites_date": "2026-11-28T14:01:14.763382+00:00",
+ "catalogue": "catalogue.csv",
+ "catalogue_source": "CelesTrak",
+ "catalogue_date": "2026-11-28T08:01:06.039331+00:00",
+ "erreurs": {},
+ "celestrak_pause_until": 0.0
+}
